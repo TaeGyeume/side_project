@@ -5,7 +5,7 @@ export const fetchUsers = async () => {
   try {
     const response = await axiosInstance.get("/");
     return response.data;
-  } catch (error) {
+  } catch (error) {    
     console.error("Error fetching users:", error);
     throw error;
   }
@@ -18,9 +18,9 @@ export const addUser = async (username, name, email, password, phone, gender, bi
       username,
       name,
       email,
-      password,
+      password, 
       phone,
-      gender,
+      gender,         
       birthdate,
     });
     return response.data;
