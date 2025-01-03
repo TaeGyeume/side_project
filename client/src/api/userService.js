@@ -20,7 +20,7 @@ export const addUser = async (username, name, email, password, phone, gender, bi
       email,
       password,
       phone,
-      gender,
+      gender,         
       birthdate,
     });
     return response.data;
