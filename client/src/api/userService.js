@@ -6,7 +6,7 @@ export const fetchUsers = async () => {
     const response = await axiosInstance.get("/");
     return response.data;
   } catch (error) {    
-    console.error("Error fetching users:EEEEEEEEEEEEE", error);
+    console.error("Error fetching users:EEEEEEEEEEEEEffff", error);
     throw error;
   }
 };
