@@ -18,7 +18,7 @@ export const addUser = async (username, name, email, password, phone, gender, bi
       username,
       name,
       email,
-      password,
+      password, 
       phone,
       gender,
       birthdate,
