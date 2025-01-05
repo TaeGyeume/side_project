@@ -5,6 +5,7 @@ const router = express.Router();
 
 router.get("/me", verifyToken, userController.getMyInfo);
 router.post("/me/profile-image", verifyToken, userController.uploadProfileImage);
+router.put("/me", verifyToken, userController.updateMyInfo);
 router.get("/", verifyToken, userController.getUsers);
 
 module.exports = router;

@@ -63,3 +63,20 @@ exports.uploadProfileImage = [
     },
 ];
 
+// 사용자 정보 업데이트
+exports.updateMyInfo = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { name, gender, birthdate, bio } = req.body;
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { name, gender, birthdate, bio },
+            { new: true }
+        );
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        console.error("Error updating user info:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+

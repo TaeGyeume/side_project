@@ -7,6 +7,8 @@ const Profile = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [selectedFile, setSelectedFile] = useState(null);
+    const [editBio, setEditBio] = useState(false);
+    const [bio, setBio] = useState("");
     const navigate = useNavigate();
 
     const fetchUserInfo = async () => {
@@ -25,6 +27,7 @@ const Profile = () => {
                 },
             });
             setUserInfo(response.data);
+            setBio(response.data.bio); // 상태 메시지 초기화
         } catch (err) {
             console.error("Error fetching user info:", err.message);
             setError("Failed to fetch user information.");
@@ -64,6 +67,32 @@ const Profile = () => {
         }
     };
 
+    const handleBioChange = (e) => {
+        setBio(e.target.value);
+    };
+
+    const handleBioUpdate = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setError("You must log in.");
+            navigate("/login");
+            return;
+        }
+
+        try {
+            const response = await axios.put(`${process.env.REACT_APP_API_URL}/users/me`, { bio }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setUserInfo(response.data);
+            setEditBio(false);
+        } catch (err) {
+            console.error("Error updating bio:", err.message);
+            setError("Failed to update bio.");
+        }
+    };
+
     useEffect(() => {
         fetchUserInfo();
     }, [navigate]);
@@ -73,13 +102,28 @@ const Profile = () => {
 
     return (
         <div>
-            <h1>My Profile</h1>
-            <p>Username: {userInfo?.username}</p>
-            <p>Name: {userInfo?.name}</p>
-            <p>Email: {userInfo?.email}</p>
-            <p>Phone: {userInfo?.phone}</p>
-            <p>Gender: {userInfo?.gender}</p>
-            <p>Birthdate: {userInfo?.birthdate}</p>
+            <h1>내정보</h1>
+            <p>닉네임: {userInfo?.username}</p>
+            <p>이름: {userInfo?.name}</p>
+            <p>이메일: {userInfo?.email}</p>
+            <p>핸드폰번호: {userInfo?.phone}</p>
+            <p>성별: {userInfo?.gender}</p>
+            <p>생년월일: {userInfo?.birthdate}</p>
+            <p>
+                상태 메시지창: 
+                {editBio ? (
+                    <>
+                        <input type="text" value={bio} onChange={handleBioChange} />
+                        <button onClick={handleBioUpdate}>저장</button>
+                        <button onClick={() => setEditBio(false)}>취소</button>
+                    </>
+                ) : (
+                    <>
+                        {userInfo?.bio}
+                        <button onClick={() => setEditBio(true)}>수정</button>
+                    </>
+                )}
+            </p>
             {userInfo?.profileImage && (
                 <img src={`http://localhost:5000${userInfo.profileImage}`} alt="Profile" style={{ width: "150px", height: "150px" }} />
             )}
