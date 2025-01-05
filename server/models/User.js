@@ -1,16 +1,17 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  email: { type: String, required: true },
-  phone: { type: String, required: true },
-  gender: { type: String, enum: ["male", "female", "other"], required: true },
-  birthdate: { type: Date, required: true },
-  followers: [{ type: String }], // 팔로워 사용자 ID 배열
-  following: [{ type: String }], // 팔로우한 사용자 ID 배열
-  created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now }
+  username: { type: String, required: true, unique: true }, // 유니크한 사용자 이름
+  password: { type: String }, // 일반 회원가입 시 암호화된 비밀번호
+  email: { type: String, unique: true }, // 이메일 주소
+  phone: { type: String, unique: true }, // 전화번호
+  facebookId: { type: String, sparse: true,default: null }, // Facebook 로그인용 ID
+  bio: { type: String }, // 사용자 소개 (예: "사진과 추억을 공유합니다")
+  profileImage: { type: String }, // 프로필 사진 URL
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // 팔로워 목록
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // 팔로잉 목록
+  created_at: { type: Date, default: Date.now }, // 생성 날짜
+  updated_at: { type: Date, default: Date.now }, // 업데이트 날짜
 });
 
 const User = mongoose.model("User", userSchema);

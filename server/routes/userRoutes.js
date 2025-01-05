@@ -1,8 +1,10 @@
 const express = require("express");
-const { createUser, getUsers } = require("../controllers/userController");
+const userController = require("../controllers/userController");
+const { verifyToken } = require("../middleware/auth");
 const router = express.Router();
 
-router.post("/", createUser); // POST /api/users
-router.get("/", getUsers);   // GET /api/users
+router.get("/me", verifyToken, userController.getMyInfo);
+router.post("/me/profile-image", verifyToken, userController.uploadProfileImage);
+router.get("/", verifyToken, userController.getUsers);
 
 module.exports = router;
