@@ -42,9 +42,13 @@ exports.resetProfileImage = async (req, res) => {
         // 기존 이미지 삭제
         if (user.profileImage && user.profileImage !== "/uploads/default-profile.png") {
             const oldImagePath = path.join(__dirname, "..", user.profileImage);
-            fs.unlink(oldImagePath, (err) => {
-                if (err) console.error("Error deleting old profile image:", err.message);
-            });
+
+             // 기본 이미지를 삭제하지 않도록 조건 추가
+            if (!oldImagePath.endsWith("default-profile.png")) {
+                fs.unlink(oldImagePath, (err) => {
+                    if (err) console.error("Error deleting old profile image:", err.message);
+                });
+            }
         }
 
         // 기본 이미지 설정
