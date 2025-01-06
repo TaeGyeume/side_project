@@ -18,6 +18,12 @@ exports.getMyInfo = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: "User not found" });
+
+         // 한국 시간으로 변환
+         const birthdate = new Date(user.birthdate);
+         const koreanDate = birthdate.toLocaleString("ko-KR", {
+             timeZone: "Asia/Seoul",
+         });
         
         res.status(200).json({
             username: user.username,
@@ -25,7 +31,7 @@ exports.getMyInfo = async (req, res) => {
             email: user.email,
             phone: user.phone,
             gender: user.gender,
-            birthdate: user.birthdate,
+            birthdate: koreanDate,
             profileImage: user.profileImage  || "/uploads/default-profile.png",
             bio: user.bio || "", // bio 필드가 없으면 빈 문자열 반환
         });
@@ -40,19 +46,15 @@ exports.resetProfileImage = async (req, res) => {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: "User not found" });
 
-        // 기존 이미지 삭제
+        // 기존 이미지가 기본 이미지가 아니라면 삭제
         if (user.profileImage && user.profileImage !== "/uploads/default-profile.png") {
             const oldImagePath = path.join(__dirname, "..", user.profileImage);
-
-             // 기본 이미지를 삭제하지 않도록 조건 추가
-            if (!oldImagePath.endsWith("default-profile.png")) {
-                fs.unlink(oldImagePath, (err) => {
-                    if (err) console.error("Error deleting old profile image:", err.message);
-                });
-            }
+            fs.unlink(oldImagePath, (err) => {
+                if (err) console.error("Error deleting old profile image:", err.message);
+            });
         }
 
-        // 기본 이미지 설정
+        // 기본 이미지로 설정
         user.profileImage = "/uploads/default-profile.png";
         await user.save();
 
@@ -75,8 +77,8 @@ exports.uploadProfileImage = [
             const user = await User.findById(req.user.id);
             if (!user) return res.status(404).json({ message: "User not found" });
 
-            // 이전 이미지 삭제
-            if (user.profileImage) {
+            // 기본 이미지가 아니면 기존 이미지를 삭제
+            if (user.profileImage && user.profileImage !== "/uploads/default-profile.png") {
                 const oldImagePath = path.join(__dirname, "..", user.profileImage);
                 fs.unlink(oldImagePath, (err) => {
                     if (err) console.error("Error deleting old profile image:", err.message);
