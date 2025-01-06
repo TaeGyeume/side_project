@@ -7,6 +7,9 @@ const authRoutes = require("./routes/authRoutes");
 require("./config/passport");
 const path = require("path");
 const fs = require("fs");
+const messageRoutes = require("./routes/messageRoutes");
+const roomRoutes = require("./routes/roomRoutes");
+const roomUnreadRoutes = require("./routes/roomUnreadRoutes");
 
 const app = express();
 
@@ -33,6 +36,9 @@ app.use(passport.initialize());
 // API 라우트 설정
 app.use("/api/users", userRoutes); // 사용자 관련 라우트
 app.use("/api/auth", authRoutes); // 인증 관련 라우트
+app.use("/api/messages", messageRoutes); // 메시지 관련 라우트
+app.use("/api/rooms", roomRoutes); // 채팅방 관련 라우트
+app.use("/api/rooms/unread", roomUnreadRoutes); // 읽지 않은 메시지 관련 라우트
 
 // React 정적 파일 제공
 const clientBuildPath = path.join(__dirname, "../client/build");
