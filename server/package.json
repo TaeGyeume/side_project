@@ -4,9 +4,7 @@
   "main": "index.js",
   "scripts": {
     "server": "nodemon index.js",
-    "client": "npm start --prefix ../client",
-    "start": "node index.js",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
@@ -20,11 +18,9 @@
     "mongoose": "^8.9.3",
     "multer": "^1.4.5-lts.1",
     "passport": "^0.7.0",
-    "passport-facebook": "^3.0.0",
-    "socket.io": "^4.8.1"
+    "passport-facebook": "^3.0.0"
   },
   "devDependencies": {
-    "concurrently": "^8.2.0",
     "nodemon": "^3.1.9"
   },
   "description": ""

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import Profile from "./pages/Profile"; // 내 정보 페이지
 import Login from "./pages/Login"; // 로그인 페이지
@@ -25,9 +25,9 @@ const App = () => {
 //     const storedUser = JSON.parse(localStorage.getItem("currentUser"));
 //     console.log("Stored user in localStorage:", storedUser); // 디버깅
 //     if (storedUser) {
-//       setCurrentUser(storedUser);ㄴㄴㄴ
+//       setCurrentUser(storedUser);
 //     }
-//   }, []);
+//   }, []); 
 
 
     return (
