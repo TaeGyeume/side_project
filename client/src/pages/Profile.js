@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import { resetProfileImage } from "../api/userService"; // 기본 이미지 리셋 API 함수 가져오기
@@ -12,7 +12,8 @@ const Profile = () => {
     const [bio, setBio] = useState("");
     const navigate = useNavigate();
 
-    const fetchUserInfo = async () => {
+    // 사용자 정보 가져오기
+    const fetchUserInfo = useCallback(async () => {
         const token = localStorage.getItem("token");
         if (!token) {
             setError("You must log in.");
@@ -27,21 +28,24 @@ const Profile = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            setUserInfo(response.data);
-            setBio(response.data.bio); // 상태 메시지 초기화
+
+            console.log("Fetched user info:", response.data); // 서버 응답 확인
+            setUserInfo(response.data); // userInfo 상태 업데이트
+            setBio(response.data.bio || ""); // bio 상태 초기화
         } catch (err) {
             console.error("Error fetching user info:", err.message);
             setError("Failed to fetch user information.");
-            navigate("/login");
         } finally {
             setLoading(false);
         }
-    };
+    }, [navigate]);
 
+    // 파일 선택 핸들러
     const handleFileChange = (e) => {
         setSelectedFile(e.target.files[0]);
     };
 
+    // 프로필 이미지 업로드
     const handleUpload = async () => {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -68,10 +72,7 @@ const Profile = () => {
         }
     };
 
-    const handleBioChange = (e) => {
-        setBio(e.target.value);
-    };
-
+    // 상태 메시지 변경 핸들러
     const handleBioUpdate = async () => {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -81,26 +82,34 @@ const Profile = () => {
         }
 
         try {
-            const response = await axios.put(`${process.env.REACT_APP_API_URL}/users/me`, { bio }, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            setUserInfo(response.data);
-            setEditBio(false);
+            console.log("Updating bio:", bio); // bio 상태 확인
+            const response = await axios.put(
+                `${process.env.REACT_APP_API_URL}/users/me`,
+                { bio },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            console.log("Server response:", response.data); // 서버 응답 확인
+            setUserInfo((prev) => ({ ...prev, bio: response.data.bio })); // userInfo의 bio 업데이트
+            setEditBio(false); // 편집 모드 종료
         } catch (err) {
             console.error("Error updating bio:", err.message);
             setError("Failed to update bio.");
         }
     };
 
+    // 기본 프로필 이미지로 변경
     const handleResetProfileImage = async () => {
         setLoading(true);
         try {
             const response = await resetProfileImage();
             setUserInfo((prev) => ({
                 ...prev,
-                profileImage: response.profileImage, // 서버에서 반환된 기본 이미지 경로로 업데이트
+                profileImage: response.profileImage, // 기본 이미지로 업데이트
             }));
         } catch (err) {
             console.error("Error resetting profile image:", err.message);
@@ -110,9 +119,10 @@ const Profile = () => {
         }
     };
 
+    // 초기 사용자 정보 가져오기
     useEffect(() => {
         fetchUserInfo();
-    }, [navigate]);
+    }, [fetchUserInfo]);
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p style={{ color: "red" }}>{error}</p>;
@@ -127,33 +137,45 @@ const Profile = () => {
             <p>성별: {userInfo?.gender}</p>
             <p>생년월일: {userInfo?.birthdate}</p>
             <p>
-                상태 메시지창: 
+                상태 메시지창:{" "}
                 {editBio ? (
                     <>
-                        <input type="text" value={bio} onChange={handleBioChange} />
+                        <input
+                            type="text"
+                            value={bio} // bio 상태 기반 렌더링
+                            onChange={(e) => setBio(e.target.value)} // 입력값으로 bio 상태 업데이트
+                        />
                         <button onClick={handleBioUpdate}>저장</button>
                         <button onClick={() => setEditBio(false)}>취소</button>
                     </>
                 ) : (
                     <>
-                        {userInfo?.bio}
+                        {userInfo?.bio || "상태 메시지가 없습니다."} {/* userInfo에서 bio 상태를 가져오기 */}
                         <button onClick={() => setEditBio(true)}>수정</button>
                     </>
                 )}
             </p>
             {userInfo?.profileImage && (
-                <img src={`http://localhost:5000${userInfo.profileImage}`} alt="Profile" style={{ width: "150px", height: "150px" }} />
+                <img
+                    src={`http://localhost:5000${userInfo.profileImage}`}
+                    alt="Profile"
+                    style={{ width: "150px", height: "150px" }}
+                />
             )}
             <div>
-                <input type="file" onChange={handleFileChange} style={{ display: selectedFile ? "block" : "none" }} />
-                {selectedFile && <p>Selected file: {selectedFile.name}</p>}
+                <input
+                    type="file"
+                    onChange={handleFileChange}
+                    style={{ display: selectedFile ? "block" : "none" }}
+                />
+                {selectedFile && <p>선택된 파일: {selectedFile.name}</p>}
                 <button onClick={selectedFile ? handleUpload : () => document.querySelector('input[type="file"]').click()}>
-                    {selectedFile ? "Upload Profile Image" : "Change Profile Image"}
+                    {selectedFile ? "업로드 프로필 이미지" : "변경할 프로필 이미지"}
                 </button>
             </div>
             <div>
                 <button onClick={handleResetProfileImage} style={{ marginTop: "10px" }}>
-                    Reset to Default Profile Image
+                    기본이미지로 변경
                 </button>
             </div>
         </div>

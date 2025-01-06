@@ -27,6 +27,7 @@ exports.getMyInfo = async (req, res) => {
             gender: user.gender,
             birthdate: user.birthdate,
             profileImage: user.profileImage  || "/uploads/default-profile.png",
+            bio: user.bio || "", // bio 필드가 없으면 빈 문자열 반환
         });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error" });
@@ -92,20 +93,35 @@ exports.uploadProfileImage = [
     },
 ];
 
-// 사용자 정보 업데이트
 exports.updateMyInfo = async (req, res) => {
     try {
+        console.log("Request body:", req.body); // 요청 데이터 확인
         const userId = req.user.id;
         const { name, gender, birthdate, bio } = req.body;
+
+        const updatedData = {
+            ...(name && { name }),
+            ...(gender && { gender }),
+            ...(birthdate && { birthdate }),
+            ...(bio && { bio }),
+            updated_at: new Date(),
+        };
+
+        console.log("Updating user with data:", updatedData); // 업데이트 데이터 확인
+
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            { name, gender, birthdate, bio },
+            { $set: updatedData },
             { new: true }
         );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
         res.status(200).json(updatedUser);
     } catch (error) {
-        console.error("Error updating user info:", error);
+        console.error("Error updating user info:", error.message);
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
-

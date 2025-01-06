@@ -19,6 +19,24 @@ export const addUser = async (formData) => {
   return response.data;
 };
 
+// 사용자 정보 업데이트
+export const updateUserInfo = async (updatedData) => {
+  try {
+    const token = localStorage.getItem("token"); // 인증 토큰 가져오기
+    if (!token) throw new Error("You must log in.");
+
+    const response = await axios.put(`${process.env.REACT_APP_API_URL}/users/me`, updatedData, {
+      headers: {
+        Authorization: `Bearer ${token}`, // 인증 헤더 추가
+      },
+    });
+    return response.data; // 업데이트된 사용자 정보 반환
+  } catch (error) {
+    console.error("Error updating user info:", error.message);
+    throw error; // 에러 다시 던지기
+  }
+};
+
 // 프로필 이미지를 기본 이미지로 리셋
 export const resetProfileImage = async () => {
   try {
