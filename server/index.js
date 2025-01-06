@@ -1,15 +1,31 @@
 require("dotenv").config(); // 환경 변수 로드
-const app = require("./app"); // Express 앱 가져오기
+const express = require('express');
+const path = require('path');
+const passport = require('passport');
+require('./config/passport'); // 패스포트 설정 파일
+const app = express(); // Express 앱 가져오기
 const connectDB = require("./config/db"); // MongoDB 연결 설정
 const http = require("http"); // HTTP 서버 생성
 const { Server } = require("socket.io"); // Socket.IO 추가
 const Message = require("./models/Message"); // 메시지 모델 임포트
 
 // MongoDB 연결
-connectDB();
+connectDB().then(() => {
+  console.log("MongoDB connected successfully");
+}).catch((error) => {
+  console.error("MongoDB connection error:", error);
+});
 
 // HTTP 서버 생성
 const server = http.createServer(app); // HTTP 서버로 변경
+
+// 클라이언트 빌드 폴더 제공
+const buildPath = path.join(__dirname, '..', 'client', 'build');
+app.use(express.static(buildPath));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
+});
 
 // Socket.IO 설정
 const io = new Server(server, {
@@ -35,28 +51,28 @@ io.on("connection", (socket) => {
     const { roomId, senderId, dtype, content, mediaUrl } = data;
 
     // MongoDB에 메시지 저장
-  try {
-    const newMessage = new Message({
-      roomId,
-      senderId,
-      dtype,
-      content,
-      mediaUrl,
-      isRead: false,
-      createdAt: new Date(),
-    });
+    try {
+      const newMessage = new Message({
+        roomId,
+        senderId,
+        dtype,
+        content,
+        mediaUrl,
+        isRead: false,
+        createdAt: new Date(),
+      });
 
-    // 메시지 저장
-    await newMessage.save();
-    console.log("Message saved to DB:", newMessage);
+      // 메시지 저장
+      await newMessage.save();
+      console.log("Message saved to DB:", newMessage);
 
-    // 저장된 메시지를 다른 사용자에게 브로드캐스트
-    io.to(roomId).emit("receiveMessage", newMessage);
-    console.log("Message broadcasted to room:", roomId); // 메시지 브로드캐스트 로그
-  } catch (error) {
-    console.error("Error saving message to DB:", error);
-  }
-});
+      // 저장된 메시지를 다른 사용자에게 브로드캐스트
+      io.to(roomId).emit("receiveMessage", newMessage);
+      console.log("Message broadcasted to room:", roomId); // 메시지 브로드캐스트 로그
+    } catch (error) {
+      console.error("Error saving message to DB:", error);
+    }
+  });
 
   // 읽음 처리 이벤트
   socket.on("markAsRead", async (data) => {

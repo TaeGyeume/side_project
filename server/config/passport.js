@@ -9,7 +9,7 @@ passport.use(
     {
       clientID: process.env.FACEBOOK_APP_ID, // 환경 변수에서 Facebook App ID 가져오기
       clientSecret: process.env.FACEBOOK_APP_SECRET, // 환경 변수에서 Facebook App Secret 가져오기
-      callbackURL: "http://localhost:5000/auth/facebook/callback", // OAuth Redirect URI
+      callbackURL: process.env.FACEBOOK_CALLBACK_URL || "http://localhost:5000/auth/facebook/callback", // OAuth Redirect URI
       profileFields: ["id", "displayName", "emails"], // Facebook에서 가져올 데이터 필드
     },
     async (accessToken, refreshToken, profile, done) => {

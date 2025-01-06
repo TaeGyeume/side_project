@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import Profile from "./pages/Profile"; // 내 정보 페이지
 import Login from "./pages/Login"; // 로그인 페이지
 import Register from "./components/Register"; // 회원가입 페이지
-import Login from "./components/Login";
 import UserList from "./components/UserList";
 import ChatRoom from "./components/ChatRoom";
-import AddUser from "./components/AddUser";
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
