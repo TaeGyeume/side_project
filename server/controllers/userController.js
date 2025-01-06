@@ -1,28 +1,82 @@
 const User = require("../models/User");
-
-// 사용자 생성
-exports.createUser = async (req, res) => {
-    try {
-        console.log("Request body:", req.body); // 요청 데이터 출력
-        const user = new User(req.body);
-        await user.save();
-        console.log("New user created:", user); // 생성된 사용자 정보 출력
-        res.status(201).json({ message: "User created successfully", user });
-    } catch (error) {
-        console.error("Error creating user:", error.message); // 오류 메시지 출력
-        res.status(400).json({ message: "Error creating user", error });
-    }
-};
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
 // 사용자 목록 조회
 exports.getUsers = async (req, res) => {
     try {
-        console.log("Fetching all users..."); // 사용자 조회 시도 로그
         const users = await User.find();
-        console.log("Fetched users:", users); // 조회된 사용자 정보 출력
         res.status(200).json(users);
     } catch (error) {
-        console.error("Error fetching users:", error.message); // 오류 메시지 출력
-        res.status(500).json({ message: "Error fetching users", error });
+        res.status(500).json({ message: "사용자 목록 조회 중 오류가 발생했습니다." });
     }
 };
+
+// 사용자 정보 조회
+exports.getMyInfo = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.status(200).json({
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            gender: user.gender,
+            birthdate: user.birthdate,
+            profileImage: user.profileImage
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// 프로필 이미지 업로드
+exports.uploadProfileImage = [
+    multer({
+        storage: multer.diskStorage({
+            destination: (req, file, cb) => cb(null, path.join(__dirname, "../uploads")),
+            filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+        })
+    }).single("profileImage"),
+    async (req, res) => {
+        try {
+            const user = await User.findById(req.user.id);
+            if (!user) return res.status(404).json({ message: "User not found" });
+
+            // 이전 이미지 삭제
+            if (user.profileImage) {
+                const oldImagePath = path.join(__dirname, "..", user.profileImage);
+                fs.unlink(oldImagePath, (err) => {
+                    if (err) console.error("Error deleting old profile image:", err.message);
+                });
+            }
+
+            const imagePath = `/uploads/${req.file.filename}`;
+            user.profileImage = imagePath;
+            await user.save();
+            res.status(200).json({ message: "Profile image uploaded", profileImage: imagePath });
+        } catch (error) {
+            res.status(500).json({ message: "Error uploading profile image" });
+        }
+    },
+];
+
+// 사용자 정보 업데이트
+exports.updateMyInfo = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { name, gender, birthdate, bio } = req.body;
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { name, gender, birthdate, bio },
+            { new: true }
+        );
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        console.error("Error updating user info:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
