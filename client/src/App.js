@@ -1,60 +1,43 @@
-import React, { useState } from "react";
-import { addUser } from "./api/userService";
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import Login from "./components/Login";
+import UserList from "./components/UserList";
+import ChatRoom from "./components/ChatRoom";
+import AddUser from "./components/AddUser";
 
 const App = () => {
-  const [formData, setFormData] = useState({
-    username: "",
-    name: "",
-    email: "",
-    password: "",
-    phone: "",
-    gender: "male",
-    birthdate: "",
-  });
+  const [currentUser, setCurrentUser] = useState(null);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const { username, name, email, password, phone, gender, birthdate } = formData;
-
-    try {
-      const newUser = await addUser(username, name, email, password, phone, gender, birthdate);
-      console.log("User added:", newUser);
-      setFormData({
-        username: "",
-        name: "",
-        email: "",
-        password: "",
-        phone: "",
-        gender: "male",
-        birthdate: "",
-      }); // 입력 필드 초기화
-    } catch (error) {
-      console.error("Failed to add user:", error);
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("currentUser"));
+    console.log("Stored user in localStorage:", storedUser); // 디버깅
+    if (storedUser) {
+      setCurrentUser(storedUser);
     }
-  };
+  }, []);
 
   return (
-    <div>
-      <h1>Add User</h1>
-      <form onSubmit={handleSubmit}>
-        <input type="text" name="username" placeholder="Username" value={formData.username} onChange={handleChange} required />
-        <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required />
-        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
-        <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
-        <input type="text" name="phone" placeholder="Phone" value={formData.phone} onChange={handleChange} required />
-        <select name="gender" value={formData.gender} onChange={handleChange} required>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-        </select>
-        <input type="date" name="birthdate" placeholder="Birthdate" value={formData.birthdate} onChange={handleChange} required />
-        <button type="submit">Add User</button>
-      </form>
-    </div>
+    <Router>
+      <div>
+        <nav style={{ display: "flex", gap: "20px", justifyContent: "center", padding: "10px" }}>
+          <Link to="/login">Login</Link>
+          <Link to="/messages">Messages</Link>
+          <Link to="/add-user">Add User</Link> {/* Add User 링크 추가 */}
+        </nav>
+        <Routes>
+          {!currentUser ? (
+            <Route path="*" element={<Login setCurrentUser={setCurrentUser} />} />
+          ) : (
+            <>
+              <Route path="/messages" element={<UserList currentUser={currentUser} />} />
+              <Route path="/chat/:roomId" element={<ChatRoom currentUser={currentUser} />} />
+              <Route path="/add-user" element={<AddUser />} /> {/* AddUser 라우트 추가 */}
+            </>
+          )}
+          <Route path="/login" element={<Login setCurrentUser={setCurrentUser} />} />
+        </Routes>
+      </div>
+    </Router>
   );
 };
 
