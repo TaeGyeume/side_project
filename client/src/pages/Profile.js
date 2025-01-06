@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
+import { resetProfileImage } from "../api/userService"; // 기본 이미지 리셋 API 함수 가져오기
 
 const Profile = () => {
     const [userInfo, setUserInfo] = useState(null);
@@ -93,6 +94,22 @@ const Profile = () => {
         }
     };
 
+    const handleResetProfileImage = async () => {
+        setLoading(true);
+        try {
+            const response = await resetProfileImage();
+            setUserInfo((prev) => ({
+                ...prev,
+                profileImage: response.profileImage, // 서버에서 반환된 기본 이미지 경로로 업데이트
+            }));
+        } catch (err) {
+            console.error("Error resetting profile image:", err.message);
+            setError("Failed to reset profile image.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchUserInfo();
     }, [navigate]);
@@ -132,6 +149,11 @@ const Profile = () => {
                 {selectedFile && <p>Selected file: {selectedFile.name}</p>}
                 <button onClick={selectedFile ? handleUpload : () => document.querySelector('input[type="file"]').click()}>
                     {selectedFile ? "Upload Profile Image" : "Change Profile Image"}
+                </button>
+            </div>
+            <div>
+                <button onClick={handleResetProfileImage} style={{ marginTop: "10px" }}>
+                    Reset to Default Profile Image
                 </button>
             </div>
         </div>

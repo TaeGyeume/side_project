@@ -18,6 +18,7 @@ exports.getMyInfo = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: "User not found" });
+        
         res.status(200).json({
             username: user.username,
             name: user.name,
@@ -25,10 +26,34 @@ exports.getMyInfo = async (req, res) => {
             phone: user.phone,
             gender: user.gender,
             birthdate: user.birthdate,
-            profileImage: user.profileImage
+            profileImage: user.profileImage  || "/uploads/default-profile.png",
         });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// 기본이미지 삭제할시 디폴트 이미지변경
+exports.resetProfileImage = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // 기존 이미지 삭제
+        if (user.profileImage && user.profileImage !== "/uploads/default-profile.png") {
+            const oldImagePath = path.join(__dirname, "..", user.profileImage);
+            fs.unlink(oldImagePath, (err) => {
+                if (err) console.error("Error deleting old profile image:", err.message);
+            });
+        }
+
+        // 기본 이미지 설정
+        user.profileImage = "/uploads/default-profile.png";
+        await user.save();
+
+        res.status(200).json({ message: "Profile image reset to default", profileImage: user.profileImage });
+    } catch (error) {
+        res.status(500).json({ message: "Error resetting profile image" });
     }
 };
 
