@@ -19,15 +19,15 @@ const App = () => {
     localStorage.removeItem("token"); // 토큰 제거
   };
 
-  const [currentUser, setCurrentUser] = useState(null);
+//   const [currentUser, setCurrentUser] = useState(null);
 
-  useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("currentUser"));
-    console.log("Stored user in localStorage:", storedUser); // 디버깅
-    if (storedUser) {
-      setCurrentUser(storedUser);
-    }
-  }, []);
+//   useEffect(() => {
+//     const storedUser = JSON.parse(localStorage.getItem("currentUser"));
+//     console.log("Stored user in localStorage:", storedUser); // 디버깅
+//     if (storedUser) {
+//       setCurrentUser(storedUser);
+//     }
+//   }, []);
 
 
     return (
@@ -67,8 +67,8 @@ const App = () => {
                     path="/"
                     element={<h1>메인페이지!</h1>} // 메인 페이지
                 />
-                <Route path="/messages" element={<UserList currentUser={currentUser} />} />
-                <Route path="/chat/:roomId" element={<ChatRoom currentUser={currentUser} />} />
+                {/* <Route path="/messages" element={<UserList currentUser={currentUser} />} />
+                <Route path="/chat/:roomId" element={<ChatRoom currentUser={currentUser} />} /> */}
                 <Route path="/register" element={<Register />} />
                 <Route path="/login" element={<Login onLogin={handleLogin} />} />
                 <Route
