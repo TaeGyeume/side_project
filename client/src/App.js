@@ -25,7 +25,7 @@ const App = () => {
 //     const storedUser = JSON.parse(localStorage.getItem("currentUser"));
 //     console.log("Stored user in localStorage:", storedUser); // 디버깅
 //     if (storedUser) {
-//       setCurrentUser(storedUser);
+//       setCurrentUser(storedUser);ㄴㄴㄴ
 //     }
 //   }, []);
 
