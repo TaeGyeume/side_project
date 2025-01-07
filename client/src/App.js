@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import Profile from "./pages/Profile"; // 내 정보 페이지
 import Login from "./pages/Login"; // 로그인 페이지
 import Register from "./components/Register"; // 회원가입 페이지
-import UserList from "./components/UserList";
-import ChatRoom from "./components/ChatRoom";
+import UserList from "./pages/UserList";
+import ChatRoom from "./pages/ChatRoom";
 import axios from "axios";
 
 const App = () => {
