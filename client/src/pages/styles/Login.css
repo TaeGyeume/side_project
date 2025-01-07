@@ -1,0 +1,81 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #fafafa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.login-page {
+    text-align: center;
+}
+
+.login-container {
+    background: white;
+    border: 1px solid #dbdbdb;
+    padding: 20px;
+    border-radius: 8px;
+    width: 350px;
+}
+
+.instagram-logo {
+    font-family: 'Billabong', cursive;
+    font-size: 50px;
+    margin-bottom: 20px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-input {
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 14px;
+}
+
+.login-button {
+    background-color: #0095f6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.login-button:hover {
+    background-color: #0077cc;
+}
+
+.separator {
+    margin: 10px 0;
+    color: #8e8e8e;
+    position: relative;
+    text-align: center;
+}
+
+.separator::before,
+.separator::after {
+    content: "";
+    /* 여기에 문제가 있었을 가능성 */
+    display: block;
+    height: 1px;
+    background: #dbdbdb;
+    position: absolute;
+    top: 50%;
+    width: 40%;
+}
+
+.separator::before {
+    left: 0;
+}
+
+.separator::after {
+    right: 0;
+}
