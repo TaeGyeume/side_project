@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const roomUnreadController = require("../controllers/roomUnreadController");
+const roomUnreadController = require("./roomUnreadController");
 
 router.get("/:roomId/:userId", roomUnreadController.getUnreadMessages);
 

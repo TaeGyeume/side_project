@@ -1,4 +1,4 @@
-const RoomUnread = require("../models/RoomUnread");
+const RoomUnread = require("../../models/RoomUnread");
 
 // 읽지 않은 메시지 관리
 exports.getUnreadMessages = async (req, res) => {

@@ -1,4 +1,4 @@
-const Message = require("../models/Message");
+const Message = require("../../models/Message");
 
 // 메시지 전송
 exports.sendMessage = async (req, res) => {
