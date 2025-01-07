@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "bootstrap-icons/font/bootstrap-icons.css"; // Bootstrap Icons CSS 추가
-import "./style/Login.css"; // 기존 스타일 파일
+import "./styles/Login.css"; // 기존 스타일 파일
 
 const Login = ({ onLogin }) => {
     const [formData, setFormData] = useState({ email: "", password: "" });

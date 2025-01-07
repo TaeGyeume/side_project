@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import axios from "axios";
-import "./ChatRoom.css";
+import "./styles/ChatRoom.css";
 
 const ChatRoom = ({ currentUser }) => {
   const { roomId } = useParams();
