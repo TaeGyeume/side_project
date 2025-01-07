@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const User = require("../models/User");
+const User = require("../../models/User");
 
 // JWT 생성 함수
 const generateToken = (user) => {
