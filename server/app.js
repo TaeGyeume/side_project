@@ -7,9 +7,9 @@ const authRoutes = require("./routes/authRoutes");
 require("./config/passport");
 const path = require("path");
 const fs = require("fs");
-const messageRoutes = require("./routes/messageRoutes");
-const roomRoutes = require("./routes/roomRoutes");
-const roomUnreadRoutes = require("./routes/roomUnreadRoutes");
+const messageRoutes = require("./api/message/messageRoutes");
+const roomRoutes = require("./api/room/roomRoutes")
+const roomUnreadRoutes = require("./api/roomUnread/roomUnreadRoutes");
 
 const app = express();
 
