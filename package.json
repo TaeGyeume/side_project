@@ -5,6 +5,7 @@
     "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "dependencies": {
+    "bootstrap-icons": "^1.11.3",
     "concurrently": "^9.1.2",
     "socket.io": "^4.8.1"
   }
