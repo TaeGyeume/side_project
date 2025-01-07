@@ -18,17 +18,49 @@ exports.getMyInfo = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: "User not found" });
+
+         // 한국 시간으로 변환
+         const birthdate = new Date(user.birthdate);
+         const koreanDate = birthdate.toLocaleString("ko-KR", {
+             timeZone: "Asia/Seoul",
+         });
+        
         res.status(200).json({
             username: user.username,
             name: user.name,
             email: user.email,
             phone: user.phone,
             gender: user.gender,
-            birthdate: user.birthdate,
-            profileImage: user.profileImage
+            birthdate: koreanDate,
+            profileImage: user.profileImage  || "/uploads/default-profile.png",
+            bio: user.bio || "", // bio 필드가 없으면 빈 문자열 반환
         });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// 기본이미지 삭제할시 디폴트 이미지변경
+exports.resetProfileImage = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // 기존 이미지가 기본 이미지가 아니라면 삭제
+        if (user.profileImage && user.profileImage !== "/uploads/default-profile.png") {
+            const oldImagePath = path.join(__dirname, "..", user.profileImage);
+            fs.unlink(oldImagePath, (err) => {
+                if (err) console.error("Error deleting old profile image:", err.message);
+            });
+        }
+
+        // 기본 이미지로 설정
+        user.profileImage = "/uploads/default-profile.png";
+        await user.save();
+
+        res.status(200).json({ message: "Profile image reset to default", profileImage: user.profileImage });
+    } catch (error) {
+        res.status(500).json({ message: "Error resetting profile image" });
     }
 };
 
@@ -45,8 +77,8 @@ exports.uploadProfileImage = [
             const user = await User.findById(req.user.id);
             if (!user) return res.status(404).json({ message: "User not found" });
 
-            // 이전 이미지 삭제
-            if (user.profileImage) {
+            // 기본 이미지가 아니면 기존 이미지를 삭제
+            if (user.profileImage && user.profileImage !== "/uploads/default-profile.png") {
                 const oldImagePath = path.join(__dirname, "..", user.profileImage);
                 fs.unlink(oldImagePath, (err) => {
                     if (err) console.error("Error deleting old profile image:", err.message);
@@ -63,20 +95,37 @@ exports.uploadProfileImage = [
     },
 ];
 
-// 사용자 정보 업데이트
+
 exports.updateMyInfo = async (req, res) => {
     try {
+        console.log("Request body:", req.body); // 요청 데이터 확인
         const userId = req.user.id;
-        const { name, gender, birthdate, bio } = req.body;
+        const { name, gender, birthdate, bio , username } = req.body;
+
+        const updatedData = {
+            ...(username && { username }),
+            ...(name && { name }),
+            ...(gender && { gender }),
+            ...(birthdate && { birthdate }),
+            ...(bio && { bio }),
+            updated_at: new Date(),
+        };
+
+        console.log("Updating user with data:", updatedData); // 업데이트 데이터 확인
+
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            { name, gender, birthdate, bio },
+            { $set: updatedData },
             { new: true }
         );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
         res.status(200).json(updatedUser);
     } catch (error) {
-        console.error("Error updating user info:", error);
+        console.error("Error updating user info:", error.message);
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
-
