@@ -1,0 +1,25 @@
+.footer {
+  font-size: 0.875rem;
+}
+
+.footer .list-inline-item {
+  margin-right: 1rem;
+}
+
+.footer .dropdown-toggle {
+  border: none;
+  background: none;
+  font-size: 0.875rem;
+  text-decoration: none;
+  color: #8e8e8e;
+}
+
+.footer .dropdown-menu {
+  font-size: 0.875rem;
+}
+
+.footer .dropdown-menu a {
+  color: #8e8e8e;
+  text-decoration: none;
+}
+

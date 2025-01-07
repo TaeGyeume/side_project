@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import Profile from "./pages/Profile"; // 내 정보 페이지
 import Login from "./pages/Login"; // 로그인 페이지
 import Register from "./components/Register"; // 회원가입 페이지
+import Footer from "./components/Footer";
 import UserList from "./pages/UserList";
 import ChatRoom from "./pages/ChatRoom";
 import axios from "axios";
@@ -117,6 +118,7 @@ const App = () => {
           element={token ? <ChatRoom currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
         />
       </Routes>
+         <Footer /> {/* 푸터 추가 */}
     </Router>
   );
     return (
@@ -171,6 +173,7 @@ const App = () => {
                     element={currentUser ? <ChatRoom currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
                 />
             </Routes>
+            
         </Router>
     );
 };

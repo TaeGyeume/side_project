@@ -292,7 +292,7 @@ const Profile = () => {
                 </button>
 
                 <button onClick={handleResetProfileImage} style={{ marginTop: "10px" }}>
-                    기본이미지로 변경
+                    이미지 삭제
                 </button>
             </div>
 
