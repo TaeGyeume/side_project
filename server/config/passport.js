@@ -7,7 +7,7 @@ require("dotenv").config({ path: "./server/.env" }); // 서버 폴더의 .env �
 // Facebook Strategy 설정
 passport.use(
   new FacebookStrategy(
-    {
+    {    
       clientID: process.env.FACEBOOK_APP_ID, // 환경 변수에서 Facebook App ID 가져오기
       clientSecret: process.env.FACEBOOK_APP_SECRET, // 환경 변수에서 Facebook App Secret 가져오기
       callbackURL: "http://localhost:5000/auth/facebook/callback", // OAuth Redirect URI
