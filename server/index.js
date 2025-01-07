@@ -1,5 +1,4 @@
-// require("dotenv").config(); // 환경 변수 로드
-require("dotenv").config({ path: "./server/.env" }); // 서버 폴더의 .env 파일을 명시적으로 로드
+require("dotenv").config({ path: __dirname + "/../.env" });
 
 const app = require("./app"); // Express 앱 가져오기
 const connectDB = require("./config/db"); // MongoDB 연결 설정
@@ -12,6 +11,18 @@ connectDB();
 
 // HTTP 서버 생성
 const server = http.createServer(app); // HTTP 서버로 변경
+
+// 서버 포트 설정
+const PORT = process.env.PORT || 5000;
+
+console.log("CLIENT_URL:", process.env.CLIENT_URL);
+
+// 서버 실행
+server.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+
 
 // Socket.IO 설정
 const io = new Server(server, {
@@ -88,10 +99,3 @@ io.on("connection", (socket) => {
   });
 });
 
-// 서버 포트 설정
-const PORT = process.env.PORT || 5000;
-
-// 서버 실행
-server.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
