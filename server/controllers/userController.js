@@ -95,13 +95,15 @@ exports.uploadProfileImage = [
     },
 ];
 
+
 exports.updateMyInfo = async (req, res) => {
     try {
         console.log("Request body:", req.body); // 요청 데이터 확인
         const userId = req.user.id;
-        const { name, gender, birthdate, bio } = req.body;
+        const { name, gender, birthdate, bio , username } = req.body;
 
         const updatedData = {
+            ...(username && { username }),
             ...(name && { name }),
             ...(gender && { gender }),
             ...(birthdate && { birthdate }),

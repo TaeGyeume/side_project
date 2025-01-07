@@ -13,8 +13,9 @@ const Profile = () => {
     const [bio, setBio] = useState("");
     const [name, setName] = useState(""); // 이름 수정 상태
     const [email, setEmail] = useState(""); // 이메일 수정 상태
-    const [phone, setPhone] = useState(""); // 전화번호 수정 상태
+    const [phone, setPhone] = useState(""); // 전화번호 상태
     const [gender, setGender] = useState(""); // 성별 수정 상태
+    const [username, setUsername] = useState(""); // 사용자 이름 수정 상태
     const navigate = useNavigate();
 
     // 사용자 정보 가져오기
@@ -41,6 +42,7 @@ const Profile = () => {
             setEmail(response.data.email); // 이메일 초기화
             setPhone(response.data.phone); // 전화번호 초기화
             setGender(response.data.gender); // 성별 초기화
+            setUsername(response.data.username); // 사용자 이름 초기화
         } catch (err) {
             console.error("Error fetching user info:", err.message);
             setErrorMessage("Failed to fetch user information.");
@@ -115,12 +117,6 @@ const Profile = () => {
         return emailRegex.test(email);
     };
 
-    // 전화번호 형식 검증 함수
-    const isValidPhone = (phone) => {
-        const phoneRegex = /^\d{3}-\d{3,4}-\d{4}$/; // 010-1234-1234 형식
-        return phoneRegex.test(phone);
-    };
-
     // 사용자 정보 수정
     const handleUserInfoUpdate = async () => {
         const token = localStorage.getItem("token");
@@ -135,15 +131,10 @@ const Profile = () => {
             return;
         }
 
-        if (!isValidPhone(phone)) {
-            setErrorMessage("전화번호 형식이 올바르지 않습니다.");
-            return;
-        }
-
         try {
             const response = await axios.put(
                 `${process.env.REACT_APP_API_URL}/users/me`,
-                { name, email, phone, gender },
+                { username, name, email, gender }, // 핸드폰 번호 제외
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -153,16 +144,23 @@ const Profile = () => {
 
             setUserInfo((prev) => ({
                 ...prev,
+                username: response.data.username,
                 name: response.data.name,
                 email: response.data.email,
-                phone: response.data.phone,
                 gender: response.data.gender,
             }));
 
             setEditUserInfo(false); // 수정 모드 종료
         } catch (err) {
             if (err.response && err.response.status === 409) {
-                setErrorMessage("Email, phone number, or username already exists. Please enter a different value.");
+                const conflictField = err.response.data.field; // 서버에서 반환하는 필드 정보 (예: 'username' 또는 'email')
+                if (conflictField === "username") {
+                    setErrorMessage("이미 있는 사용자 이름입니다.");
+                } else if (conflictField === "email") {
+                    setErrorMessage("이미 있는 이메일입니다.");
+                } else {
+                    setErrorMessage("이미 존재하는 데이터입니다.");
+                }
             } else {
                 console.error("Error updating user info:", err.message);
                 setErrorMessage("Failed to update user information.");
@@ -197,7 +195,26 @@ const Profile = () => {
         <div>
             <h1>내정보</h1>
             {errorMessage && <p style={{ color: "red", fontSize: "12px", fontWeight: "bold" }}>{errorMessage}</p>}
-            <p>닉네임: {userInfo?.username}</p>
+            <p>
+                사용자 이름:{" "}
+                {editUserInfo ? (
+                    <input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)} // 사용자 이름 수정
+                    />
+                ) : (
+                    userInfo?.username
+                )}
+            </p>
+            <p>
+                핸드폰번호:{" "}
+                <input
+                    type="text"
+                    value={phone}
+                    disabled // 수정 불가
+                />
+            </p>
             <p>
                 이름:{" "}
                 {editUserInfo ? (
@@ -220,19 +237,6 @@ const Profile = () => {
                     />
                 ) : (
                     userInfo?.email
-                )}
-            </p>
-            <p>
-                핸드폰번호:{" "}
-                {editUserInfo ? (
-                    <input
-                        type="text"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)} // 전화번호 수정
-                        placeholder="010-1234-1234 형식으로 입력하세요"
-                    />
-                ) : (
-                    userInfo?.phone
                 )}
             </p>
             <p>
