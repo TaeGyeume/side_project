@@ -81,7 +81,7 @@ const App = () => {
         </ul>
       </nav>
       <Routes>
-        <Route path="/" element={<h1>메인페이지!</h1>} />
+        <Route path="/" element={<h1>메인페이지! 이희진</h1>} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route path="/profile" element={token ? <Profile /> : <p>Please log in to view this page.</p>} />
