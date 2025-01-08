@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchAllUsers } from "../api/userService";
+import { fetchUsers } from "../api/userService";
 
 const AllUserList = () => {
     const [users, setUsers] = useState([]);
@@ -8,7 +8,7 @@ const AllUserList = () => {
     useEffect(() => {
         const loadUsers = async () => {
             try {
-                const data = await fetchAllUsers(); // fetchAllUsers 호출
+                const data = await fetchUsers(); // fetchUsers 호출
                 setUsers(data); // 사용자 데이터 설정
             } catch (error) {
                 setError("사용자 정보를 불러오는 데 실패했습니다.");
