@@ -94,7 +94,7 @@ const App = () => {
         </ul>
       </nav>
       <Routes>
-        <Route path="/" element={<h1>메인페이지! 이희진이형민</h1>} />
+        <Route path="/" element={<h1>메인페이지! 이희진이형민김민혁</h1>} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route
