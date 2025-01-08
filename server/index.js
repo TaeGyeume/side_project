@@ -23,7 +23,9 @@ const io = new Server(server, {
 
 // Socket.IO 실시간 이벤트 처리
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  if (process.env.DEBUG_MODE === "true") {
+    console.log(`User connected: ${socket.id}`);
+  }
 
   // 방 참여 이벤트
   socket.on("joinRoom", (roomId) => {
@@ -55,6 +57,7 @@ io.on("connection", (socket) => {
     // 저장된 메시지를 다른 사용자에게 브로드캐스트
     io.to(roomId).emit("receiveMessage", newMessage);
     console.log("Message broadcasted to room:", roomId); // 메시지 브로드캐스트 로그
+
   } catch (error) {
     console.error("Error saving message to DB:", error);
   }
@@ -84,7 +87,9 @@ io.on("connection", (socket) => {
 
   // 사용자 연결 해제
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    if (process.env.DEBUG_MODE === "true") {
+      console.log(`User disconnected: ${socket.id}`);
+    }
   });
 });
 

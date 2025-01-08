@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
@@ -18,29 +18,41 @@ const App = () => {
     fetchCurrentUser(newToken); // 사용자 정보 로드
   };
 
-  const handleLogout = () => {
+  // `handleLogout`을 useCallback으로 감싸기
+  const handleLogout = useCallback(() => {
     setToken(null);
     setCurrentUser(null);
-    localStorage.removeItem("token"); // 토큰 제거
-  };
+    localStorage.removeItem("token");
+  }, []); // 의존성 배열을 비워서 항상 동일한 함수 유지
 
-  const fetchCurrentUser = async (authToken) => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/me`, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      setCurrentUser(response.data);
-    } catch (error) {
-      console.error("Failed to fetch current user:", error);
-      handleLogout();
-    }
-  };
+  // `fetchCurrentUser`를 `useCallback`으로 래핑
+  const fetchCurrentUser = useCallback(
+    async (authToken) => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/me`, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        setCurrentUser(response.data);
+      } catch (error) {
+        console.error("Failed to fetch current user:", error);
+        handleLogout();
+      }
+    },
+    [handleLogout] // 의존성 배열에 `handleLogout` 추가
+  );
 
   useEffect(() => {
     if (token) {
       fetchCurrentUser(token); // 토큰이 있으면 사용자 정보 로드
     }
-  }, [token]);
+  }, [token, fetchCurrentUser]); // `fetchCurrentUser`를 의존성 배열에 추가
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (storedUser) {
+      setCurrentUser(storedUser);
+    }
+  }, []);
 
   return (
     <Router>
@@ -81,13 +93,24 @@ const App = () => {
         </ul>
       </nav>
       <Routes>
-        <Route path="/" element={<h1>메인페이지! 이희진</h1>} />
+        <Route path="/" element={<h1>메인페이지! 이희진이형민</h1>} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
-        <Route path="/profile" element={token ? <Profile /> : <p>Please log in to view this page.</p>} />
+        <Route
+          path="/profile"
+          element={token ? <Profile /> : <p>Please log in to view this page.</p>}
+        />
         <Route path="/allUser" element={<AllUserList />} />
-        <Route path="/messages" element={token ? <UserList currentUser={currentUser} /> : <p>Please log in to view this page.</p>} />
-        <Route path="/chat/:roomId" element={token ? <ChatRoom currentUser={currentUser} /> : <p>Please log in to view this page.</p>} />
+        {/* 로그인한 사용자만 메시지 페이지에 접근 가능 */}
+        <Route
+          path="/messages"
+          element={token ? <UserList currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
+        />
+        {/* 특정 채팅방에 접근 */}
+        <Route
+          path="/chat/:roomId"
+          element={token ? <ChatRoom currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
+        />
       </Routes>
     </Router>
   );
