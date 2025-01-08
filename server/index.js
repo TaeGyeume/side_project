@@ -1,5 +1,5 @@
 // require("dotenv").config(); // 환경 변수 로드
-require("dotenv").config({ path: "./server/.env" }); // 서버 폴더의 .env 파일을 명시적으로 로드
+require("dotenv").config({ path: __dirname + "/../.env" }); // 서버 폴더의 .env 파일을 명시적으로 로드
 
 const app = require("./app"); // Express 앱 가져오기
 const connectDB = require("./config/db"); // MongoDB 연결 설정

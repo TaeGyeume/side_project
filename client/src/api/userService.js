@@ -4,7 +4,7 @@ import axios from "axios"; // axios 패키지 가져오기
 // 모든 사용자 조회
 export const fetchUsers = async () => {
   try {
-    const response = await axiosInstance.get("/");
+    const response = await axiosInstance.get("/api/users");
     return response.data;
   } catch (error) {    
     console.error("Error fetching users:", error);

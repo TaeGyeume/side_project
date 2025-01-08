@@ -2,12 +2,12 @@ const passport = require("passport");
 const FacebookStrategy = require("passport-facebook").Strategy;
 const User = require("../models/User"); // User 모델 가져오기
 // require("dotenv").config(); // 환경 변수 로드
-require("dotenv").config({ path: "./server/.env" }); // 서버 폴더의 .env 파일을 명시적으로 로드
+require("dotenv").config({ path: __dirname + "/../.env" }); // 서버 폴더의 .env 파일을 명시적으로 로드
 
 // Facebook Strategy 설정
 passport.use(
   new FacebookStrategy(
-    {    
+    {
       clientID: process.env.FACEBOOK_APP_ID, // 환경 변수에서 Facebook App ID 가져오기
       clientSecret: process.env.FACEBOOK_APP_SECRET, // 환경 변수에서 Facebook App Secret 가져오기
       callbackURL: "http://localhost:5000/auth/facebook/callback", // OAuth Redirect URI

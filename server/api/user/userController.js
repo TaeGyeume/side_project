@@ -2,6 +2,7 @@ const User = require("../../models/User");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+
 // 사용자 목록 조회
 exports.getUsers = async (req, res) => {
     try {
@@ -18,12 +19,12 @@ exports.getMyInfo = async (req, res) => {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: "User not found" });
 
-         // 한국 시간으로 변환
-         const birthdate = new Date(user.birthdate);
-         const koreanDate = birthdate.toLocaleString("ko-KR", {
-             timeZone: "Asia/Seoul",
-         });
-        
+        // 한국 시간으로 변환
+        const birthdate = new Date(user.birthdate);
+        const koreanDate = birthdate.toLocaleString("ko-KR", {
+            timeZone: "Asia/Seoul",
+        });
+
         res.status(200).json({
             username: user.username,
             name: user.name,
@@ -31,7 +32,7 @@ exports.getMyInfo = async (req, res) => {
             phone: user.phone,
             gender: user.gender,
             birthdate: koreanDate,
-            profileImage: user.profileImage  || "/uploads/default-profile.png",
+            profileImage: user.profileImage || "/uploads/default-profile.png",
             bio: user.bio || "", // bio 필드가 없으면 빈 문자열 반환
         });
     } catch (error) {
@@ -99,7 +100,7 @@ exports.updateMyInfo = async (req, res) => {
     try {
         console.log("Request body:", req.body); // 요청 데이터 확인
         const userId = req.user.id;
-        const { name, gender, birthdate, bio , username } = req.body;
+        const { name, gender, birthdate, bio, username } = req.body;
 
         const updatedData = {
             ...(username && { username }),
