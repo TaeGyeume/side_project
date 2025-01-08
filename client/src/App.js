@@ -91,7 +91,7 @@ const App = () => {
       <Routes>
         <Route
           path="/"
-          element={<h1>메인페이지!</h1>} // 메인 페이지
+          element={<h1>메인페이지!이형민</h1>} // 메인 페이지
         />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
