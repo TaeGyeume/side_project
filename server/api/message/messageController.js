@@ -4,6 +4,9 @@ const Message = require("../../models/Message");
 exports.sendMessage = async (req, res) => {
   const { roomId, senderId, dtype, content, mediaUrl } = req.body;
 
+  // 디버깅 로그 추가
+  console.log("Request Body:", req.body);
+
   try {
     // 메시지 저장
     const message = await Message.create({
@@ -12,6 +15,7 @@ exports.sendMessage = async (req, res) => {
       dtype,
       content,
       mediaUrl,
+      isRead: false,
     });
 
     res.status(201).json(message);
@@ -22,22 +26,19 @@ exports.sendMessage = async (req, res) => {
 
 // 메시지 읽음 처리
 exports.markAsRead = async (req, res) => {
-  const { messageId } = req.params;
+  const { roomId, userId } = req.body;
 
   try {
-    const message = await Message.findByIdAndUpdate(
-      messageId,
-      { isRead: true },
-      { new: true } // 업데이트된 메시지를 반환
+    // 현재 사용자가 받은 메시지 중 읽지 않은 메시지 상태 업데이트
+    const result = await Message.updateMany(
+      { roomId, receiverId: userId, isRead: false },
+      { $set: { isRead: true } }
     );
 
-    if (!message) {
-      return res.status(404).json({ error: "Message not found" });
-    }
-
-    res.json(message);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to mark message as read" });
+    res.json({ updatedCount: result.modifiedCount });
+  } catch (error) {
+    console.error("Failed to mark messages as read:", error);
+    res.status(500).json({ message: "Failed to mark messages as read" });
   }
 };
 
@@ -50,5 +51,31 @@ exports.getMessages = async (req, res) => {
     res.json(messages);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch messages" });
+  }
+};
+
+exports.getUnreadMessagesCount = async (req, res) => {
+  const { userId } = req.query;
+
+  try {
+    const unreadCounts = await Message.aggregate([
+      {
+        $match: {
+          receiverId: userId, // 현재 사용자가 받은 메시지
+          isRead: false,      // 읽지 않은 메시지
+        },
+      },
+      {
+        $group: {
+          _id: "$roomId",      // roomId별로 그룹화
+          count: { $sum: 1 },  // 메시지 개수 합산
+        },
+      },
+    ]);
+
+    res.status(200).json(unreadCounts);
+  } catch (error) {
+    console.error("Error fetching unread counts:", error);
+    res.status(500).json({ message: "Failed to fetch unread message counts" });
   }
 };
