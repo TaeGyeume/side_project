@@ -1,8 +1,12 @@
 const Message = require("../../models/Message");
+const { ObjectId } = require("mongoose").Types;
 
 // 메시지 전송
 exports.sendMessage = async (req, res) => {
   const { roomId, senderId, dtype, content, mediaUrl } = req.body;
+
+  // 디버깅 로그 추가
+  console.log("Request Body:", req.body);
 
   try {
     // 메시지 저장
@@ -12,6 +16,7 @@ exports.sendMessage = async (req, res) => {
       dtype,
       content,
       mediaUrl,
+      isRead: false,
     });
 
     res.status(201).json(message);
@@ -20,24 +25,22 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
-// 메시지 읽음 처리
 exports.markAsRead = async (req, res) => {
-  const { messageId } = req.params;
+  const { roomId, userId } = req.body;
 
   try {
-    const message = await Message.findByIdAndUpdate(
-      messageId,
-      { isRead: true },
-      { new: true } // 업데이트된 메시지를 반환
+    console.log("Marking messages as read in room:", roomId, "for user:", userId); // 디버깅 로그
+
+    const result = await Message.updateMany(
+      { roomId, senderId: { $ne: userId }, isRead: false },
+      { $set: { isRead: true } }
     );
 
-    if (!message) {
-      return res.status(404).json({ error: "Message not found" });
-    }
-
-    res.json(message);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to mark message as read" });
+    console.log("Update result:", result); // MongoDB 결과 로그
+    res.json({ updatedCount: result.modifiedCount });
+  } catch (error) {
+    console.error("Failed to mark messages as read:", error.message);
+    res.status(500).json({ message: "Failed to mark messages as read" });
   }
 };
 
@@ -50,5 +53,32 @@ exports.getMessages = async (req, res) => {
     res.json(messages);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch messages" });
+  }
+};
+
+exports.getUnreadMessagesRooms = async (req, res) => {
+  const { userId } = req.query;
+  console.log("Unread Rooms API called with userId:", userId); // 요청 로그
+
+  try {
+    const unreadRooms = await Message.aggregate([
+      {
+        $match: {
+          senderId: { $ne: ObjectId(userId) }, // 반드시 ObjectId로 변환
+          isRead: false,
+        },
+      },
+      {
+        $group: {
+          _id: "$roomId", // roomId별로 그룹화
+        },
+      },
+    ]);
+
+    console.log("Unread Rooms Result:", unreadRooms); // 결과 로그
+    res.status(200).json(unreadRooms.map((room) => room._id)); // roomId만 반환
+  } catch (error) {
+    console.error("Error fetching unread rooms:", error);
+    res.status(500).json({ message: "Failed to fetch unread rooms" });
   }
 };

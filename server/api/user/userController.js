@@ -3,6 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
+
 // 사용자 목록 조회
 exports.getUsers = async (req, res) => {
     try {
@@ -26,6 +27,7 @@ exports.getMyInfo = async (req, res) => {
         });
 
         res.status(200).json({
+            _id: user._id,
             username: user.username,
             name: user.name,
             email: user.email,
@@ -100,7 +102,7 @@ exports.updateMyInfo = async (req, res) => {
     try {
         console.log("Request body:", req.body); // 요청 데이터 확인
         const userId = req.user.id;
-        const { name, gender, birthdate, bio, username, email } = req.body;
+        const { name, gender, birthdate, bio, username } = req.body;
 
         const updatedData = {
             ...(username && { username }),

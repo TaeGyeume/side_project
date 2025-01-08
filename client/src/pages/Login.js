@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import "bootstrap-icons/font/bootstrap-icons.css"; // Bootstrap Icons CSS 추가
+import "./styles/Login.css"; // 기존 스타일 파일
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const Login = ({ onLogin }) => {

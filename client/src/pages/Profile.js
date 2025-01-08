@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
-import { resetProfileImage } from "../api/userService"; // 기본 이미지 리셋 API 함수 가져오기
+import { resetProfileImage } from "../api/userService"; // 기본 이미지 리셋 API 함수 가져오기z
 
 const Profile = () => {
     const [userInfo, setUserInfo] = useState(null);

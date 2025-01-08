@@ -4,12 +4,13 @@ const bodyParser = require("body-parser");
 const passport = require("passport");
 const userRoutes = require("./api/user/userRoutes");
 const authRoutes = require("./api/auth/authRoutes");
+const followRoutes = require('./api/follow/followRoutes');
+
 require("./config/passport");
 const path = require("path");
 const fs = require("fs");
 const messageRoutes = require("./api/message/messageRoutes");
 const roomRoutes = require("./api/room/roomRoutes")
-const roomUnreadRoutes = require("./api/roomUnread/roomUnreadRoutes");
 
 const app = express();
 
@@ -38,7 +39,7 @@ app.use("/api/users", userRoutes); // 사용자 관련 라우트
 app.use("/api/auth", authRoutes); // 인증 관련 라우트
 app.use("/api/messages", messageRoutes); // 메시지 관련 라우트
 app.use("/api/rooms", roomRoutes); // 채팅방 관련 라우트
-app.use("/api/rooms/unread", roomUnreadRoutes); // 읽지 않은 메시지 관련 라우트
+app.use('/api/follow', followRoutes); // Follow API 경로 설정
 
 // React 정적 파일 제공
 const clientBuildPath = path.join(__dirname, "../client/build");

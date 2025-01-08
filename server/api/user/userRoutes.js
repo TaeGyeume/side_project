@@ -2,7 +2,7 @@ const express = require("express");
 const userController = require("../user/userController");
 const { verifyToken } = require("../../middleware/auth");
 const router = express.Router();
-
+   
 // 자신의 프로필 조회
 router.get("/me", verifyToken, userController.getMyInfo);
 

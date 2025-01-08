@@ -1,4 +1,5 @@
-require("dotenv").config({ path: __dirname + "/../.env" });
+// require("dotenv").config(); // 환경 변수 로드
+require("dotenv").config({ path: __dirname + "/../.env" }); // 서버 폴더의 .env 파일을 명시적으로 로드
 
 const app = require("./app"); // Express 앱 가져오기
 const connectDB = require("./config/db"); // MongoDB 연결 설정
@@ -34,7 +35,9 @@ const io = new Server(server, {
 
 // Socket.IO 실시간 이벤트 처리
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  if (process.env.DEBUG_MODE === "true") {
+    console.log(`User connected: ${socket.id}`);
+  }
 
   // 방 참여 이벤트
   socket.on("joinRoom", (roomId) => {
@@ -66,6 +69,7 @@ io.on("connection", (socket) => {
     // 저장된 메시지를 다른 사용자에게 브로드캐스트
     io.to(roomId).emit("receiveMessage", newMessage);
     console.log("Message broadcasted to room:", roomId); // 메시지 브로드캐스트 로그
+
   } catch (error) {
     console.error("Error saving message to DB:", error);
   }
@@ -95,7 +99,9 @@ io.on("connection", (socket) => {
 
   // 사용자 연결 해제
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    if (process.env.DEBUG_MODE === "true") {
+      console.log(`User disconnected: ${socket.id}`);
+    }
   });
 });
 
