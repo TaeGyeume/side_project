@@ -101,7 +101,17 @@ const App = () => {
           path="/profile"
           element={token ? <Profile /> : <p>Please log in to view this page.</p>}
         />
-        <Route path="/allUser" element={<AllUserList />} />
+        <Route
+          path="/allUser"
+          element={
+            currentUser ? (
+              <AllUserList currentUserId={currentUser._id} />
+            ) : (
+              <p>사용자 정보를 불러오는 중...</p>
+            )
+          }
+        />
+
         {/* 로그인한 사용자만 메시지 페이지에 접근 가능 */}
         <Route
           path="/messages"
