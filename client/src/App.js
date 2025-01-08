@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
-import Profile from "./pages/Profile";
-import Login from "./pages/Login";
-import Register from "./components/Register";
+import Profile from "./pages/Profile"; // 내 정보 페이지
+import Login from "./pages/Login"; // 로그인 페이지
+import Register from "./components/Register"; // 회원가입 페이지
+import Footer from "./components/Footer";
 import UserList from "./pages/UserList";
 import ChatRoom from "./pages/ChatRoom";
 import AllUserList from "./components/AllUserList";
@@ -93,7 +94,7 @@ const App = () => {
         </ul>
       </nav>
       <Routes>
-        <Route path="/" element={<h1>메인페이지! 이희진이형민</h1>} />
+        <Route path="/" element={<h1>메인페이지! 이희진이형민김민혁</h1>} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route
@@ -112,6 +113,7 @@ const App = () => {
           element={token ? <ChatRoom currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
         />
       </Routes>
+      <Footer /> {/* 푸터 추가 */}
     </Router>
   );
 };
