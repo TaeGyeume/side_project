@@ -58,8 +58,6 @@ io.on("connection", (socket) => {
     io.to(roomId).emit("receiveMessage", newMessage);
     console.log("Message broadcasted to room:", roomId); // 메시지 브로드캐스트 로그
 
-    // 읽지 않은 메시지 수 업데이트 이벤트
-    io.emit("updateUnreadCount", { roomId: roomId, newCount: 1 });
   } catch (error) {
     console.error("Error saving message to DB:", error);
   }

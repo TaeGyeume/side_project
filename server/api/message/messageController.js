@@ -1,4 +1,5 @@
 const Message = require("../../models/Message");
+const { ObjectId } = require("mongoose").Types;
 
 // 메시지 전송
 exports.sendMessage = async (req, res) => {
@@ -24,20 +25,21 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
-// 메시지 읽음 처리
 exports.markAsRead = async (req, res) => {
   const { roomId, userId } = req.body;
 
   try {
-    // 현재 사용자가 받은 메시지 중 읽지 않은 메시지 상태 업데이트
+    console.log("Marking messages as read in room:", roomId, "for user:", userId); // 디버깅 로그
+
     const result = await Message.updateMany(
-      { roomId, receiverId: userId, isRead: false },
+      { roomId, senderId: { $ne: userId }, isRead: false },
       { $set: { isRead: true } }
     );
 
+    console.log("Update result:", result); // MongoDB 결과 로그
     res.json({ updatedCount: result.modifiedCount });
   } catch (error) {
-    console.error("Failed to mark messages as read:", error);
+    console.error("Failed to mark messages as read:", error.message);
     res.status(500).json({ message: "Failed to mark messages as read" });
   }
 };
@@ -54,28 +56,29 @@ exports.getMessages = async (req, res) => {
   }
 };
 
-exports.getUnreadMessagesCount = async (req, res) => {
+exports.getUnreadMessagesRooms = async (req, res) => {
   const { userId } = req.query;
+  console.log("Unread Rooms API called with userId:", userId); // 요청 로그
 
   try {
-    const unreadCounts = await Message.aggregate([
+    const unreadRooms = await Message.aggregate([
       {
         $match: {
-          receiverId: userId, // 현재 사용자가 받은 메시지
-          isRead: false,      // 읽지 않은 메시지
+          senderId: { $ne: ObjectId(userId) }, // 반드시 ObjectId로 변환
+          isRead: false,
         },
       },
       {
         $group: {
-          _id: "$roomId",      // roomId별로 그룹화
-          count: { $sum: 1 },  // 메시지 개수 합산
+          _id: "$roomId", // roomId별로 그룹화
         },
       },
     ]);
 
-    res.status(200).json(unreadCounts);
+    console.log("Unread Rooms Result:", unreadRooms); // 결과 로그
+    res.status(200).json(unreadRooms.map((room) => room._id)); // roomId만 반환
   } catch (error) {
-    console.error("Error fetching unread counts:", error);
-    res.status(500).json({ message: "Failed to fetch unread message counts" });
+    console.error("Error fetching unread rooms:", error);
+    res.status(500).json({ message: "Failed to fetch unread rooms" });
   }
 };

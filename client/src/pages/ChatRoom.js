@@ -33,17 +33,24 @@ const ChatRoom = ({ currentUser }) => {
   useEffect(() => {
     socketRef.current = io("http://localhost:5000");
 
+    // 방에 참여
     socketRef.current.emit("joinRoom", roomId);
     console.log(`Joining room: ${roomId}`);
 
+    // 메시지 수신 이벤트 처리
     socketRef.current.on("receiveMessage", (message) => {
       console.log("Received message:", message);
       setMessages((prev) => [...prev, message]);
     });
 
+    // 서버에서 메시지 가져오기
     axios
       .get(`http://localhost:5000/api/messages/${roomId}`)
-      .then((res) => setMessages(res.data))
+      .then((res) => {
+        setMessages(res.data);
+        // 읽지 않은 메시지 읽음 처리 요청
+        markMessagesAsRead(res.data);
+      })
       .catch((err) => console.error("Failed to fetch messages:", err));
 
     return () => {
@@ -71,6 +78,29 @@ const ChatRoom = ({ currentUser }) => {
     console.log("Sending message:", messageData);
     socketRef.current.emit("sendMessage", messageData);
     setNewMessage("");
+  };
+
+  const markMessagesAsRead = (messages) => {
+    if (!currentUser) return;
+
+    const unreadMessageIds = messages
+      .filter((msg) => msg.senderId !== currentUser._id && !msg.isRead) // 내가 보낸 메시지가 아니고 읽지 않은 메시지
+      .map((msg) => msg._id); // 읽지 않은 메시지 ID만 추출
+
+    if (unreadMessageIds.length > 0) {
+      console.log("Marking messages as read:", unreadMessageIds);
+      axios
+        .post("http://localhost:5000/api/messages/mark-as-read", {
+          roomId,
+          userId: currentUser._id,
+        })
+        .then((res) => {
+          console.log("Messages marked as read:", res.data);
+        })
+        .catch((err) => {
+          console.error("Failed to mark messages as read:", err);
+        });
+    }
   };
 
   const getUsername = (senderId) => {
