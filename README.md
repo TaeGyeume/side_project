@@ -8,9 +8,7 @@
 
 ## 의존성 설치 가이드
 
-### 1. 서버 설정
-
-#### MongoDB와 상호작용하기 위한 라이브러리
+MongoDB와 상호작용하기 위한 라이브러리
 ```bash
 npm install mongoose
 Facebook OAuth 인증
