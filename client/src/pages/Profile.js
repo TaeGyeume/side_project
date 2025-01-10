@@ -35,14 +35,18 @@ const Profile = () => {
                 },
             });
 
+            // 디버깅 로그 추가
             console.log("Fetched user info:", response.data); // 서버 응답 확인
-            setUserInfo(response.data); // userInfo 상태 업데이트
-            setBio(response.data.bio || ""); // bio 상태 초기화
-            setName(response.data.name); // 이름 초기화
-            setEmail(response.data.email); // 이메일 초기화
-            setPhone(response.data.phone); // 전화번호 초기화
-            setGender(response.data.gender); // 성별 초기화
-            setUsername(response.data.username); // 사용자 이름 초기화
+            console.log("Setting email state:", response.data.email);
+
+            // 상태 업데이트
+            setUserInfo(response.data);
+            setBio(response.data.bio || "");
+            setName(response.data.name || "");
+            setEmail(response.data.email || ""); // email 상태 초기화
+            setPhone(response.data.phone || "");
+            setGender(response.data.gender || "");
+            setUsername(response.data.username || "");
         } catch (err) {
             console.error("Error fetching user info:", err.message);
             setErrorMessage("Failed to fetch user information.");
@@ -50,6 +54,7 @@ const Profile = () => {
             setLoading(false);
         }
     }, [navigate]);
+
 
     // 파일 선택 핸들러
     const handleFileChange = (e) => {
@@ -111,12 +116,6 @@ const Profile = () => {
         }
     };
 
-    // 이메일 형식 검증 함수
-    const isValidEmail = (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    };
-
     // 사용자 정보 수정
     const handleUserInfoUpdate = async () => {
         const token = localStorage.getItem("token");
@@ -126,15 +125,11 @@ const Profile = () => {
             return;
         }
 
-        if (!isValidEmail(email)) {
-            setErrorMessage("이메일 형식이 올바르지 않습니다.");
-            return;
-        }
-
         try {
+            // 요청에서 이메일 제외
             const response = await axios.put(
                 `${process.env.REACT_APP_API_URL}/users/me`,
-                { username, name, email, gender }, // 핸드폰 번호 제외
+                { username, name, gender }, // email 제거
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -142,31 +137,22 @@ const Profile = () => {
                 }
             );
 
+            // 이메일 제외하고 상태 업데이트
             setUserInfo((prev) => ({
                 ...prev,
                 username: response.data.username,
                 name: response.data.name,
-                email: response.data.email,
                 gender: response.data.gender,
             }));
 
             setEditUserInfo(false); // 수정 모드 종료
         } catch (err) {
-            if (err.response && err.response.status === 409) {
-                const conflictField = err.response.data.field; // 서버에서 반환하는 필드 정보 (예: 'username' 또는 'email')
-                if (conflictField === "username") {
-                    setErrorMessage("이미 있는 사용자 이름입니다.");
-                } else if (conflictField === "email") {
-                    setErrorMessage("이미 있는 이메일입니다.");
-                } else {
-                    setErrorMessage("이미 존재하는 데이터입니다.");
-                }
-            } else {
-                console.error("Error updating user info:", err.message);
-                setErrorMessage("Failed to update user information.");
-            }
+            console.error("Error updating user info:", err.message);
+            setErrorMessage("이미사용중인 사용자 이름입니다");
         }
     };
+
+
 
     // 기본 프로필 이미지로 변경
     const handleResetProfileImage = async () => {
@@ -227,18 +213,13 @@ const Profile = () => {
                     userInfo?.name
                 )}
             </p>
+
+
             <p>
-                이메일:{" "}
-                {editUserInfo ? (
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)} // 이메일 수정
-                    />
-                ) : (
-                    userInfo?.email
-                )}
+                이메일: {userInfo?.email}
             </p>
+
+
             <p>
                 성별:{" "}
                 {editUserInfo ? (
