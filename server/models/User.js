@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // 팔로잉 목록
   created_at: { type: Date, default: Date.now }, // 생성 날짜
   updated_at: { type: Date, default: Date.now }, // 업데이트 날짜
+  isFacebookUser: { type: Boolean, default: false }, // Facebook 사용자인지 여부
 });
 
 const User = mongoose.model("User", userSchema);
