@@ -13,7 +13,7 @@ import socket from "./socket";
 
 import axios from "axios";
 import "./App.css"; // 전체 레이아웃 스타일
-import socket from "./socket";
+import Sidebar from "./components/Sidebar";
 
 const App = ({ currentUserId }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -119,60 +119,6 @@ const App = ({ currentUserId }) => {
         {/* 로그인된 사용자만 사이드바 표시 */}
         {token && <Sidebar handleLogout={handleLogout} />}
         <div className={token ? "content-with-sidebar" : "content"}>
-          <nav>
-            <ul className="top-nav">
-              {!token && (
-                <>
-                  <li>
-                    <Link to="/">메인페이지</Link>
-                  </li>
-                  <li>
-                    <Link to="/register">회원가입</Link>
-                  </li>
-                  <li>
-                    <Link to="/login">로그인</Link>
-                  </li>
-                </>
-              )}
-              {token && (
-                <>
-                  <li>
-                    <Link to="/">메인페이지</Link>
-                  </li>
-                  <li>
-                    <Link to="/profile">내정보</Link>
-                  </li>
-                  <li>
-                    <Link to="/allUser">전체 사용자 목록</Link>
-                  </li>
-                  <li>
-                    <Link to="/messages">메시지</Link>
-                  </li>
-                </>
-              )}
-            </ul>
-          </nav>
-          <Routes>
-            <Route path="/" element={<h1>메인페이지!</h1>} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
-            <Route
-              path="/profile"
-              element={token ? <Profile /> : <p>Please log in to view this page.</p>}
-            />
-            <Route path="/allUser" element={<AllUserList />} />
-            <Route
-              path="/messages"
-              element={token ? <UserList currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
-            />
-            <Route
-              path="/chat/:roomId"
-              element={token ? <ChatRoom currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
-            />
-          </Routes>
-          <Footer /> {/* 푸터 */}
-        </div>
-      </div>
       <nav>
         <ul>
           {!token && (
