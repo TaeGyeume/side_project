@@ -17,7 +17,6 @@ const Profile = () => {
     const [gender, setGender] = useState(""); // 성별 수정 상태
     const [username, setUsername] = useState(""); // 사용자 이름 수정 상태
     const navigate = useNavigate();
-
     // 사용자 정보 가져오기
     const fetchUserInfo = useCallback(async () => {
         const token = localStorage.getItem("token");
@@ -27,18 +26,15 @@ const Profile = () => {
             navigate("/login");
             return;
         }
-
         try {
             const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/me`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
-
             // 디버깅 로그 추가
             console.log("Fetched user info:", response.data); // 서버 응답 확인
             console.log("Setting email state:", response.data.email);
-
             // 상태 업데이트
             setUserInfo(response.data);
             setBio(response.data.bio || "");
@@ -54,13 +50,10 @@ const Profile = () => {
             setLoading(false);
         }
     }, [navigate]);
-
-
     // 파일 선택 핸들러
     const handleFileChange = (e) => {
         setSelectedFile(e.target.files[0]);
     };
-
     // 프로필 이미지 업로드
     const handleUpload = async () => {
         const token = localStorage.getItem("token");
@@ -69,10 +62,8 @@ const Profile = () => {
             navigate("/login");
             return;
         }
-
         const formData = new FormData();
         formData.append("profileImage", selectedFile);
-
         try {
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/users/me/profile-image`, formData, {
                 headers: {
@@ -213,13 +204,9 @@ const Profile = () => {
                     userInfo?.name
                 )}
             </p>
-
-
             <p>
                 이메일: {userInfo?.email}
             </p>
-
-
             <p>
                 성별:{" "}
                 {editUserInfo ? (
@@ -232,7 +219,6 @@ const Profile = () => {
                     userInfo?.gender
                 )}
             </p>
-
             <p>
                 소개:{" "}
                 {editBio ? (
@@ -252,7 +238,6 @@ const Profile = () => {
                     </>
                 )}
             </p>
-
             {userInfo?.profileImage && (
                 <img
                     src={`http://localhost:5000${userInfo.profileImage}`}
@@ -260,7 +245,6 @@ const Profile = () => {
                     style={{ width: "150px", height: "150px" }}
                 />
             )}
-
             <div>
                 <input
                     type="file"
@@ -271,12 +255,10 @@ const Profile = () => {
                 <button onClick={selectedFile ? handleUpload : () => document.querySelector('input[type="file"]').click()}>
                     프로필 이미지 변경
                 </button>
-
                 <button onClick={handleResetProfileImage} style={{ marginTop: "10px" }}>
                     이미지 삭제
                 </button>
             </div>
-
             {editUserInfo ? (
                 <button onClick={handleUserInfoUpdate}>저장</button>
             ) : (
