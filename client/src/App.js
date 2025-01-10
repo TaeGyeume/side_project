@@ -187,7 +187,7 @@ const App = ({ currentUserId }) => {
           </Routes>
           <Footer /> {/* 푸터 추가 */}
         </div>
-      </div>
+      </div>   
     </Router>
   );
 };
