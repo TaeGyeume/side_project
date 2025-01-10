@@ -5,7 +5,7 @@ import axios from "axios";
 import axiosInstance from "../api/axios";
 import socket from "../socket";
 
-const UserList = ({ currentUser }) => {
+const ChatList = ({ currentUser }) => {
   const [users, setUsers] = useState([]);
   const [unreadCounts, setUnreadCounts] = useState({});
   const navigate = useNavigate();
@@ -101,4 +101,4 @@ const UserList = ({ currentUser }) => {
   );
 };
 
-export default UserList;
+export default ChatList;

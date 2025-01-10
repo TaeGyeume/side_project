@@ -9,6 +9,7 @@ router.get("/unread", (req, res, next) => {
   console.log("Request reached /unread route");
   next();
 }, verifyToken, messageController.getUnreadMessageCounts);
+router.get("/chatUsers", messageController.getChatUsers);
 router.get("/:roomId", messageController.getMessages);
 router.post("/mark-as-read", messageController.markAsRead);
 

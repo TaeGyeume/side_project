@@ -4,7 +4,7 @@ import Profile from "./pages/Profile"; // 내 정보 페이지
 import Login from "./pages/Login"; // 로그인 페이지
 import Register from "./components/Register"; // 회원가입 페이지
 import Footer from "./components/Footer";
-import UserList from "./pages/UserList";
+import ChatList from "./pages/ChatList";
 import ChatRoom from "./pages/ChatRoom";
 import AllUserList from "./components/AllUserList";
 import Notifications from "./components/Notifications";
@@ -200,7 +200,7 @@ const App = ({ currentUserId }) => {
             {/* 로그인한 사용자만 메시지 페이지에 접근 가능 */}
             <Route
               path="/messages"
-              element={token ? <UserList currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
+              element={token ? <ChatList currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
             />
             {/* 특정 채팅방에 접근 */}
             <Route

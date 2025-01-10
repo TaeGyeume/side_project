@@ -1,6 +1,31 @@
 const Room = require("../../models/Room");
 const Message = require("../../models/Message");
 const { ObjectId } = require("mongoose").Types;
+const User = require("../../models/User");
+
+exports.getChatUsers = async (req, res) => {
+  const { userId } = req.query; // 로그인한 사용자의 ID
+
+  try {
+    // 사용자가 포함된 채팅방 가져오기
+    const rooms = await Room.find({ members: userId });
+
+    // 채팅방에 포함된 사용자 ID 가져오기
+    const userIds = rooms.flatMap((room) =>
+      room.members.filter((member) => member.toString() !== userId)
+    );
+
+    // 중복된 사용자 제거 및 사용자 정보 가져오기
+    const users = await User.find({ _id: { $in: [...new Set(userIds)] } }).select(
+      "_id username email"
+    );
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Failed to fetch chat users:", error.message);
+    res.status(500).json({ error: "Failed to fetch chat users" });
+  }
+};
 
 // 메시지 전송
 exports.sendMessage = async (req, res) => {
