@@ -109,7 +109,6 @@ exports.updateMyInfo = async (req, res) => {
             ...(name && { name }),
             ...(gender && { gender }),
             ...(birthdate && { birthdate }),
-            ...(email && { email }),
             ...(bio && { bio }),
             updated_at: new Date(),
         };
