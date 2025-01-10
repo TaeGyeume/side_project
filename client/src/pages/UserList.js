@@ -42,8 +42,8 @@ const UserList = ({ currentUser }) => {
     const fetchUnreadCounts = async () => {
       try {
         const response = await axiosInstance.get("/messages/unread");
-  
         const userCounts = {};
+
         for (const item of response.data) {
           if (item.lastSenderDetails) {
             userCounts[item.lastSenderDetails._id] = {
@@ -61,25 +61,22 @@ const UserList = ({ currentUser }) => {
     };
   
     fetchUnreadCounts();
-    // 소켓 이벤트 설정
+    // 소켓 이벤트 처리
     socket.on("unreadMessageUpdate", ({ roomId, count }) => {
       setUnreadCounts((prev) => {
         const updatedCounts = { ...prev };
-  
-        // roomId에 해당하는 사용자를 찾아서 업데이트
-        Object.entries(prev).forEach(([userId, details]) => {
+        for (const [userId, details] of Object.entries(prev)) {
           if (details.roomId === roomId) {
             updatedCounts[userId] = {
               ...details,
               count, // 새로운 count로 업데이트
             };
           }
-        });
-  
+        }
         return updatedCounts;
       });
     });
-  
+
     return () => {
       socket.off("unreadMessageUpdate");
     };
