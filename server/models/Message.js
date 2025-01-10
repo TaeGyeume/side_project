@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema({
-  roomId: { type: String, required: true }, // 채팅방 ID
-  senderId: { type: String, required: true }, // 메시지 보낸 사용자
+  roomId: { type: mongoose.Schema.Types.ObjectId, ref: "Room", required: true }, // Room 모델 참조
+  senderId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // User 모델 참조
   dtype: { type: String, enum: ["text", "image", "file"], required: true }, // 메시지 타입
   content: { type: String }, // 텍스트 메시지 내용
   mediaUrl: { type: String }, // 이미지, 파일 등의 URL

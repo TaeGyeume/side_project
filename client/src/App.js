@@ -13,11 +13,13 @@ import socket from "./socket";
 
 import axios from "axios";
 import "./App.css"; // 전체 레이아웃 스타일
+import socket from "./socket";
 
 const App = ({ currentUserId }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [currentUser, setCurrentUser] = useState(null);
   const [notificationCount, setNotificationCount] = useState(0); // 알림 개수 상태
+  const [unreadMessages, setUnreadMessages] = useState([]);
 
   const handleLogin = (newToken) => {
     setToken(newToken);
@@ -99,6 +101,18 @@ const App = ({ currentUserId }) => {
     setNotificationCount(0); // 알림 수 초기화
   };
 
+  useEffect(() => {
+    // 읽지 않은 메시지 이벤트 수신
+    socket.on("newUnreadMessage", (data) => {
+      setUnreadMessages((prev) => [...prev, data]);
+      console.log("Unread message received:", data);
+    });
+
+    return () => {
+      socket.off("newUnreadMessage");
+    };
+  }, []);
+
   return (
     <Router>
       <div className="app">
@@ -139,7 +153,7 @@ const App = ({ currentUserId }) => {
             </ul>
           </nav>
           <Routes>
-            <Route path="/" element={<h1>메인페이지! 이희진이형민김민혁</h1>} />
+            <Route path="/" element={<h1>메인페이지!</h1>} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
             <Route
@@ -194,7 +208,9 @@ const App = ({ currentUserId }) => {
                 </Link>
               </li>
               <li>
-                <Link to="/messages">메시지</Link>
+                <Link to="/messages">
+                  메시지 {unreadMessages.length > 0 && `(${unreadMessages.length})`}
+                </Link>
               </li>
               <li>
                 <button onClick={handleLogout}>로그아웃</button>

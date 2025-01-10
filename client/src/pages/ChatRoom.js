@@ -9,7 +9,7 @@ const ChatRoom = ({ currentUser }) => {
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const messagesEndRef = useRef(null); // 스크롤 이동용 Ref
+  const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
 
   useEffect(() => {
@@ -17,13 +17,14 @@ const ChatRoom = ({ currentUser }) => {
 
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem("token"); // 토큰 가져오기
+        const token = localStorage.getItem("token");
         const response = await axios.get("http://localhost:5000/api/users", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUsers(response.data);
+        setUsers(response.data || []); // users 데이터가 없을 경우 빈 배열로 초기화
       } catch (error) {
         console.error("Failed to fetch users:", error);
+        setUsers([]); // 에러가 발생해도 users를 빈 배열로 설정
       }
     };
 
@@ -31,7 +32,12 @@ const ChatRoom = ({ currentUser }) => {
   }, [currentUser]);
 
   useEffect(() => {
+    if (!currentUser || !roomId) return;
+
     socketRef.current = io("http://localhost:5000");
+
+    // 사용자 ID 설정
+    socketRef.current.emit("setUserId", currentUser._id);
 
     // 방에 참여
     socketRef.current.emit("joinRoom", roomId);
@@ -43,21 +49,34 @@ const ChatRoom = ({ currentUser }) => {
       setMessages((prev) => [...prev, message]);
     });
 
+    // 메시지 읽음 상태 업데이트 이벤트 처리
+    socketRef.current.on("messageRead", ({ roomId: updatedRoomId, messageId }) => {
+      if (updatedRoomId === roomId) {
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg._id === messageId ? { ...msg, isRead: true } : msg
+          )
+        );
+      }
+    });
+
     // 서버에서 메시지 가져오기
     axios
       .get(`http://localhost:5000/api/messages/${roomId}`)
       .then((res) => {
-        setMessages(res.data);
-        // 읽지 않은 메시지 읽음 처리 요청
-        markMessagesAsRead(res.data);
+        setMessages(res.data || []); // 메시지가 없을 경우 빈 배열로 초기화
+        markMessagesAsRead(res.data); // 읽지 않은 메시지 읽음 처리 요청
       })
-      .catch((err) => console.error("Failed to fetch messages:", err));
+      .catch((err) => {
+        console.error("Failed to fetch messages:", err);
+        setMessages([]); // 에러 발생 시 빈 배열로 초기화
+      });
 
     return () => {
       console.log("Disconnecting socket...");
       socketRef.current.disconnect();
     };
-  }, [roomId]);
+  }, [currentUser, roomId]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -66,7 +85,7 @@ const ChatRoom = ({ currentUser }) => {
   }, [messages]);
 
   const sendMessage = () => {
-    if (!currentUser) return;
+    if (!currentUser || !newMessage.trim()) return;
 
     const messageData = {
       roomId,
@@ -80,12 +99,12 @@ const ChatRoom = ({ currentUser }) => {
     setNewMessage("");
   };
 
-  const markMessagesAsRead = (messages) => {
-    if (!currentUser) return;
+  const markMessagesAsRead = (messages = []) => {
+    if (!currentUser || messages.length === 0) return;
 
     const unreadMessageIds = messages
-      .filter((msg) => msg.senderId !== currentUser._id && !msg.isRead) // 내가 보낸 메시지가 아니고 읽지 않은 메시지
-      .map((msg) => msg._id); // 읽지 않은 메시지 ID만 추출
+      .filter((msg) => msg.senderId !== currentUser._id && !msg.isRead)
+      .map((msg) => msg._id);
 
     if (unreadMessageIds.length > 0) {
       console.log("Marking messages as read:", unreadMessageIds);
@@ -117,19 +136,23 @@ const ChatRoom = ({ currentUser }) => {
     <div>
       <h1>Chat Room</h1>
       <div className="chat-messages">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`message ${
-              msg.senderId === currentUser._id ? "my-message" : "other-message"
-            }`}
-          >
-            {msg.senderId !== currentUser._id && (
-              <div className="username">{getUsername(msg.senderId)}</div>
-            )}
-            <div className="message-content">{msg.content}</div>
-          </div>
-        ))}
+        {messages.length > 0 ? (
+          messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`message ${
+                msg.senderId === currentUser._id ? "my-message" : "other-message"
+              }`}
+            >
+              {msg.senderId !== currentUser._id && (
+                <div className="username">{getUsername(msg.senderId)}</div>
+              )}
+              <div className="message-content">{msg.content}</div>
+            </div>
+          ))
+        ) : (
+          <p>Loading messages...</p>
+        )}
         <div ref={messagesEndRef}></div>
       </div>
       <input
