@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+
 const followSchema = new mongoose.Schema(
   {
     followerId: {
@@ -23,16 +24,16 @@ const followSchema = new mongoose.Schema(
       enum: ["PENDING", "ACCEPTED", "REJECTED"],
       default: "PENDING",
     },
-    regDate: {
+    createdAt: {
       type: Date,
-      default: Date.now,
+      default: () => new Date(Date.now() + 9 * 60 * 60 * 1000), // KST로 설정
     },
-    modDate: {
+    updatedAt: {
       type: Date,
-      default: Date.now,
+      default: () => new Date(Date.now() + 9 * 60 * 60 * 1000), // KST로 설정
     },
   },
-  { timestamps: true }
+  { timestamps: false }
 );
 
 // 중복 팔로우 요청 방지

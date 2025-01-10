@@ -32,7 +32,21 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
+}
+
+/* 스타일 파일에 추가 */
+.notification-badge {
+  background-color: red;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: bold;
+  border-radius: 50%;
+  padding: 0.2em 0.5em;
+  position: relative;
+  top: -10px;
+  left: 5px;
 }

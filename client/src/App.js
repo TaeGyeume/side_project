@@ -8,12 +8,15 @@ import UserList from "./pages/UserList";
 import ChatRoom from "./pages/ChatRoom";
 import AllUserList from "./components/AllUserList";
 import Notifications from "./components/Notifications";
+import { getIncomingFollowRequests } from "./api/followService";
+import socket from "./socket";
 
 import axios from "axios";
 
-const App = () => {
+const App = ({ currentUserId }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [currentUser, setCurrentUser] = useState(null);
+  const [notificationCount, setNotificationCount] = useState(0); // 알림 개수 상태
 
   const handleLogin = (newToken) => {
     setToken(newToken);
@@ -44,6 +47,26 @@ const App = () => {
     [handleLogout] // 의존성 배열에 `handleLogout` 추가
   );
 
+  const fetchNotifications = useCallback(async () => {
+    if (currentUser) {
+      try {
+        const notifications = await getIncomingFollowRequests(currentUser._id);
+        if (Array.isArray(notifications)) {
+          setNotificationCount(notifications.length);
+        }
+
+        else {
+          console.error("Unexpected notifications format:", notifications);
+          setNotificationCount(0); // 잘못된 형식인 경우 알림 개수 초기화
+        }
+
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+        setNotificationCount(0); // 요청 실패 시 알림 개수 초기화
+      }
+    }
+  }, [currentUser]);
+
   useEffect(() => {
     if (token) {
       fetchCurrentUser(token); // 토큰이 있으면 사용자 정보 로드
@@ -56,6 +79,26 @@ const App = () => {
       setCurrentUser(storedUser);
     }
   }, []);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    if (currentUser) {
+      fetchNotifications();
+    }
+
+    socket.on(`notification:${currentUser._id}`, () => {
+      setNotificationCount((prev) => prev + 1);
+    });
+
+    return () => {
+      socket.off(`notification:${currentUser._id}`);
+    };
+  }, [currentUser, fetchNotifications]);
+
+  const resetNotificationCount = () => {
+    setNotificationCount(0); // 알림 수 초기화
+  };
 
   return (
     <Router>
@@ -86,7 +129,12 @@ const App = () => {
                 <Link to="/allUser">전체 사용자 목록</Link>
               </li>
               <li>
-                <Link to="/notifications">알림</Link>
+                <Link to="/notifications" onClick={resetNotificationCount}>
+                  알림
+                  {notificationCount > 0 && (
+                    <span className="notification-badge">{notificationCount}</span>
+                  )}
+                </Link>
               </li>
               <li>
                 <Link to="/messages">메시지</Link>
@@ -111,7 +159,9 @@ const App = () => {
           path="/notifications"
           element={
             currentUser ? (
-              <Notifications currentUserId={currentUser._id} />
+              <Notifications currentUserId={currentUser._id}
+                onNotificationClear={resetNotificationCount}
+              />
             ) : (
               <p>알림을 보려면 로그인하세요.</p>
             )

@@ -4,18 +4,20 @@ const Follow = require('../../models/Follow');
 // 팔로우 알림 목록 조회
 exports.getIncomingFollowRequests = async (req, res) => {
   try {
-      const { userId } = req.params;
+    const { userId } = req.params;
 
-      const incomingRequests = await Follow.find({
-          followingId: userId,
-          status: "PENDING",
-      })
-          .select("followerId followerUsername")
-          .lean();
+    const incomingRequests = await Follow.find({
+      followingId: userId,
+      status: "PENDING",
+    })
+      .select("followerId followerUsername")
+      .lean();
 
-      res.status(200).json({ incomingRequests });
+    console.log("Incoming Requests:", incomingRequests); // 응답 데이터 확인
+
+    res.status(200).json({ incomingRequests });
   } catch (err) {
-      res.status(500).json({ message: "Failed to fetch incoming follow requests.", error: err.message });
+    res.status(500).json({ message: "Failed to fetch incoming follow requests.", error: err.message });
   }
 };
 
@@ -23,8 +25,6 @@ exports.getIncomingFollowRequests = async (req, res) => {
 exports.getPendingRequests = async (req, res) => {
   try {
     const { userId } = req.params;
-    
-    console.log("User ID for pending requests:", userId); // 요청된 userId 확인
 
     const pendingRequests = await Follow.find({
       followerId: userId, // 요청자의 ID
@@ -32,8 +32,6 @@ exports.getPendingRequests = async (req, res) => {
     })
       .select('followingId followingUsername') // 필요한 필드만 반환
       .lean();
-
-    console.log("Pending Requests:", pendingRequests); // 쿼리 결과 확인
 
     res.status(200).json({ pendingRequests });
   } catch (error) {
@@ -44,8 +42,6 @@ exports.getPendingRequests = async (req, res) => {
 
 // 팔로우 요청 생성
 exports.createFollow = async (req, res) => {
-  console.log("Request body:", req.body); // 요청 데이터 확인
-
   const { followerId, followingId } = req.body;
 
   if (!followerId || !followingId) {
@@ -57,7 +53,7 @@ exports.createFollow = async (req, res) => {
     const existingFollow = await Follow.findOne({ followerId, followingId });
 
     if (existingFollow) {
-      return res.status(400).json({ message: "Follow request already exists" });
+      return res.status(200).json(existingFollow); // 기존 요청 반환
     }
 
     // `followerId`와 `followingId`에 해당하는 사용자 이름 조회
@@ -70,17 +66,15 @@ exports.createFollow = async (req, res) => {
 
     const follow = new Follow({
       followerId,
-      followerUsername: follower.username, // 요청자 이름 저장
+      followerUsername: follower.username,
       followingId,
-      followingUsername: following.username, // 대상자 이름 저장
+      followingUsername: following.username,
     });
 
     await follow.save();
-
     res.status(201).json(follow);
   } catch (error) {
     console.error("Error creating follow:", error);
-
     res.status(500).json({ message: "Failed to create follow" });
   }
 };
@@ -92,7 +86,10 @@ exports.acceptFollow = async (req, res) => {
 
     const follow = await Follow.findByIdAndUpdate(
       followId,
-      { status: 'ACCEPTED', modDate: Date.now() },
+      {
+        status: 'ACCEPTED',
+        updatedAt: Date.now() + 9 * 60 * 60 * 1000
+      },
       { new: true }
     );
 
@@ -113,7 +110,10 @@ exports.rejectFollow = async (req, res) => {
 
     const follow = await Follow.findByIdAndUpdate(
       followId,
-      { status: 'REJECTED', modDate: Date.now() },
+      {
+        status: 'REJECTED',
+        updatedAt: Date.now() + 9 * 60 * 60 * 1000
+      },
       { new: true }
     );
 

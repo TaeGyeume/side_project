@@ -2,9 +2,22 @@ import axiosInstance from "./axios";
 
 // 자신에게 온 팔로우 요청 가져오기
 export const getIncomingFollowRequests = async (userId) => {
-  const response = await axiosInstance.get(`/follow/incoming/${userId}`);
-  return response.data.incomingRequests; // 서버에서 반환된 요청 목록
+  try {
+    const response = await axiosInstance.get(`/follow/incoming/${userId}`);
+
+    if (response.data && Array.isArray(response.data.incomingRequests)) {
+      return response.data.incomingRequests; // 올바른 데이터 반환
+    }
+
+    console.error("Unexpected server response format:", response.data);
+    return []; // 잘못된 데이터 형식인 경우 빈 배열 반환
+    
+  } catch (error) {
+    console.error("Failed to fetch incoming follow requests:", error);
+    return []; // 요청 실패 시 빈 배열 반환
+  }
 };
+
 
 // 팔로우 요청 보내기
 export const sendFollowRequest = async (followerId, followingId) => {
@@ -13,7 +26,9 @@ export const sendFollowRequest = async (followerId, followingId) => {
       followerId,
       followingId,
     });
+
     return response.data;
+
   } catch (error) {
     console.error("팔로우 요청 실패:", error);
     throw error;
@@ -32,6 +47,7 @@ export const acceptFollowRequest = async (followId) => {
 };
 
 // 팔로우 요청 거절
+// 거절되면 DB에서 삭제? 유지? ----------> 확인해야 함함
 export const rejectFollowRequest = async (followId) => {
   try {
     const response = await axiosInstance.put(`/follow/reject/${followId}`);
