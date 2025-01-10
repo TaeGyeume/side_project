@@ -24,8 +24,6 @@ server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-
-
 // Socket.IO 설정
 const io = new Server(server, {
   cors: {
@@ -39,6 +37,12 @@ io.on("connection", (socket) => {
   if (process.env.DEBUG_MODE === "true") {
     console.log(`User connected: ${socket.id}`);
   }
+
+  // 사용자 ID를 소켓에 저장
+  socket.on("setUserId", (userId) => {
+    socket.userId = userId;
+    console.log(`Socket ${socket.id} is associated with userId: ${userId}`);
+  });
 
   // 방 참여 이벤트
   socket.on("joinRoom", (roomId) => {
@@ -66,6 +70,25 @@ io.on("connection", (socket) => {
     // 메시지 저장
     await newMessage.save();
     console.log("Message saved to DB:", newMessage);
+
+    // 방에 있는 소켓 확인
+    const roomSockets = await io.in(roomId).fetchSockets();
+    const isRecipientInRoom = roomSockets.some(
+      (socket) => socket.userId && socket.userId !== senderId // 발신자가 아닌 사용자 찾기
+    );
+
+    // 방에 사용자가 있으면 메시지를 읽음 처리
+    if (isRecipientInRoom) {
+      newMessage.isRead = true;
+      await newMessage.save();
+      console.log("Message marked as read automatically:", newMessage);
+
+      // 읽음 상태 업데이트 이벤트 전송
+      io.to(roomId).emit("messageRead", {
+        roomId,
+        messageId: newMessage._id,
+      });
+    }
 
     // 저장된 메시지를 다른 사용자에게 브로드캐스트
     io.to(roomId).emit("receiveMessage", newMessage);

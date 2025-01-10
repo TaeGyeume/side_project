@@ -37,6 +37,13 @@ exports.markAsRead = async (req, res) => {
       { $set: { isRead: true } }
     );
 
+    // 소켓을 통해 읽음 상태 변경 알림
+    const io = req.app.get("socketio"); // 소켓 IO 가져오기
+    io.to(roomId).emit("messagesRead", {
+      roomId,
+      userId, // 읽은 사용자 ID
+    });
+
     console.log("Update result:", result); // MongoDB 결과 로그
     res.json({ updatedCount: result.modifiedCount });
   } catch (error) {
