@@ -10,10 +10,10 @@ import AllUserList from "./components/AllUserList";
 import Notifications from "./components/Notifications";
 import { getIncomingFollowRequests } from "./api/followService";
 import socket from "./socket";
+import Sidebar from "./components/Sidebar";
 
 import axios from "axios";
 import "./App.css"; // 전체 레이아웃 스타일
-import socket from "./socket";
 
 const App = ({ currentUserId }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
