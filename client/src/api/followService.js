@@ -1,6 +1,6 @@
 import axiosInstance from "./axios";
 
-// 자신에게 온 팔로우 요청 가져오기
+// 내가 받은 팔로우 요청
 export const getIncomingFollowRequests = async (userId) => {
   try {
     const response = await axiosInstance.get(`/follow/incoming/${userId}`);
@@ -11,13 +11,12 @@ export const getIncomingFollowRequests = async (userId) => {
 
     console.error("Unexpected server response format:", response.data);
     return []; // 잘못된 데이터 형식인 경우 빈 배열 반환
-    
+
   } catch (error) {
     console.error("Failed to fetch incoming follow requests:", error);
     return []; // 요청 실패 시 빈 배열 반환
   }
 };
-
 
 // 팔로우 요청 보내기
 export const sendFollowRequest = async (followerId, followingId) => {
@@ -58,29 +57,7 @@ export const rejectFollowRequest = async (followId) => {
   }
 };
 
-// 팔로워 목록 가져오기
-export const getFollowers = async (userId) => {
-  try {
-    const response = await axiosInstance.get(`/follow/followers/${userId}`);
-    return response.data.followers;
-  } catch (error) {
-    console.error("팔로워 목록 조회 실패:", error);
-    throw error;
-  }
-};
-
-// 팔로잉 목록 가져오기
-export const getFollowings = async (userId) => {
-  try {
-    const response = await axiosInstance.get(`/follow/following/${userId}`);
-    return response.data.followings;
-  } catch (error) {
-    console.error("팔로잉 목록 조회 실패:", error);
-    throw error;
-  }
-};
-
-// 요청 중인 팔로우 목록 가져오기 (PENDING 상태)
+// 내가 보낸 팔로우 요청
 export const getPendingFollowRequests = async (userId) => {
   try {
     const response = await axiosInstance.get(`/follow/pending/${userId}`);
@@ -88,5 +65,16 @@ export const getPendingFollowRequests = async (userId) => {
   } catch (error) {
     console.error("요청 중인 팔로우 목록 조회 실패:", error);
     throw error;
+  }
+};
+
+// 이미 팔로우 된 상태인데 X 버튼 클릭 시, 팔로우 취소됨
+export const deleteFollowRequest = async (followId) => {
+  try {
+    const response = await axiosInstance.delete(`/follow/${followId}`);
+    return response.data; // 성공 메시지 반환
+  } catch (error) {
+    console.error("팔로우 요청 삭제 실패:", error);
+    throw error; // 에러를 호출한 쪽으로 전달
   }
 };
