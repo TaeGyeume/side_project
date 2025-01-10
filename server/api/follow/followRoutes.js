@@ -22,4 +22,6 @@ router.get("/following/:userId", verifyToken, followController.getFollowing);
 // 요청 중인 팔로우 목록 조회
 router.get("/pending/:userId", verifyToken, followController.getPendingRequests);
 
+router.get("/incoming/:userId", verifyToken, followController.getIncomingFollowRequests);
+
 module.exports = router;

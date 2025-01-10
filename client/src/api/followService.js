@@ -1,5 +1,11 @@
 import axiosInstance from "./axios";
 
+// 자신에게 온 팔로우 요청 가져오기
+export const getIncomingFollowRequests = async (userId) => {
+  const response = await axiosInstance.get(`/follow/incoming/${userId}`);
+  return response.data.incomingRequests; // 서버에서 반환된 요청 목록
+};
+
 // 팔로우 요청 보내기
 export const sendFollowRequest = async (followerId, followingId) => {
   try {

@@ -7,6 +7,8 @@ import Footer from "./components/Footer";
 import UserList from "./pages/UserList";
 import ChatRoom from "./pages/ChatRoom";
 import AllUserList from "./components/AllUserList";
+import Notifications from "./components/Notifications";
+
 import axios from "axios";
 
 const App = () => {
@@ -84,6 +86,9 @@ const App = () => {
                 <Link to="/allUser">전체 사용자 목록</Link>
               </li>
               <li>
+                <Link to="/notifications">알림</Link>
+              </li>
+              <li>
                 <Link to="/messages">메시지</Link>
               </li>
               <li>
@@ -94,12 +99,23 @@ const App = () => {
         </ul>
       </nav>
       <Routes>
-        <Route path="/" element={<h1>메인페이지! 이희진이형민김민혁</h1>} />
+        <Route path="/" element={<h1>메인페이지!</h1>} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route
           path="/profile"
           element={token ? <Profile /> : <p>Please log in to view this page.</p>}
+        />
+
+        <Route
+          path="/notifications"
+          element={
+            currentUser ? (
+              <Notifications currentUserId={currentUser._id} />
+            ) : (
+              <p>알림을 보려면 로그인하세요.</p>
+            )
+          }
         />
         <Route
           path="/allUser"

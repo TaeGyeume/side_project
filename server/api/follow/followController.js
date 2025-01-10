@@ -1,10 +1,29 @@
 const User = require("../../models/User");
 const Follow = require('../../models/Follow');
 
+// 팔로우 알림 목록 조회
+exports.getIncomingFollowRequests = async (req, res) => {
+  try {
+      const { userId } = req.params;
+
+      const incomingRequests = await Follow.find({
+          followingId: userId,
+          status: "PENDING",
+      })
+          .select("followerId followerUsername")
+          .lean();
+
+      res.status(200).json({ incomingRequests });
+  } catch (err) {
+      res.status(500).json({ message: "Failed to fetch incoming follow requests.", error: err.message });
+  }
+};
+
 // 요청 중인 팔로우 목록 조회
 exports.getPendingRequests = async (req, res) => {
   try {
     const { userId } = req.params;
+    
     console.log("User ID for pending requests:", userId); // 요청된 userId 확인
 
     const pendingRequests = await Follow.find({
