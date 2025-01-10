@@ -12,6 +12,7 @@ import { getIncomingFollowRequests } from "./api/followService";
 import socket from "./socket";
 
 import axios from "axios";
+import "./App.css"; // 전체 레이아웃 스타일
 
 const App = ({ currentUserId }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -24,14 +25,12 @@ const App = ({ currentUserId }) => {
     fetchCurrentUser(newToken); // 사용자 정보 로드
   };
 
-  // `handleLogout`을 useCallback으로 감싸기
   const handleLogout = useCallback(() => {
     setToken(null);
     setCurrentUser(null);
-    localStorage.removeItem("token");
-  }, []); // 의존성 배열을 비워서 항상 동일한 함수 유지
+    localStorage.removeItem("token"); // 로컬 스토리지에서 토큰 제거
+  }, []);
 
-  // `fetchCurrentUser`를 `useCallback`으로 래핑
   const fetchCurrentUser = useCallback(
     async (authToken) => {
       try {
@@ -41,7 +40,7 @@ const App = ({ currentUserId }) => {
         setCurrentUser(response.data);
       } catch (error) {
         console.error("Failed to fetch current user:", error);
-        handleLogout();
+        handleLogout(); // 사용자 정보 로드 실패 시 로그아웃
       }
     },
     [handleLogout] // 의존성 배열에 `handleLogout` 추가
@@ -69,7 +68,7 @@ const App = ({ currentUserId }) => {
 
   useEffect(() => {
     if (token) {
-      fetchCurrentUser(token); // 토큰이 있으면 사용자 정보 로드
+      fetchCurrentUser(token); // 토큰이 있는 경우 사용자 정보 로드
     }
   }, [token, fetchCurrentUser]); // `fetchCurrentUser`를 의존성 배열에 추가
 
@@ -102,6 +101,64 @@ const App = ({ currentUserId }) => {
 
   return (
     <Router>
+      <div className="app">
+        {/* 로그인된 사용자만 사이드바 표시 */}
+        {token && <Sidebar handleLogout={handleLogout} />}
+        <div className={token ? "content-with-sidebar" : "content"}>
+          <nav>
+            <ul className="top-nav">
+              {!token && (
+                <>
+                  <li>
+                    <Link to="/">메인페이지</Link>
+                  </li>
+                  <li>
+                    <Link to="/register">회원가입</Link>
+                  </li>
+                  <li>
+                    <Link to="/login">로그인</Link>
+                  </li>
+                </>
+              )}
+              {token && (
+                <>
+                  <li>
+                    <Link to="/">메인페이지</Link>
+                  </li>
+                  <li>
+                    <Link to="/profile">내정보</Link>
+                  </li>
+                  <li>
+                    <Link to="/allUser">전체 사용자 목록</Link>
+                  </li>
+                  <li>
+                    <Link to="/messages">메시지</Link>
+                  </li>
+                </>
+              )}
+            </ul>
+          </nav>
+          <Routes>
+            <Route path="/" element={<h1>메인페이지! 이희진이형민김민혁</h1>} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route
+              path="/profile"
+              element={token ? <Profile /> : <p>Please log in to view this page.</p>}
+            />
+            <Route path="/allUser" element={<AllUserList />} />
+            <Route
+              path="/messages"
+              element={token ? <UserList currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
+            />
+            <Route
+              path="/chat/:roomId"
+              element={token ? <ChatRoom currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
+            />
+          </Routes>
+          <Footer /> {/* 푸터 */}
+        </div>
+      </div>
       <nav>
         <ul>
           {!token && (

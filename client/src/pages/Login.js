@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "bootstrap-icons/font/bootstrap-icons.css"; // Bootstrap Icons CSS 추가
-import "./styles/Login.css"; // 기존 스타일 파일
+import "./styles/Login.css"; // 스타일 파일
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const Login = ({ onLogin }) => {
@@ -40,38 +40,38 @@ const Login = ({ onLogin }) => {
           />
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <input
-              type="email"
-              name="email"
-              placeholder="휴대폰 번호 또는 이메일"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="form-control"
-            />
-          </div>
-          <div className="mb-3">
-            <input
-              type="password"
-              name="password"
-              placeholder="비밀번호"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="form-control"
-            />
-          </div>
-          {errorMessage && (
-            <div className="alert alert-danger text-center py-2" role="alert">
-              {errorMessage}
-            </div>
-          )}
-          <button type="submit" className="btn btn-primary w-100">
-            로그인
-          </button>
-        </form>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="전화번호, 사용자 이름 또는 이메일"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            className="form-control"
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="비밀번호"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                            className="form-control"
+                        />
+                    </div>
+                    {errorMessage && (
+                        <div className="alert alert-danger text-center py-2" role="alert">
+                            {errorMessage}
+                        </div>
+                    )}
+                    <button type="submit" className="btn btn-primary w-100">
+                        로그인
+                    </button>
+                </form>
 
         <div className="text-muted my-3">또는</div>
 
