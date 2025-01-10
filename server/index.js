@@ -31,7 +31,7 @@ const io = new Server(server, {
     credentials: true,
   },
 });
-
+app.set("socketio", io); // Express 앱에 소켓 IO 객체 설정
 // Socket.IO 실시간 이벤트 처리
 io.on("connection", (socket) => {
   if (process.env.DEBUG_MODE === "true") {
