@@ -98,7 +98,7 @@ const Register = () => {
             <input
               type="text"
               name="email"
-              placeholder="휴대폰 번호 또는 이메일 주소"
+              placeholder="전화번호, 사용자 이름 또는 이메일"
               value={formData.email}
               onChange={handleChange}
               required

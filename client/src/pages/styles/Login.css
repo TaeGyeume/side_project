@@ -1,31 +1,33 @@
+/* 공통 스타일 */
 body {
     font-family: Arial, sans-serif;
-    background-color: #fafafa;
+    background-color: #fafafa; /* 인스타그램 배경색 */
+    margin: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    margin: 0;
 }
 
-.login-page {
-    text-align: center;
-}
-
+/* 로그인 페이지 컨테이너 */
 .login-container {
     background: white;
     border: 1px solid #dbdbdb;
     padding: 20px;
     border-radius: 8px;
     width: 350px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* 살짝의 그림자 추가 */
+    text-align: center;
 }
 
+/* 인스타그램 로고 */
 .instagram-logo {
     font-family: 'Billabong', cursive;
-    font-size: 50px;
+    font-size: 48px;
     margin-bottom: 20px;
 }
 
+/* 로그인 폼 */
 .login-form {
     display: flex;
     flex-direction: column;
@@ -37,8 +39,15 @@ body {
     margin-bottom: 10px;
     padding: 10px;
     font-size: 14px;
+    background-color: #fafafa;
 }
 
+.login-input:focus {
+    border-color: #a8a8a8;
+    outline: none;
+}
+
+/* 로그인 버튼 */
 .login-button {
     background-color: #0095f6;
     color: white;
@@ -47,23 +56,24 @@ body {
     padding: 10px;
     font-size: 14px;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 .login-button:hover {
     background-color: #0077cc;
 }
 
+/* 분리선 */
 .separator {
-    margin: 10px 0;
+    margin: 20px 0;
     color: #8e8e8e;
     position: relative;
-    text-align: center;
+    font-size: 12px;
 }
 
 .separator::before,
 .separator::after {
     content: "";
-    /* 여기에 문제가 있었을 가능성 */
     display: block;
     height: 1px;
     background: #dbdbdb;
@@ -78,4 +88,49 @@ body {
 
 .separator::after {
     right: 0;
+}
+
+/* Facebook 로그인 버튼 */
+.facebook-login {
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 14px;
+    color: #385185;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.facebook-login i {
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+/* 하단 링크 */
+.login-footer {
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.login-footer a {
+    color: #0095f6;
+    text-decoration: none;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+}
+
+/* 앱 다운로드 섹션 */
+.app-download {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.app-download img {
+    width: 120px;
+    margin: 5px;
 }

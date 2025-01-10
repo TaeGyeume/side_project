@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "bootstrap-icons/font/bootstrap-icons.css"; // Bootstrap Icons CSS 추가
-import "./styles/Login.css"; // 기존 스타일 파일
+import "./styles/Login.css"; // 스타일 파일
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const Login = ({ onLogin }) => {
@@ -45,7 +45,7 @@ const Login = ({ onLogin }) => {
                         <input
                             type="email"
                             name="email"
-                            placeholder="휴대폰 번호 또는 이메일"
+                            placeholder="전화번호, 사용자 이름 또는 이메일"
                             value={formData.email}
                             onChange={handleChange}
                             required
