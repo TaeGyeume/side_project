@@ -8,10 +8,12 @@ import UserList from "./pages/UserList";
 import ChatRoom from "./pages/ChatRoom";
 import AllUserList from "./components/AllUserList";
 import axios from "axios";
+import socket from "./socket";
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [currentUser, setCurrentUser] = useState(null);
+  const [unreadMessages, setUnreadMessages] = useState([]);
 
   const handleLogin = (newToken) => {
     setToken(newToken);
@@ -55,6 +57,18 @@ const App = () => {
     }
   }, []);
 
+  useEffect(() => {
+    // 읽지 않은 메시지 이벤트 수신
+    socket.on("newUnreadMessage", (data) => {
+      setUnreadMessages((prev) => [...prev, data]);
+      console.log("Unread message received:", data);
+    });
+
+    return () => {
+      socket.off("newUnreadMessage");
+    };
+  }, []);
+
   return (
     <Router>
       <nav>
@@ -84,7 +98,9 @@ const App = () => {
                 <Link to="/allUser">전체 사용자 목록</Link>
               </li>
               <li>
-                <Link to="/messages">메시지</Link>
+                <Link to="/messages">
+                  메시지 {unreadMessages.length > 0 && `(${unreadMessages.length})`}
+                </Link>
               </li>
               <li>
                 <button onClick={handleLogout}>로그아웃</button>
@@ -94,7 +110,7 @@ const App = () => {
         </ul>
       </nav>
       <Routes>
-        <Route path="/" element={<h1>메인페이지! 이희진이형민김민혁</h1>} />
+        <Route path="/" element={<h1>메인페이지!</h1>} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route

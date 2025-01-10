@@ -6,6 +6,7 @@ const connectDB = require("./config/db"); // MongoDB 연결 설정
 const http = require("http"); // HTTP 서버 생성
 const { Server } = require("socket.io"); // Socket.IO 추가
 const Message = require("./models/Message"); // 메시지 모델 임포트
+const Room = require("./models/Room"); // Room 모델 가져오기
 
 // MongoDB 연결
 connectDB();
@@ -69,6 +70,9 @@ io.on("connection", (socket) => {
     // 저장된 메시지를 다른 사용자에게 브로드캐스트
     io.to(roomId).emit("receiveMessage", newMessage);
     console.log("Message broadcasted to room:", roomId); // 메시지 브로드캐스트 로그
+    
+    const unreadCount = await Message.countDocuments({ roomId, isRead: false });
+    io.to(roomId).emit("unreadCountUpdate", { roomId, unreadCount });
 
   } catch (error) {
     console.error("Error saving message to DB:", error);

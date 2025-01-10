@@ -1,3 +1,4 @@
+const Room = require("../../models/Room");
 const Message = require("../../models/Message");
 const { ObjectId } = require("mongoose").Types;
 
@@ -56,29 +57,73 @@ exports.getMessages = async (req, res) => {
   }
 };
 
-exports.getUnreadMessagesRooms = async (req, res) => {
-  const { userId } = req.query;
-  console.log("Unread Rooms API called with userId:", userId); // 요청 로그
+exports.getUnreadMessageCounts = async (req, res) => {
+  console.log("getUnreadMessageCounts function called");
+  const userId = req.user.id;
+
+  console.log("User ID from token:", userId);
+  if (!ObjectId.isValid(userId)) {
+    console.error("Invalid user ID:", userId);
+    return res.status(400).json({ message: "Invalid user ID" });
+  }
+
+  const objectUserId = new ObjectId(userId);
 
   try {
-    const unreadRooms = await Message.aggregate([
+    const counts = await Message.aggregate([
       {
         $match: {
-          senderId: { $ne: ObjectId(userId) }, // 반드시 ObjectId로 변환
           isRead: false,
+          senderId: { $ne: objectUserId }, // 본인이 보낸 메시지는 제외
+        },
+      },
+      {
+        $lookup: {
+          from: "rooms",
+          localField: "roomId",
+          foreignField: "_id",
+          as: "roomDetails",
+        },
+      },
+      { $unwind: "$roomDetails" },
+      {
+        $match: {
+          "roomDetails.members": objectUserId, // 방 멤버가 로그인한 사용자와 매칭
         },
       },
       {
         $group: {
-          _id: "$roomId", // roomId별로 그룹화
+          _id: "$roomId", // 방 ID로 그룹화
+          count: { $sum: 1 }, // 읽지 않은 메시지 합계
+          lastSenderId: { $last: "$senderId" }, // 마지막 송신자
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "lastSenderId",
+          foreignField: "_id",
+          as: "lastSenderDetails",
+        },
+      },
+      { $unwind: "$lastSenderDetails" },
+      {
+        $project: {
+          roomId: "$_id",
+          count: 1,
+          lastSenderDetails: {
+            _id: 1,
+            username: 1,
+            email: 1,
+          },
         },
       },
     ]);
 
-    console.log("Unread Rooms Result:", unreadRooms); // 결과 로그
-    res.status(200).json(unreadRooms.map((room) => room._id)); // roomId만 반환
+    console.log("Unread message counts by room:", counts);
+    res.json(counts);
   } catch (error) {
-    console.error("Error fetching unread rooms:", error);
-    res.status(500).json({ message: "Failed to fetch unread rooms" });
+    console.error("Error fetching unread message counts:", error.message);
+    res.status(500).json({ message: "Failed to fetch unread message counts" });
   }
 };
