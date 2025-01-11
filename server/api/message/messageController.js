@@ -159,3 +159,27 @@ exports.getUnreadMessageCounts = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch unread message counts" });
   }
 };
+
+exports.leaveRoom = async (req, res) => {
+  const { roomId, userId } = req.body;
+
+  try {
+    const room = await Room.findById(roomId);
+
+    if (!room) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // 사용자가 나갈 때 방에 메시지가 없으면 방 삭제
+    const hasMessages = await Message.exists({ roomId });
+    if (!hasMessages) {
+      await Room.findByIdAndDelete(roomId);
+      console.log("Room deleted because it had no messages:", roomId);
+    }
+
+    res.status(200).json({ message: "User left the room." });
+  } catch (error) {
+    console.error("Error leaving room:", error.message);
+    res.status(500).json({ error: "Failed to leave room" });
+  }
+};

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchUsers } from "../api/userService";
 import axios from "axios";
 import axiosInstance from "../api/axios";
 import socket from "../socket";

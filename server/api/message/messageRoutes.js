@@ -8,6 +8,7 @@ router.patch("/read/:messageId", messageController.markAsRead);
 router.get("/unread", verifyToken, messageController.getUnreadMessageCounts);
 router.get("/chatUsers", messageController.getChatUsers);
 router.post("/mark-as-read", messageController.markAsRead);
+router.post("/leaveRoom", messageController.leaveRoom);
 router.get("/:roomId", messageController.getMessages);
 
 module.exports = router;
