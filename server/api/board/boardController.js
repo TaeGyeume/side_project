@@ -1,21 +1,21 @@
-const Board = require('../models/Board');
+const Board = require('../../models/Board');
 
 // 게시물 생성
 exports.createBoard = async (req, res) => {
   try {
-    const { title, content, media } = req.body;
+    const { title, content } = req.body;
+    const media = req.files.map((file) => `/uploads/${file.filename}`);
 
-    // media 필드 유효성 검사
     if (!media || media.length === 0) {
-      return res.status(400).json({ message: '이미지 또는 영상을 최소 하나 이상 포함해야 합니다.' });
+      return res.status(400).json({ message: "이미지 또는 영상을 최소 하나 이상 포함해야 합니다." });
     }
 
     const newPost = new Board({ title, content, media });
     await newPost.save();
 
-    res.status(201).json({ message: '게시물이 성공적으로 생성되었습니다.', post: newPost });
+    res.status(201).json({ message: "게시물이 성공적으로 생성되었습니다.", post: newPost });
   } catch (error) {
-    res.status(500).json({ message: '게시물 생성 중 오류가 발생했습니다.', error });
+    res.status(500).json({ message: "게시물 생성 중 오류가 발생했습니다.", error });
   }
 };
 
