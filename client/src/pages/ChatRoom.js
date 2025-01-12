@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 import axios from "axios";
 import "./styles/ChatRoom.css";
 
-const ChatRoom = ({ currentUser }) => {
+const ChatRoom = ({ currentUser, onMessagesRead }) => {
   const { roomId } = useParams();
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]); // 방 멤버 데이터 저장
@@ -52,13 +52,16 @@ const ChatRoom = ({ currentUser }) => {
           })
           .then((res) => {
             console.log("Messages marked as read:", res.data);
+            if (onMessagesRead) {
+              onMessagesRead(); // 부모 컴포넌트에 알림 상태 업데이트 요청
+            }
           })
           .catch((err) => {
             console.error("Failed to mark messages as read:", err);
           });
       }
     },
-    [currentUser, roomId]
+    [currentUser, roomId, onMessagesRead]
   );
 
   // 방 나가기 함수
@@ -75,8 +78,6 @@ const ChatRoom = ({ currentUser }) => {
       // 소켓 연결 해제
       socketRef.current.disconnect();
 
-      // 메인 페이지로 리디렉션
-      window.location.href = "/messages";
     } catch (error) {
       console.error("Failed to leave the room:", error.response?.data?.error || error.message);
     }

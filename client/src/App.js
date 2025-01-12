@@ -19,7 +19,7 @@ const App = ({ currentUserId }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [currentUser, setCurrentUser] = useState(null);
   const [notificationCount, setNotificationCount] = useState(0); // 알림 개수 상태
-  const [unreadMessages, setUnreadMessages] = useState([]);
+  const [unreadMessageAlerts, setUnreadMessageAlerts] = useState(false);
 
   const handleLogin = (newToken) => {
     setToken(newToken);
@@ -68,6 +68,36 @@ const App = ({ currentUserId }) => {
     }
   }, [currentUser]);
 
+  const fetchUnreadMessages = useCallback(async () => {
+    if (!currentUser) return;
+  
+    try {
+      const response = await axios.get(`http://localhost:5000/api/messages/unread`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      if (response.data) {
+        const alerts = response.data.reduce((acc, item) => {
+          acc[item.roomId] = true;
+          return acc;
+        }, {});
+        setUnreadMessageAlerts(alerts);
+      }
+    } catch (error) {
+      console.error("Failed to fetch unread messages:", error);
+      setUnreadMessageAlerts({});
+    }
+  }, [currentUser, token]);
+
+  const handleRoomMessagesRead = (roomId) => {
+    setUnreadMessageAlerts((prev) => ({
+      ...prev,
+      [roomId]: false,
+    }));
+    // 최신 상태 동기화
+  fetchUnreadMessages();
+  };
+
   useEffect(() => {
     if (token) {
       fetchCurrentUser(token); // 토큰이 있는 경우 사용자 정보 로드
@@ -86,32 +116,26 @@ const App = ({ currentUserId }) => {
 
     if (currentUser) {
       fetchNotifications();
+      fetchUnreadMessages(); // 읽지 않은 메시지 확인
     }
 
     socket.on(`notification:${currentUser._id}`, () => {
       setNotificationCount((prev) => prev + 1);
     });
 
+    socket.on(`messageUnread:${currentUser._id}`, () => {
+      fetchUnreadMessages(); // 소켓 이벤트로 읽지 않은 메시지 업데이트
+    });
+
     return () => {
       socket.off(`notification:${currentUser._id}`);
+      socket.off(`messageUnread:${currentUser._id}`);
     };
-  }, [currentUser, fetchNotifications]);
+  }, [currentUser, fetchNotifications, fetchUnreadMessages]);
 
   const resetNotificationCount = () => {
     setNotificationCount(0); // 알림 수 초기화
   };
-
-  useEffect(() => {
-    // 읽지 않은 메시지 이벤트 수신
-    socket.on("newUnreadMessage", (data) => {
-      setUnreadMessages((prev) => [...prev, data]);
-      console.log("Unread message received:", data);
-    });
-
-    return () => {
-      socket.off("newUnreadMessage");
-    };
-  }, []);
 
   return (
     <Router>
@@ -155,7 +179,10 @@ const App = ({ currentUserId }) => {
                   </li>
                   <li>
                     <Link to="/messages">
-                      메시지 {unreadMessages.length > 0 && `(${unreadMessages.length})`}
+                      메시지{" "}
+                      {Object.values(unreadMessageAlerts).some((alert) => alert) && (
+                        <span className="alert-badge">⭕</span>
+                      )}
                     </Link>
                   </li>
                   <li>
@@ -205,7 +232,7 @@ const App = ({ currentUserId }) => {
             {/* 특정 채팅방에 접근 */}
             <Route
               path="/chat/:roomId"
-              element={token ? <ChatRoom currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
+              element={token ? <ChatRoom currentUser={currentUser} onMessagesRead={handleRoomMessagesRead} /> : <p>Please log in to view this page.</p>}
             />
           </Routes>
           <Footer /> {/* 푸터 추가 */}
