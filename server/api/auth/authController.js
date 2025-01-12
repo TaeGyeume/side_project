@@ -4,8 +4,10 @@ const User = require("../../models/User");
 
 // JWT 생성 함수
 const generateToken = (user) => {
+  console.log("JWT_SECRET:", process.env.JWT_SECRET);
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 };
+
 
 // 회원가입
 exports.register = async (req, res) => {
@@ -26,9 +28,14 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "사용자 이름은 3~20자의 영문, 숫자, 밑줄(_)만 허용됩니다." });
     }
 
-    // 비밀번호 유효성 검증
-    if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)) {
-      return res.status(400).json({ message: "비밀번호는 최소 8자, 영문, 숫자, 특수문자를 포함해야 합니다." });
+    // 비밀번호 유효성 검증 "비밀번호는 최소 8자, 영문, 숫자, 특수문자를 포함
+    // if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)) {
+    // return res.status(400).json({ message: "비밀번호는 최소 8자, 영문, 숫자, 특수문자를 포함해야 합니다." });
+    // }
+
+    // 비밀번호 유효성 검증 (최소 8자리)
+    if (!/^[A-Za-z\d@$!%*?&]{8,}$/.test(password)) {
+      return res.status(400).json({ message: "비밀번호는 최소 8자여야 합니다." });
     }
 
     // 비밀번호 해싱

@@ -1,13 +1,12 @@
 require("dotenv").config({ path: __dirname + "/../.env" }); // .env 파일 명시적 로드
-
 const express = require("express");
 const app = require("./app"); // Express 앱 가져오기
 const connectDB = require("./config/db"); // MongoDB 연결 설정
 const http = require("http"); // HTTP 서버 생성
 const { Server } = require("socket.io"); // Socket.IO 추가
 const socketHandler = require("./socket/socketHandler");
-const passport = require("passport");
-const FacebookStrategy = require("passport-facebook").Strategy;
+// const passport = require("passport");
+// const FacebookStrategy = require("passport-facebook").Strategy;
 const session = require("express-session"); // express-session 추가
 const cors = require("cors");
 const jwt = require("jsonwebtoken"); // JWT 라이브러리 추가
@@ -39,51 +38,51 @@ app.use(
 );
 
 // Passport 설정
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 // Facebook Strategy 설정
-passport.use(
-  new FacebookStrategy(
-    {
-      clientID: process.env.FACEBOOK_APP_ID,
-      clientSecret: process.env.FACEBOOK_APP_SECRET,
-      callbackURL: `${process.env.SERVER_URL || "http://localhost:5000"}/api/auth/facebook/callback`,
-      profileFields: ["id", "displayName", "email"],
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try { 
-        console.log("Facebook profile:", profile);
-        const user = await findOrCreateUser(profile); // MongoDB에서 사용자 저장/조회
-        return done(null, user);
-      } catch (error) {
-        return done(error, null);
-      }
-    }
-  )
-);
+//passport.use(
+//  new FacebookStrategy(
+//    {
+//      clientID: process.env.FACEBOOK_APP_ID,
+//      clientSecret: process.env.FACEBOOK_APP_SECRET,
+//      callbackURL: `${process.env.SERVER_URL || "http://localhost:5000"}/api/auth/facebook/callback`,
+//      profileFields: ["id", "displayName", "email"],
+//    },
+//    async (accessToken, refreshToken, profile, done) => {
+//      try { 
+//        console.log("Facebook profile:", profile);
+//        const user = await findOrCreateUser(profile); // MongoDB에서 사용자 저장/조회
+//        return done(null, user);
+//      } catch (error) {
+//        return done(error, null);
+//      }
+//   }
+//  )
+// );
 
 // Serialize/Deserialize 설정
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-passport.deserializeUser(async (id, done) => {
-  const user = await findUserById(id); // MongoDB에서 사용자 찾기
-  done(null, user);
-});
+//passport.serializeUser((user, done) => {
+//  done(null, user.id);
+//});
+//passport.deserializeUser(async (id, done) => {
+//  const user = await findUserById(id); // MongoDB에서 사용자 찾기
+//  done(null, user);
+// });
 
 // Facebook 로그인 라우트
-app.get("/api/auth/facebook", passport.authenticate("facebook", { scope: ["email"] }));
+// app.get("/api/auth/facebook", passport.authenticate("facebook", { scope: ["email"] }));
 
 // Facebook 로그인 콜백 라우트
-app.get(
-  "/api/auth/facebook/callback",
-  passport.authenticate("facebook", { failureRedirect: "/login" }),
-  (req, res) => {
-    const token = generateToken(req.user); // JWT 토큰 생성
-    res.redirect(`${process.env.CLIENT_URL}/?token=${token}`);
-  }
-);
+// app.get(
+//  "/api/auth/facebook/callback",
+//  passport.authenticate("facebook", { failureRedirect: "/login" }),
+//  (req, res) => {
+//    const token = generateToken(req.user); // JWT 토큰 생성
+//    res.redirect(`${process.env.CLIENT_URL}/?token=${token}`);
+//  }
+// );
 
 // Socket.IO 설정
 const io = new Server(server, {
