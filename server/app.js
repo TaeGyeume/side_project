@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-// const passport = require("passport");
 require('dotenv').config({ path: __dirname + '/../.env' });
 const userRoutes = require("./api/user/userRoutes");
 const authRoutes = require("./api/auth/authRoutes");
@@ -30,7 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // CORS 설정
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
-app.use(cors({ origin: CLIENT_URL, credentials: true }));
+app.use(cors({ origin: CLIENT_URL, credentials: true, }));
 
 // Passport 초기화
 // app.use(passport.initialize());

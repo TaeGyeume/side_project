@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
-import Profile from "./pages/Profile";
-import Login from "./pages/Login";
-import Register from "./components/Register";
+import Profile from "./pages/Profile"; // 내 정보 페이지
+import Login from "./pages/Login"; // 로그인 페이지
+import Register from "./components/Register"; // 회원가입 페이지
 import Footer from "./components/Footer";
 import UserList from "./pages/UserList";
 import ChatRoom from "./pages/ChatRoom";
@@ -18,55 +18,75 @@ import "./App.css"; // 전체 레이아웃 스타일
 const App = ({ currentUserId }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [currentUser, setCurrentUser] = useState(null);
-  const [notificationCount, setNotificationCount] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0); // 알림 개수 상태
   const [unreadMessages, setUnreadMessages] = useState([]);
 
   const handleLogin = (newToken) => {
     setToken(newToken);
-    localStorage.setItem("token", newToken);
-    fetchCurrentUser(newToken);
+    localStorage.setItem("token", newToken); // 토큰 저장
+    fetchCurrentUser(newToken); // 사용자 정보 로드
   };
 
   const handleLogout = useCallback(() => {
     setToken(null);
     setCurrentUser(null);
-    localStorage.removeItem("token");
+    localStorage.removeItem("token"); // 로컬 스토리지에서 토큰 제거
   }, []);
 
-  const fetchCurrentUser = useCallback(async (authToken) => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/me`, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      setCurrentUser(response.data);
-    } catch (error) {
-      console.error("Failed to fetch current user:", error);
-      handleLogout();
-    }
-  }, [handleLogout]);
+  const fetchCurrentUser = useCallback(
+    async (authToken) => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/me`, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        setCurrentUser(response.data);
+      } catch (error) {
+        console.error("Failed to fetch current user:", error);
+        handleLogout(); // 사용자 정보 로드 실패 시 로그아웃
+      }
+    },
+    [handleLogout] // 의존성 배열에 `handleLogout` 추가
+  );
 
   const fetchNotifications = useCallback(async () => {
     if (currentUser) {
       try {
         const notifications = await getIncomingFollowRequests(currentUser._id);
-        setNotificationCount(Array.isArray(notifications) ? notifications.length : 0);
+        if (Array.isArray(notifications)) {
+          setNotificationCount(notifications.length);
+        }
+
+        else {
+          console.error("Unexpected notifications format:", notifications);
+          setNotificationCount(0); // 잘못된 형식인 경우 알림 개수 초기화
+        }
+
       } catch (error) {
         console.error("Failed to fetch notifications:", error);
-        setNotificationCount(0);
+        setNotificationCount(0); // 요청 실패 시 알림 개수 초기화
       }
     }
   }, [currentUser]);
 
   useEffect(() => {
     if (token) {
-      fetchCurrentUser(token);
+      fetchCurrentUser(token); // 토큰이 있는 경우 사용자 정보 로드
     }
-  }, [token, fetchCurrentUser]);
+  }, [token, fetchCurrentUser]); // `fetchCurrentUser`를 의존성 배열에 추가
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (storedUser) {
+      setCurrentUser(storedUser);
+    }
+  }, []);
 
   useEffect(() => {
     if (!currentUser) return;
 
-    fetchNotifications();
+    if (currentUser) {
+      fetchNotifications();
+    }
 
     socket.on(`notification:${currentUser._id}`, () => {
       setNotificationCount((prev) => prev + 1);
@@ -77,9 +97,15 @@ const App = ({ currentUserId }) => {
     };
   }, [currentUser, fetchNotifications]);
 
+  const resetNotificationCount = () => {
+    setNotificationCount(0); // 알림 수 초기화
+  };
+
   useEffect(() => {
+    // 읽지 않은 메시지 이벤트 수신
     socket.on("newUnreadMessage", (data) => {
       setUnreadMessages((prev) => [...prev, data]);
+      console.log("Unread message received:", data);
     });
 
     return () => {
@@ -87,13 +113,10 @@ const App = ({ currentUserId }) => {
     };
   }, []);
 
-  const resetNotificationCount = () => {
-    setNotificationCount(0);
-  };
-
   return (
     <Router>
       <div className="app">
+        {/* 로그인된 사용자만 사이드바 표시 */}
         {token && <Sidebar handleLogout={handleLogout} />}
         <div className={token ? "content-with-sidebar" : "content"}>
           <nav>
@@ -187,7 +210,7 @@ const App = ({ currentUserId }) => {
           </Routes>
           <Footer /> {/* 푸터 추가 */}
         </div>
-      </div>   
+      </div>
     </Router>
   );
 };

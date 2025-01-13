@@ -1,8 +1,14 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import "./styles/Sidebar.css"; // 스타일 추가
+import "./styles/Sidebar.css"; 
 
 const Sidebar = ({ handleLogout }) => {
+  const handleSidebarLogout = () => {
+    if (handleLogout) {
+      handleLogout(); 
+    }
+  };
+
   return (
     <div className="sidebar">
       <div className="sidebar-logo">
@@ -21,7 +27,7 @@ const Sidebar = ({ handleLogout }) => {
         <NavLink to="/messages" className="nav-item">
           <i className="fas fa-envelope"></i> 메시지
         </NavLink>
-        <button className="nav-item logout" onClick={handleLogout}>
+        <button className="nav-item logout" onClick={handleSidebarLogout}>
           <i className="fas fa-sign-out-alt"></i> 로그아웃
         </button>
       </nav>

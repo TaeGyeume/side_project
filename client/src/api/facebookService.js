@@ -1,15 +1,15 @@
-// client/src/facebookService.js
+import axios from "axios";
 
-import axios from 'axios';
-
-
-// 페북로그인
+// Facebook 로그인 요청 함수
 export const facebookLogin = async (accessToken) => {
   try {
-    const response = await axios.post('http://localhost:5000/auth/facebook/login', { accessToken });
-    return response.data; // JWT 토큰 등 서버에서 반환한 데이터
+    const response = await axios.post(
+      "http://localhost:5000/api/auth/facebook/login",
+      { accessToken }
+    );
+    return response.data; // 서버로부터 받은 데이터 (JWT 토큰 등)
   } catch (error) {
-    console.error('Facebook login error:', error);
+    console.error("Facebook login error:", error);
     throw error;
   }
 };

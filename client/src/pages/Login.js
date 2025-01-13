@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "bootstrap-icons/font/bootstrap-icons.css"; // Bootstrap Icons CSS 추가
@@ -9,6 +9,22 @@ const Login = ({ onLogin }) => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate(); // useNavigate 훅 초기화
+
+  // 리디렉션 후 JWT 토큰 처리
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const user = params.get("user");
+
+    if (token && user) {
+      // JWT와 사용자 정보를 로컬 스토리지에 저장
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", user);
+      onLogin(token); // 로그인 상태 업데이트
+      alert("Facebook 로그인에 성공하셨습니다!");
+      navigate("/"); // 메인 페이지로 이동
+    }
+  }, [onLogin, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
