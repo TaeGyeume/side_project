@@ -1,11 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import axios from "axios";
 import "./styles/ChatRoom.css";
 
-const ChatRoom = ({ currentUser, onMessagesRead }) => {
-  const { roomId } = useParams();
+const ChatRoom = ({ currentUser, roomId, onMessagesRead }) => {
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]); // 방 멤버 데이터 저장
   const [newMessage, setNewMessage] = useState("");
@@ -52,6 +50,7 @@ const ChatRoom = ({ currentUser, onMessagesRead }) => {
           })
           .then((res) => {
             console.log("Messages marked as read:", res.data);
+            socketRef.current.emit("messageRead", { roomId });
             if (onMessagesRead) {
               onMessagesRead(); // 부모 컴포넌트에 알림 상태 업데이트 요청
             }
@@ -124,10 +123,9 @@ const ChatRoom = ({ currentUser, onMessagesRead }) => {
     fetchRoomUsers();
 
     return () => {
-      leaveRoom();
       socketRef.current.disconnect();
     };
-  }, [currentUser, roomId, leaveRoom, markMessagesAsRead, fetchRoomUsers]);
+  }, [currentUser, roomId, leaveRoom, fetchRoomUsers, markMessagesAsRead]);
 
   useEffect(() => {
     if (messagesEndRef.current) {

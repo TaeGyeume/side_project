@@ -1,0 +1,24 @@
+.chat-page {
+  display: flex;
+  height: 100vh; /* 화면 전체 높이 */
+  overflow: hidden;
+}
+
+.chat-list-container {
+  flex: 1; /* 화면의 1/3 사용 */
+  border-right: 1px solid #ccc;
+  overflow-y: auto;
+}
+
+.chat-room-container {
+  flex: 2; /* 화면의 2/3 사용 */
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-room {
+  font-size: 1.2rem;
+  color: #888;
+}

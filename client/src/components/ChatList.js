@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import axiosInstance from "../api/axios";
 import socket from "../socket";
 
-const ChatList = ({ currentUser }) => {
+const ChatList = ({ currentUser, onRoomSelect }) => {
   const [users, setUsers] = useState([]);
   const [unreadCounts, setUnreadCounts] = useState({});
-  const navigate = useNavigate();
 
   // 채팅 유저 불러오기
   useEffect(() => {
@@ -37,7 +35,21 @@ const ChatList = ({ currentUser }) => {
         userId1: currentUser._id,
         userId2: userId,
       });
-      navigate(`/chat/${response.data._id}`);
+      // navigate(`/chat/${response.data._id}`);
+      // 선택된 방 ID 업데이트
+      onRoomSelect(response.data._id);
+      // 클릭한 방의 읽지 않은 메시지 수를 초기화
+      setUnreadCounts((prev) => {
+        const updatedCounts = { ...prev };
+
+        Object.entries(prev).forEach(([id, details]) => {
+          if (details.roomId === response.data._id) {
+            updatedCounts[id] = { ...details, count: 0 };
+          }
+        });
+
+        return updatedCounts;
+      });
     } catch (error) {
       console.error("Failed to create room:", error);
     }
@@ -48,17 +60,17 @@ const ChatList = ({ currentUser }) => {
       try {
         const response = await axiosInstance.get("/messages/unread");
         const userCounts = {};
-
+  
         for (const item of response.data) {
           if (item.lastSenderDetails) {
             userCounts[item.lastSenderDetails._id] = {
               count: item.count,
+              roomId: item.roomId,
               username: item.lastSenderDetails.username,
             };
           }
         }
   
-        console.log("Mapped unreadCounts:", userCounts);
         setUnreadCounts(userCounts);
       } catch (error) {
         console.error("Failed to fetch unread message counts:", error);
@@ -66,24 +78,44 @@ const ChatList = ({ currentUser }) => {
     };
   
     fetchUnreadCounts();
+  
     // 소켓 이벤트 처리
     socket.on("unreadMessageUpdate", ({ roomId, count }) => {
       setUnreadCounts((prev) => {
         const updatedCounts = { ...prev };
-        for (const [userId, details] of Object.entries(prev)) {
+        Object.entries(prev).forEach(([userId, details]) => {
           if (details.roomId === roomId) {
             updatedCounts[userId] = {
               ...details,
               count, // 새로운 count로 업데이트
             };
           }
-        }
+        });
         return updatedCounts;
       });
     });
-
+  
+    // 새로운 읽음 이벤트 처리
+    socket.on("messageRead", ({ roomId }) => {
+      setUnreadCounts((prev) => {
+        const updatedCounts = { ...prev };
+  
+        Object.entries(prev).forEach(([userId, details]) => {
+          if (details.roomId === roomId) {
+            updatedCounts[userId] = {
+              ...details,
+              count: 0, // 해당 방의 읽지 않은 메시지 수를 0으로 설정
+            };
+          }
+        });
+  
+        return updatedCounts;
+      });
+    });
+  
     return () => {
       socket.off("unreadMessageUpdate");
+      socket.off("messageRead");
     };
   }, [currentUser]);
 

@@ -4,13 +4,12 @@ import Profile from "./pages/Profile"; // 내 정보 페이지
 import Login from "./pages/Login"; // 로그인 페이지
 import Register from "./components/Register"; // 회원가입 페이지
 import Footer from "./components/Footer";
-import ChatList from "./pages/ChatList";
-import ChatRoom from "./pages/ChatRoom";
 import AllUserList from "./components/AllUserList";
 import Notifications from "./components/Notifications";
 import { getIncomingFollowRequests } from "./api/followService";
 import socket from "./socket";
 import Sidebar from "./components/Sidebar";
+import ChatPage from "./pages/ChatPage";
 
 import axios from "axios";
 import "./App.css"; // 전체 레이아웃 스타일
@@ -230,14 +229,18 @@ const App = ({ currentUserId }) => {
             />
 
             {/* 로그인한 사용자만 메시지 페이지에 접근 가능 */}
-            <Route
+            {/* <Route
               path="/messages"
               element={token ? <ChatList currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
-            />
+            /> */}
             {/* 특정 채팅방에 접근 */}
-            <Route
+            {/* <Route
               path="/chat/:roomId"
               element={token ? <ChatRoom currentUser={currentUser} onMessagesRead={handleRoomMessagesRead} /> : <p>Please log in to view this page.</p>}
+            /> */}
+            <Route
+              path="/messages/:roomId?"
+              element={token ? <ChatPage currentUser={currentUser} onMessagesRead={handleRoomMessagesRead} /> : <p>Please log in to view this page.</p>}
             />
           </Routes>
           <Footer /> {/* 푸터 추가 */}
