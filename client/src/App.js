@@ -234,7 +234,7 @@ const App = ({ currentUserId }) => {
               element={token ? <ChatPage currentUser={currentUser} onMessagesRead={handleRoomMessagesRead} /> : <p>Please log in to view this page.</p>}
             />
           </Routes>
-          {window.location.pathname !== "/messages" && <Footer />} {/* 푸터 추가 */}
+          <Footer /> {/* 푸터 추가 */}
         </div>
       </div>
     </Router>

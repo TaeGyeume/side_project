@@ -35,7 +35,6 @@ const ChatList = ({ currentUser, onRoomSelect }) => {
         userId1: currentUser._id,
         userId2: userId,
       });
-      // navigate(`/chat/${response.data._id}`);
       // 선택된 방 ID 업데이트
       onRoomSelect(response.data._id);
       // 클릭한 방의 읽지 않은 메시지 수를 초기화
@@ -130,10 +129,22 @@ const ChatList = ({ currentUser, onRoomSelect }) => {
         {users.map((user) => (
           <li key={user._id}>
             <button onClick={() => handleUserClick(user._id)}>
-              {user.username}
-              {unreadCounts[user._id]?.count > 0 && (
-                <span> ({unreadCounts[user._id].count} unread)</span>
-              )}
+              <div>
+                {user.username}
+                {unreadCounts[user._id]?.count > 0 && (
+                  <span> ({unreadCounts[user._id].count} unread)</span>
+                )}
+              </div>
+              {/* 마지막 메시지 표시 */}
+              <p style={{ fontSize: "12px", color: "gray" }}>
+                {user.lastMessage}
+              </p>
+              {/* 마지막 메시지 시간 표시 */}
+              <p style={{ fontSize: "10px", color: "lightgray" }}>
+                {user.lastMessageTime
+                  ? new Date(user.lastMessageTime).toLocaleString()
+                  : ""}
+              </p>
             </button>
           </li>
         ))}

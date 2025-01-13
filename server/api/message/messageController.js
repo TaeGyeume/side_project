@@ -20,7 +20,38 @@ exports.getChatUsers = async (req, res) => {
       "_id username email"
     );
 
-    res.status(200).json(users);
+    // 각 채팅방의 마지막 메시지 가져오기
+    const lastMessages = await Promise.all(
+      rooms.map(async (room) => {
+        const lastMessage = await Message.findOne({ roomId: room._id })
+          .sort({ createdAt: -1 }) // 가장 최신 메시지를 가져오기 위해 정렬
+          .limit(1); // 하나만 가져오기
+        return {
+          roomId: room._id,
+          lastMessage: lastMessage ? lastMessage.content : null,
+          lastMessageTime: lastMessage ? lastMessage.createdAt : null,
+        };
+      })
+    );
+    // 사용자 정보와 마지막 메시지 병합
+    const userWithLastMessage = users.map((user) => {
+      const roomInfo = lastMessages.find((room) =>
+        rooms.some(
+          (r) =>
+            r.members.includes(user._id.toString()) && r._id.toString() === room.roomId.toString()
+        )
+      );
+      return {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        lastMessage: roomInfo?.lastMessage || "No messages yet",
+        lastMessageTime: roomInfo?.lastMessageTime || null,
+      };
+    });
+
+    res.status(200).json(userWithLastMessage);
+    // res.status(200).json(users);
   } catch (error) {
     console.error("Failed to fetch chat users:", error.message);
     res.status(500).json({ error: "Failed to fetch chat users" });
