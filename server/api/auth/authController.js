@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../../models/User");
+require("dotenv").config({ path: __dirname + "/.env" }); // .env 파일이 server 디렉토리에 있는 경우
+
 
 // JWT 생성 함수
 const generateToken = (user) => {

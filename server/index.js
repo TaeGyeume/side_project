@@ -1,12 +1,11 @@
-require("dotenv").config({ path: __dirname + "/../.env" }); // .env 파일 명시적 로드
+require("dotenv").config({ path: __dirname + "/.env" });
+
 const express = require("express");
 const app = require("./app"); // Express 앱 가져오기
 const connectDB = require("./config/db"); // MongoDB 연결 설정
 const http = require("http"); // HTTP 서버 생성
 const { Server } = require("socket.io"); // Socket.IO 추가
 const socketHandler = require("./socket/socketHandler");
-// const passport = require("passport");
-// const FacebookStrategy = require("passport-facebook").Strategy;
 const session = require("express-session"); // express-session 추가
 const cors = require("cors");
 const jwt = require("jsonwebtoken"); // JWT 라이브러리 추가

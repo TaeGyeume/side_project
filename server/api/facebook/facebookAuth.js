@@ -2,6 +2,8 @@ const express = require('express');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const User = require('../user/userModel'); // MongoDB User 모델
+require("dotenv").config({ path: __dirname + "/.env" }); // .env 파일이 server 디렉토리에 있는 경우
+
 
 const router = express.Router();
 

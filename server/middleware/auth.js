@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+require("dotenv").config({ path: __dirname + "/.env" }); // .env 파일이 server 디렉토리에 있는 경우
 
 exports.verifyToken = (req, res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
