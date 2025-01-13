@@ -141,7 +141,12 @@ const App = ({ currentUserId }) => {
     <Router>
       <div className="app">
         {/* 로그인된 사용자만 사이드바 표시 */}
-        {token && <Sidebar handleLogout={handleLogout} />}
+        {token && (
+          <Sidebar
+            handleLogout={handleLogout}
+            unreadMessageAlert={Object.values(unreadMessageAlerts).some((alert) => alert)}
+          />
+        )}
         <div className={token ? "content-with-sidebar" : "content"}>
           <nav>
             <ul>
