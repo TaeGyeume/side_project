@@ -7,12 +7,16 @@ import Footer from "./components/Footer";
 import AllUserList from "./components/AllUserList";
 import Notifications from "./components/Notifications";
 import { getIncomingFollowRequests } from "./api/followService";
-import socket from "./socket";
+import socket from "./socket/socket";
 import Sidebar from "./components/Sidebar";
+import FollowListPage from "./pages/FollowListPage";
+import Board from "./pages/Board";
+import CreateBoard from "./pages/CreateBoard";
 import ChatPage from "./pages/ChatPage";
 
 import axios from "axios";
 import "./App.css"; // 전체 레이아웃 스타일
+
 
 const App = ({ currentUserId }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -174,6 +178,9 @@ const App = ({ currentUserId }) => {
                     <Link to="/allUser">전체 사용자 목록</Link>
                   </li>
                   <li>
+                    <Link to="follow-list">팔로우 목록</Link>
+                  </li>
+                  <li>
                     <Link to="/notifications" onClick={resetNotificationCount}>
                       알림
                       {notificationCount > 0 && (
@@ -197,7 +204,8 @@ const App = ({ currentUserId }) => {
             </ul>
           </nav>
           <Routes>
-            <Route path="/" element={<><h1>메인페이지!</h1><Footer /></>} />
+            <Route path="/" element={<><Board /><Footer /></>} />
+            <Route path="/create" element={<><CreateBoard /><Footer /></>} />
             <Route path="/register" element={<><Register /><Footer /></>} />
             <Route path="/login" element={<><Login onLogin={handleLogin} /><Footer /></>} />
             <Route
@@ -235,6 +243,11 @@ const App = ({ currentUserId }) => {
               }
             />
 
+            {/* 로그인한 사용자만 메시지 페이지에 접근 가능 */}
+            <Route
+              path="/follow-list"
+              element={currentUser ? (<><FollowListPage currentUserId={currentUser._id} /><Footer /></>) : (<p>로그인이 필요합니다.</p>)}
+            />
             {/* 로그인한 사용자만 메시지 페이지에 접근 가능 */}
             <Route
               path="/messages/:roomId?"

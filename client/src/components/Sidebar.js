@@ -19,6 +19,9 @@ const Sidebar = ({ handleLogout, unreadMessageAlert }) => {
         <NavLink to="/allUser" className="nav-item">
           <i className="fas fa-users"></i> 사용자 목록
         </NavLink>
+        <NavLink to="/notifications" className="nav-item">
+          <i className="fas fa-envelope"></i>알림
+        </NavLink>
         {/*  메시지 알림 */}
         <MessageAlert unreadMessageAlert={unreadMessageAlert} />
         <button className="nav-item logout" onClick={handleLogout}>
