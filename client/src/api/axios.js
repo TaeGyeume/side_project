@@ -1,3 +1,21 @@
+/**
+ * =============================================================================
+ *  AXIOS INSTANCE CONFIGURATION(악시오스 인터셉터) (axiosInstance.js)
+ * =============================================================================
+ * 
+ * 이 파일은 클라이언트 전역에서 사용할 Axios 인스턴스를 설정해 둔 곳입니다.
+ * - baseURL 지정 (process.env.REACT_APP_API_URL || http://localhost:5000/api)
+ * - 요청(Request) 인터셉터 (JWT 토큰 자동 첨부)
+ * - 응답(Response) 인터셉터 (에러 핸들링)
+ * 
+ * 만약 ChatGPT 또는 다른 자료에서 
+ * "axios 인터셉터를 수정해라" / "axios 설정을 변경해라" 라고 한다면,
+ * 바로 이 파일을 수정하시면 됩니다.
+ * 
+ * 주의: 로컬 스토리지에서 가져오는 토큰 키 이름이 'token'과 다르다면,
+ *       아래에서 localStorage.getItem("token") 부분을 적절히 변경하세요.
+ */
+
 import axios from "axios";
 
 // Axios 인스턴스 생성
