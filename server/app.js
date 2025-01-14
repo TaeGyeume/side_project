@@ -1,13 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const passport = require("passport");
+require('dotenv').config({ path: __dirname + '/../.env' });
 const userRoutes = require("./api/user/userRoutes");
 const authRoutes = require("./api/auth/authRoutes");
 const followRoutes = require('./api/follow/followRoutes');
 const boardRoutes = require("./api/board/boardRoutes"); // 게시물 관련 라우트 추가
 
-require("./config/passport");
+// require("./config/passport");
 const path = require("path");
 const fs = require("fs");
 const messageRoutes = require("./api/message/messageRoutes");
@@ -30,10 +30,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // CORS 설정
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
-app.use(cors({ origin: CLIENT_URL, credentials: true }));
+app.use(cors({ origin: CLIENT_URL, credentials: true, }));
 
 // Passport 초기화
-app.use(passport.initialize());
+// app.use(passport.initialize());
 
 // API 라우트 설정
 app.use("/api/users", userRoutes); // 사용자 관련 라우트

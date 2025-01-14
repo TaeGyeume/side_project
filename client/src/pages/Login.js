@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "bootstrap-icons/font/bootstrap-icons.css"; // Bootstrap Icons CSS 추가
@@ -9,6 +9,22 @@ const Login = ({ onLogin }) => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate(); // useNavigate 훅 초기화
+
+  // 리디렉션 후 JWT 토큰 처리
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const user = params.get("user");
+
+    if (token && user) {
+      // JWT와 사용자 정보를 로컬 스토리지에 저장
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", user);
+      onLogin(token); // 로그인 상태 업데이트
+      alert("Facebook 로그인에 성공하셨습니다!");
+      navigate("/"); // 메인 페이지로 이동
+    }
+  }, [onLogin, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,6 +44,11 @@ const Login = ({ onLogin }) => {
     }
   };
 
+  const handleFacebookLogin = () => {
+    // Facebook 로그인을 서버로 요청 (서버가 OAuth 흐름을 처리)
+    window.location.href = `${process.env.REACT_APP_API_URL}/auth/facebook`;
+  };
+
   return (
     <div className="d-flex flex-column justify-content-center align-items-center vh-100 bg-light">
       <div className="card shadow-sm p-4 text-center" style={{ maxWidth: "350px", width: "100%" }}>
@@ -40,43 +61,47 @@ const Login = ({ onLogin }) => {
           />
         </div>
 
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
-                        <input
-                            type="email"
-                            name="email"
-                            placeholder="전화번호, 사용자 이름 또는 이메일"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                            className="form-control"
-                        />
-                    </div>
-                    <div className="mb-3">
-                        <input
-                            type="password"
-                            name="password"
-                            placeholder="비밀번호"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                            className="form-control"
-                        />
-                    </div>
-                    {errorMessage && (
-                        <div className="alert alert-danger text-center py-2" role="alert">
-                            {errorMessage}
-                        </div>
-                    )}
-                    <button type="submit" className="btn btn-primary w-100">
-                        로그인
-                    </button>
-                </form>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <input
+              type="email"
+              name="email"
+              placeholder="전화번호, 사용자 이름 또는 이메일"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="form-control"
+            />
+          </div>
+          <div className="mb-3">
+            <input
+              type="password"
+              name="password"
+              placeholder="비밀번호"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              className="form-control"
+            />
+          </div>
+          {errorMessage && (
+            <div className="alert alert-danger text-center py-2" role="alert">
+              {errorMessage}
+            </div>
+          )}
+          <button type="submit" className="btn btn-primary w-100">
+            로그인
+          </button>
+        </form>
 
         <div className="text-muted my-3">또는</div>
 
         {/* Facebook 로그인 버튼 */}
-        <button type="button" className="btn btn-outline-primary w-100 mb-3">
+        <button
+          type="button"
+          className="btn btn-outline-primary w-100 mb-3"
+          onClick={handleFacebookLogin}
+        >
           <i className="bi bi-facebook me-2"></i>Facebook으로 로그인
         </button>
 
