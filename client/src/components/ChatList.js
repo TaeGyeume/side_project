@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import axiosInstance from "../api/axios";
 import socket from "../socket/socket.js";
+import { useNavigate } from "react-router-dom";
 
 const ChatList = ({ currentUser, onRoomSelect }) => {
   const [users, setUsers] = useState([]);
   const [unreadCounts, setUnreadCounts] = useState({});
+  const navigate = useNavigate();
 
   // 채팅 유저 불러오기
   useEffect(() => {
@@ -67,6 +69,7 @@ const ChatList = ({ currentUser, onRoomSelect }) => {
 
         return updatedCounts;
       });
+      navigate(`/messages/${response.data._id}`);
     } catch (error) {
       console.error("Failed to create room:", error);
     }

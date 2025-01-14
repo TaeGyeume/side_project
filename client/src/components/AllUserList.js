@@ -71,7 +71,7 @@ const AllUserList = ({ currentUserId }) => {
         userId1: currentUserId,
         userId2: userId,
       });
-      navigate(`/chat/${response.data._id}`);
+      navigate(`/messages/${response.data._id}`);
     } catch (error) {
       console.error("Failed to create room:", error);
     }
