@@ -1,6 +1,62 @@
 const Room = require("../../models/Room");
 const Message = require("../../models/Message");
 const { ObjectId } = require("mongoose").Types;
+const User = require("../../models/User");
+
+exports.getChatUsers = async (req, res) => {
+  const { userId } = req.query; // 로그인한 사용자의 ID
+
+  try {
+    // 사용자가 포함된 채팅방 가져오기
+    const rooms = await Room.find({ members: userId });
+
+    // 채팅방에 포함된 사용자 ID 가져오기
+    const userIds = rooms.flatMap((room) =>
+      room.members.filter((member) => member.toString() !== userId)
+    );
+
+    // 중복된 사용자 제거 및 사용자 정보 가져오기
+    const users = await User.find({ _id: { $in: [...new Set(userIds)] } }).select(
+      "_id username email"
+    );
+
+    // 각 채팅방의 마지막 메시지 가져오기
+    const lastMessages = await Promise.all(
+      rooms.map(async (room) => {
+        const lastMessage = await Message.findOne({ roomId: room._id })
+          .sort({ createdAt: -1 }) // 가장 최신 메시지를 가져오기 위해 정렬
+          .limit(1); // 하나만 가져오기
+        return {
+          roomId: room._id,
+          lastMessage: lastMessage ? lastMessage.content : null,
+          lastMessageTime: lastMessage ? lastMessage.createdAt : null,
+        };
+      })
+    );
+    // 사용자 정보와 마지막 메시지 병합
+    const userWithLastMessage = users.map((user) => {
+      const roomInfo = lastMessages.find((room) =>
+        rooms.some(
+          (r) =>
+            r.members.includes(user._id.toString()) && r._id.toString() === room.roomId.toString()
+        )
+      );
+      return {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        lastMessage: roomInfo?.lastMessage || "No messages yet",
+        lastMessageTime: roomInfo?.lastMessageTime || null,
+      };
+    });
+
+    res.status(200).json(userWithLastMessage);
+    // res.status(200).json(users);
+  } catch (error) {
+    console.error("Failed to fetch chat users:", error.message);
+    res.status(500).json({ error: "Failed to fetch chat users" });
+  }
+};
 
 // 메시지 전송
 exports.sendMessage = async (req, res) => {
@@ -52,17 +108,31 @@ exports.markAsRead = async (req, res) => {
   }
 };
 
-// 사용자가 채팅방에 접속할 때, 채팅방의 모든 메시지 가져오기
 exports.getMessages = async (req, res) => {
   const { roomId } = req.params;
+  const { page = 1, limit = 20 } = req.query; // 기본값: 1페이지, 20개 메시지
 
   try {
-    const messages = await Message.find({ roomId }).sort({ createdAt: 1 });
-    res.json(messages);
+    // 메시지 데이터 페이징 처리
+    const messages = await Message.find({ roomId })
+      .sort({ createdAt: -1 }) // 최신 메시지부터 가져오기
+      .skip((page - 1) * limit) // 페이징 처리
+      .limit(parseInt(limit)); // 요청된 개수만큼 가져오기
+
+    // 총 메시지 개수
+    const totalMessages = await Message.countDocuments({ roomId });
+
+    res.json({
+      messages,
+      totalMessages,
+      totalPages: Math.ceil(totalMessages / limit), // 전체 페이지 수
+      currentPage: parseInt(page),
+    });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch messages" });
   }
 };
+
 
 exports.getUnreadMessageCounts = async (req, res) => {
   console.log("getUnreadMessageCounts function called");
@@ -132,5 +202,29 @@ exports.getUnreadMessageCounts = async (req, res) => {
   } catch (error) {
     console.error("Error fetching unread message counts:", error.message);
     res.status(500).json({ message: "Failed to fetch unread message counts" });
+  }
+};
+
+exports.leaveRoom = async (req, res) => {
+  const { roomId, userId } = req.body;
+
+  try {
+    const room = await Room.findById(roomId);
+
+    if (!room) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // 사용자가 나갈 때 방에 메시지가 없으면 방 삭제
+    const hasMessages = await Message.exists({ roomId });
+    if (!hasMessages) {
+      await Room.findByIdAndDelete(roomId);
+      console.log("Room deleted because it had no messages:", roomId);
+    }
+
+    res.status(200).json({ message: "User left the room." });
+  } catch (error) {
+    console.error("Error leaving room:", error.message);
+    res.status(500).json({ error: "Failed to leave room" });
   }
 };

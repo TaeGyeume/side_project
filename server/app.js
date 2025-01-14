@@ -5,6 +5,7 @@ require('dotenv').config({ path: __dirname + '/../.env' });
 const userRoutes = require("./api/user/userRoutes");
 const authRoutes = require("./api/auth/authRoutes");
 const followRoutes = require('./api/follow/followRoutes');
+const boardRoutes = require("./api/board/boardRoutes"); // 게시물 관련 라우트 추가
 
 // require("./config/passport");
 const path = require("path");
@@ -40,6 +41,7 @@ app.use("/api/auth", authRoutes); // 인증 관련 라우트
 app.use("/api/messages", messageRoutes); // 메시지 관련 라우트
 app.use("/api/rooms", roomRoutes); // 채팅방 관련 라우트
 app.use('/api/follow', followRoutes); // Follow API 경로 설정
+app.use("/api/boards", boardRoutes); // 게시물 관련 라우트
 
 // React 정적 파일 제공
 const clientBuildPath = path.join(__dirname, "../client/build");

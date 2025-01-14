@@ -11,8 +11,8 @@ const userSchema = new mongoose.Schema({
   name: { type: String },          // 이름 예: 유재석
   gender: { type: String },        // 'male' or 'female'
   birthdate: { type: Date },       // 생년월일
-  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // 팔로워 목록
-  following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // 팔로잉 목록
+  // followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // 팔로워 목록
+  // following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // 팔로잉 목록
   created_at: { type: Date, default: Date.now }, // 생성 날짜
   updated_at: { type: Date, default: Date.now }, // 업데이트 날짜
   isFacebookUser: { type: Boolean, default: false }, // Facebook 사용자인지 여부

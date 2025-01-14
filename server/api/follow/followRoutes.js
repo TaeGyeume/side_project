@@ -19,4 +19,15 @@ router.get("/pending/:userId", verifyToken, followController.getPendingRequests)
 // 알림 조회
 router.get("/incoming/:userId", verifyToken, followController.getIncomingFollowRequests);
 
+// 팔로워 목록 가져오기
+router.get("/followers/:userId", verifyToken, followController.getFollowers);
+
+// 팔로잉 목록 가져오기
+router.get("/followings/:userId", verifyToken, followController.getFollowings);
+
+router.delete("/delete/:followId", verifyToken, followController.deleteFollow);
+
+// 전체 사용자와 팔로우 상태 조회
+router.get("/usersWithStatus/:userId", verifyToken, followController.getAllUsersWithFollowStatus);
+
 module.exports = router;

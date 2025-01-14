@@ -4,22 +4,25 @@ import Profile from "./pages/Profile"; // 내 정보 페이지
 import Login from "./pages/Login"; // 로그인 페이지
 import Register from "./components/Register"; // 회원가입 페이지
 import Footer from "./components/Footer";
-import UserList from "./pages/UserList";
-import ChatRoom from "./pages/ChatRoom";
 import AllUserList from "./components/AllUserList";
 import Notifications from "./components/Notifications";
 import { getIncomingFollowRequests } from "./api/followService";
-import socket from "./socket";
+import socket from "./socket/socket";
 import Sidebar from "./components/Sidebar";
+import FollowListPage from "./pages/FollowListPage";
+import Board from "./pages/Board";
+import CreateBoard from "./pages/CreateBoard";
+import ChatPage from "./pages/ChatPage";
 
 import axios from "axios";
 import "./App.css"; // 전체 레이아웃 스타일
+
 
 const App = ({ currentUserId }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [currentUser, setCurrentUser] = useState(null);
   const [notificationCount, setNotificationCount] = useState(0); // 알림 개수 상태
-  const [unreadMessages, setUnreadMessages] = useState([]);
+  const [unreadMessageAlerts, setUnreadMessageAlerts] = useState(false);
 
   const handleLogin = (newToken) => {
     setToken(newToken);
@@ -68,6 +71,36 @@ const App = ({ currentUserId }) => {
     }
   }, [currentUser]);
 
+  const fetchUnreadMessages = useCallback(async () => {
+    if (!currentUser) return;
+  
+    try {
+      const response = await axios.get(`http://localhost:5000/api/messages/unread`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      if (response.data) {
+        const alerts = response.data.reduce((acc, item) => {
+          acc[item.roomId] = true;
+          return acc;
+        }, {});
+        setUnreadMessageAlerts(alerts);
+      }
+    } catch (error) {
+      console.error("Failed to fetch unread messages:", error);
+      setUnreadMessageAlerts({});
+    }
+  }, [currentUser, token]);
+
+  const handleRoomMessagesRead = (roomId) => {
+    setUnreadMessageAlerts((prev) => ({
+      ...prev,
+      [roomId]: false,
+    }));
+    // 최신 상태 동기화
+  fetchUnreadMessages();
+  };
+
   useEffect(() => {
     if (token) {
       fetchCurrentUser(token); // 토큰이 있는 경우 사용자 정보 로드
@@ -86,38 +119,37 @@ const App = ({ currentUserId }) => {
 
     if (currentUser) {
       fetchNotifications();
+      fetchUnreadMessages(); // 읽지 않은 메시지 확인
     }
 
     socket.on(`notification:${currentUser._id}`, () => {
       setNotificationCount((prev) => prev + 1);
     });
 
+    socket.on(`messageUnread:${currentUser._id}`, () => {
+      fetchUnreadMessages(); // 소켓 이벤트로 읽지 않은 메시지 업데이트
+    });
+
     return () => {
       socket.off(`notification:${currentUser._id}`);
+      socket.off(`messageUnread:${currentUser._id}`);
     };
-  }, [currentUser, fetchNotifications]);
+  }, [currentUser, fetchNotifications, fetchUnreadMessages]);
 
   const resetNotificationCount = () => {
     setNotificationCount(0); // 알림 수 초기화
   };
 
-  useEffect(() => {
-    // 읽지 않은 메시지 이벤트 수신
-    socket.on("newUnreadMessage", (data) => {
-      setUnreadMessages((prev) => [...prev, data]);
-      console.log("Unread message received:", data);
-    });
-
-    return () => {
-      socket.off("newUnreadMessage");
-    };
-  }, []);
-
   return (
     <Router>
       <div className="app">
         {/* 로그인된 사용자만 사이드바 표시 */}
-        {token && <Sidebar handleLogout={handleLogout} />}
+        {token && (
+          <Sidebar
+            handleLogout={handleLogout}
+            unreadMessageAlert={Object.values(unreadMessageAlerts).some((alert) => alert)}
+          />
+        )}
         <div className={token ? "content-with-sidebar" : "content"}>
           <nav>
             <ul>
@@ -146,6 +178,9 @@ const App = ({ currentUserId }) => {
                     <Link to="/allUser">전체 사용자 목록</Link>
                   </li>
                   <li>
+                    <Link to="follow-list">팔로우 목록</Link>
+                  </li>
+                  <li>
                     <Link to="/notifications" onClick={resetNotificationCount}>
                       알림
                       {notificationCount > 0 && (
@@ -155,7 +190,10 @@ const App = ({ currentUserId }) => {
                   </li>
                   <li>
                     <Link to="/messages">
-                      메시지 {unreadMessages.length > 0 && `(${unreadMessages.length})`}
+                      메시지{" "}
+                      {Object.values(unreadMessageAlerts).some((alert) => alert) && (
+                        <span className="alert-badge">⭕</span>
+                      )}
                     </Link>
                   </li>
                   <li>
@@ -166,21 +204,26 @@ const App = ({ currentUserId }) => {
             </ul>
           </nav>
           <Routes>
-            <Route path="/" element={<h1>메인페이지!</h1>} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/" element={<><Board /><Footer /></>} />
+            <Route path="/create" element={<><CreateBoard /><Footer /></>} />
+            <Route path="/register" element={<><Register /><Footer /></>} />
+            <Route path="/login" element={<><Login onLogin={handleLogin} /><Footer /></>} />
             <Route
               path="/profile"
-              element={token ? <Profile /> : <p>Please log in to view this page.</p>}
+              element={<>{token ? <Profile /> : <p>Please log in to view this page.</p>}<Footer /></>}
             />
 
             <Route
               path="/notifications"
               element={
                 currentUser ? (
-                  <Notifications currentUserId={currentUser._id}
-                    onNotificationClear={resetNotificationCount}
-                  />
+                  <>
+                    <Notifications
+                      currentUserId={currentUser._id}
+                      onNotificationClear={resetNotificationCount}
+                    />
+                    <Footer />
+                  </>
                 ) : (
                   <p>알림을 보려면 로그인하세요.</p>
                 )
@@ -190,7 +233,10 @@ const App = ({ currentUserId }) => {
               path="/allUser"
               element={
                 currentUser ? (
-                  <AllUserList currentUserId={currentUser._id} />
+                  <>
+                    <AllUserList currentUserId={currentUser._id} />
+                    <Footer />
+                  </>
                 ) : (
                   <p>사용자 정보를 불러오는 중...</p>
                 )
@@ -199,16 +245,15 @@ const App = ({ currentUserId }) => {
 
             {/* 로그인한 사용자만 메시지 페이지에 접근 가능 */}
             <Route
-              path="/messages"
-              element={token ? <UserList currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
+              path="/follow-list"
+              element={currentUser ? (<><FollowListPage currentUserId={currentUser._id} /><Footer /></>) : (<p>로그인이 필요합니다.</p>)}
             />
-            {/* 특정 채팅방에 접근 */}
+            {/* 로그인한 사용자만 메시지 페이지에 접근 가능 */}
             <Route
-              path="/chat/:roomId"
-              element={token ? <ChatRoom currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
+              path="/messages/:roomId?"
+              element={token ? <ChatPage currentUser={currentUser} onMessagesRead={handleRoomMessagesRead} /> : <p>Please log in to view this page.</p>}
             />
           </Routes>
-          <Footer /> {/* 푸터 추가 */}
         </div>
       </div>
     </Router>
