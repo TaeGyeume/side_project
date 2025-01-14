@@ -7,7 +7,7 @@ const Board = () => {
     <div>
       <h1>메인 페이지!</h1>
       <Link to="/create">
-        <button>게시물 작성하기</button> 
+        <button>게시물 작성하기</button>
       </Link>
       <BoardList />
     </div>
