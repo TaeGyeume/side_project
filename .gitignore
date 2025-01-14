@@ -61,3 +61,15 @@ yarn.lock
 
 # Debug files
 debug.log
+
+# videos files
+*.mp4
+*.mov
+*.avi
+
+# image files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp

@@ -30,7 +30,7 @@ const Sidebar = ({ handleLogout, unreadMessageAlert }) => {
         </NavLink>
         {/*  메시지 알림 */}
         <MessageAlert unreadMessageAlert={unreadMessageAlert} />
-        <button className="nav-item logout" onClick={handleLogout}>
+        <button className="nav-item logout" onClick={handleSidebarLogout}>
           <i className="fas fa-sign-out-alt"></i> 로그아웃
         </button>
       </nav>
