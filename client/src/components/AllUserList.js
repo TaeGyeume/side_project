@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchUsersWithStatus, sendFollowRequest, deleteFollowRequest } from "../api/followService";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const AllUserList = ({ currentUserId }) => {
 	const [users, setUsers] = useState([]);
@@ -64,10 +65,17 @@ const AllUserList = ({ currentUserId }) => {
 		}
 	};
 
-	const handleStartChat = (userId) => {
-		navigate(`/chat/${userId}`); // 채팅방으로 이동
-	};
-
+	const handleChatClick = async (userId) => {
+    try {
+      const response = await axios.post("http://localhost:5000/api/rooms/create", {
+        userId1: currentUserId,
+        userId2: userId,
+      });
+      navigate(`/chat/${response.data._id}`);
+    } catch (error) {
+      console.error("Failed to create room:", error);
+    }
+  };
 
 	if (error) {
 		return <p>{error}</p>;
@@ -85,7 +93,6 @@ const AllUserList = ({ currentUserId }) => {
 							{user.username}
 							{user.isFollowing ? (
 								<>
-									<button onClick={() => handleStartChat(currentUserId)}>메시지</button>
 									<button onClick={() => handleDeleteFollow(user.followId)}>X</button>
 								</>
 							) : user.status === "PENDING" ? (
@@ -95,6 +102,9 @@ const AllUserList = ({ currentUserId }) => {
 							) : (
 								<button onClick={() => handleFollow(user._id)}>팔로우</button>
 							)}
+							<button onClick={() => handleChatClick(user._id)}>
+								DM
+							</button>
 						</li>
 					))}
 				</ul>
