@@ -9,11 +9,12 @@ import ChatRoom from "./pages/ChatRoom";
 import AllUserList from "./components/AllUserList";
 import Notifications from "./components/Notifications";
 import { getIncomingFollowRequests } from "./api/followService";
-import socket from "./socket";
+import socket from "./socket/socket";
+import Sidebar from "./components/Sidebar";
+import FollowListPage from "./pages/FollowListPage";
 
 import axios from "axios";
 import "./App.css"; // 전체 레이아웃 스타일
-import Sidebar from "./components/Sidebar";
 
 const App = ({ currentUserId }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -119,96 +120,104 @@ const App = ({ currentUserId }) => {
         {/* 로그인된 사용자만 사이드바 표시 */}
         {token && <Sidebar handleLogout={handleLogout} />}
         <div className={token ? "content-with-sidebar" : "content"}>
-      <nav>
-        <ul>
-          {!token && (
-            <>
-              <li>
-                <Link to="/">메인페이지</Link>
-              </li>
-              <li>
-                <Link to="/register">회원가입</Link>
-              </li>
-              <li>
-                <Link to="/login">로그인</Link>
-              </li>
-            </>
-          )}
-          {token && (
-            <>
-              <li>
-                <Link to="/">메인페이지</Link>
-              </li>
-              <li>
-                <Link to="/profile">내정보</Link>
-              </li>
-              <li>
-                <Link to="/allUser">전체 사용자 목록</Link>
-              </li>
-              <li>
-                <Link to="/notifications" onClick={resetNotificationCount}>
-                  알림
-                  {notificationCount > 0 && (
-                    <span className="notification-badge">{notificationCount}</span>
-                  )}
-                </Link>
-              </li>
-              <li>
-                <Link to="/messages">
-                  메시지 {unreadMessages.length > 0 && `(${unreadMessages.length})`}
-                </Link>
-              </li>
-              <li>
-                <button onClick={handleLogout}>로그아웃</button>
-              </li>
-            </>
-          )}
-        </ul>
-      </nav>
-      <Routes>
-        <Route path="/" element={<h1>메인페이지!</h1>} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
-        <Route
-          path="/profile"
-          element={token ? <Profile /> : <p>Please log in to view this page.</p>}
-        />
+          <nav>
+            <ul>
+              {!token && (
+                <>
+                  <li>
+                    <Link to="/">메인페이지</Link>
+                  </li>
+                  <li>
+                    <Link to="/register">회원가입</Link>
+                  </li>
+                  <li>
+                    <Link to="/login">로그인</Link>
+                  </li>
+                </>
+              )}
+              {token && (
+                <>
+                  <li>
+                    <Link to="/">메인페이지</Link>
+                  </li>
+                  <li>
+                    <Link to="/profile">내정보</Link>
+                  </li>
+                  <li>
+                    <Link to="/allUser">전체 사용자 목록</Link>
+                  </li>
+                  <li>
+                    <Link to="follow-list">팔로우 목록</Link>
+                  </li>
+                  <li>
+                    <Link to="/notifications" onClick={resetNotificationCount}>
+                      알림
+                      {notificationCount > 0 && (
+                        <span className="notification-badge">{notificationCount}</span>
+                      )}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/messages">
+                      메시지 {unreadMessages.length > 0 && `(${unreadMessages.length})`}
+                    </Link>
+                  </li>
+                  <li>
+                    <button onClick={handleLogout}>로그아웃</button>
+                  </li>
+                </>
+              )}
+            </ul>
+          </nav>
+          <Routes>
+            <Route path="/" element={<h1>메인페이지!</h1>} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route
+              path="/profile"
+              element={token ? <Profile /> : <p>Please log in to view this page.</p>}
+            />
 
-        <Route
-          path="/notifications"
-          element={
-            currentUser ? (
-              <Notifications currentUserId={currentUser._id}
-                onNotificationClear={resetNotificationCount}
-              />
-            ) : (
-              <p>알림을 보려면 로그인하세요.</p>
-            )
-          }
-        />
-        <Route
-          path="/allUser"
-          element={
-            currentUser ? (
-              <AllUserList currentUserId={currentUser._id} />
-            ) : (
-              <p>사용자 정보를 불러오는 중...</p>
-            )
-          }
-        />
-
-        {/* 로그인한 사용자만 메시지 페이지에 접근 가능 */}
-        <Route
-          path="/messages"
-          element={token ? <UserList currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
-        />
-        {/* 특정 채팅방에 접근 */}
-        <Route
-          path="/chat/:roomId"
-          element={token ? <ChatRoom currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
-        />
-      </Routes>
-      <Footer /> {/* 푸터 추가 */}
+            <Route
+              path="/notifications"
+              element={
+                currentUser ? (
+                  <Notifications currentUserId={currentUser._id}
+                    onNotificationClear={resetNotificationCount}
+                  />
+                ) : (
+                  <p>알림을 보려면 로그인하세요.</p>
+                )
+              }
+            />
+            <Route
+              path="/allUser"
+              element={
+                currentUser ? (
+                  <AllUserList currentUserId={currentUser._id} />
+                ) : (
+                  <p>사용자 정보를 불러오는 중...</p>
+                )
+              }
+            />
+            <Route
+              path="/follow-list"
+              element={currentUser ? <FollowListPage currentUserId={currentUser._id} /> : <p>로그인이 필요합니다.</p>}
+            />
+            {/* 로그인한 사용자만 메시지 페이지에 접근 가능 */}
+            <Route
+              path="/messages"
+              element={token ? <UserList currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
+            />
+            {/* 특정 채팅방에 접근 */}
+            <Route
+              path="/chat/:roomId"
+              element={token ? <ChatRoom currentUser={currentUser} /> : <p>Please log in to view this page.</p>}
+            />
+          </Routes>
+          <Footer /> {/* 푸터 추가 */}
+        </div>
+      </div>
     </Router>
   );
 };

@@ -36,6 +36,18 @@ const getPendingRequests = async (userId) => {
   return Follow.find({ followerId: userId, status: "PENDING" }).select("followingId followingUsername").lean();
 };
 
+const getFollowers = async (userId) => {
+  return Follow.find({ followingId: userId, status: "ACCEPTED" })
+    .populate("followerId", "username _id")
+    .lean();
+};
+
+const getFollowings = async (userId) => {
+  return Follow.find({ followerId: userId, status: "ACCEPTED" })
+    .populate("followingId", "username _id")
+    .lean();
+};
+
 const updateFollowStatus = async (followId, status) => {
   const follow = await Follow.findByIdAndUpdate(
     followId,
@@ -74,6 +86,8 @@ const deleteFollowRequest = async (followId) => {
 
 module.exports = {
   createFollow,
+  getFollowers,
+  getFollowings,
   getIncomingFollowRequests,
   getPendingRequests,
   updateFollowStatus,

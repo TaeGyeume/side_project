@@ -1,8 +1,9 @@
 import React from "react";
 import useNotifications from "../hooks/useNotifications";
 
-const Notifications = ({ currentUserId }) => {
-  const { notifications, error, acceptNotification, rejectNotification } = useNotifications(currentUserId);
+const NotificationsPage = ({ currentUserId }) => {
+  const { notifications, error, acceptNotification, rejectNotification } =
+    useNotifications(currentUserId);
 
   if (!currentUserId) {
     return <p>사용자 정보가 필요합니다.</p>;
@@ -29,4 +30,4 @@ const Notifications = ({ currentUserId }) => {
   );
 };
 
-export default Notifications;
+export default NotificationsPage;
