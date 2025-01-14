@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import axiosInstance from "../api/axios";
-import socket from "../socket";
+import socket from "../socket/socket.js";
 
 const ChatList = ({ currentUser, onRoomSelect }) => {
   const [users, setUsers] = useState([]);
