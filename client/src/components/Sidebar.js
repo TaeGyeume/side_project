@@ -21,6 +21,9 @@ const Sidebar = ({ handleLogout }) => {
         <NavLink to="/messages" className="nav-item">
           <i className="fas fa-envelope"></i> 메시지
         </NavLink>
+        <NavLink to="/notifications" className="nav-item">
+          <i className="fas fa-envelope"></i>알림
+        </NavLink>
         <button className="nav-item logout" onClick={handleLogout}>
           <i className="fas fa-sign-out-alt"></i> 로그아웃
         </button>

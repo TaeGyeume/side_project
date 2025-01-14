@@ -7,7 +7,7 @@ const messageSchema = new mongoose.Schema({
   content: { type: String }, // 텍스트 메시지 내용
   mediaUrl: { type: String }, // 이미지, 파일 등의 URL
   isRead: { type: Boolean, default: false }, // 읽음 여부
-  createdAt: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: () => new Date(Date.now() + 9 * 60 * 60 * 1000), },
 });
 
 const Message = mongoose.model("Message", messageSchema);
