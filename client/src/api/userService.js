@@ -4,8 +4,14 @@ import axios from "axios"; // axios 패키지 가져오기
 // 모든 사용자 조회
 export const fetchUsers = async () => {
   try {
+    const token = localStorage.getItem("token");
      // 인증 없이 요청하려면 axiosInstance가 아닌 기본 axios로 호출
-     const response = await axios.get(`${process.env.REACT_APP_API_URL}/users`);
+     const response = await axios.get(`${process.env.REACT_APP_API_URL}/users`,
+     {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
     return response.data;
   } catch (error) {    
     console.error("Error fetching users:", error);
