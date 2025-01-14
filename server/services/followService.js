@@ -1,7 +1,7 @@
 const Follow = require('../models/Follow');
 const User = require('../models/User');
 
-const createFollow = async (followerId, followingId) => {
+exports.createFollow = async (followerId, followingId) => {
   if (followerId === followingId) {
     throw new Error("You cannot follow yourself.");
   }
@@ -28,27 +28,27 @@ const createFollow = async (followerId, followingId) => {
   return follow.save();
 };
 
-const getIncomingFollowRequests = async (userId) => {
+exports.getIncomingFollowRequests = async (userId) => {
   return Follow.find({ followingId: userId, status: "PENDING" }).select("followerId followerUsername").lean();
 };
 
-const getPendingRequests = async (userId) => {
+exports.getPendingRequests = async (userId) => {
   return Follow.find({ followerId: userId, status: "PENDING" }).select("followingId followingUsername").lean();
 };
 
-const getFollowers = async (userId) => {
+exports.getFollowers = async (userId) => {
   return Follow.find({ followingId: userId, status: "ACCEPTED" })
     .populate("followerId", "username _id")
     .lean();
 };
 
-const getFollowings = async (userId) => {
+exports.getFollowings = async (userId) => {
   return Follow.find({ followerId: userId, status: "ACCEPTED" })
     .populate("followingId", "username _id")
     .lean();
 };
 
-const updateFollowStatus = async (followId, status) => {
+exports.updateFollowStatus = async (followId, status) => {
   const follow = await Follow.findByIdAndUpdate(
     followId,
     {
@@ -65,7 +65,20 @@ const updateFollowStatus = async (followId, status) => {
   return follow;
 };
 
-const deleteFollowRequest = async (followId) => {
+// followController > deleteFollow와 연결
+exports.deleteFollow = async (followId) => {
+  const follow = await Follow.findByIdAndDelete(followId);
+
+  if (!follow) {
+    throw new Error("Follow relationship not found.");
+  }
+
+  return follow;
+};
+
+// followController > rejectFollow와 연결된 상태
+exports.rejectFollowRequest = async (followId) => {
+
   // followId에 해당하는 데이터 찾기
   const follow = await Follow.findById(followId);
 
@@ -82,14 +95,4 @@ const deleteFollowRequest = async (followId) => {
   await Follow.findByIdAndDelete(followId);
 
   return { message: "Follow request successfully deleted." };
-};
-
-module.exports = {
-  createFollow,
-  getFollowers,
-  getFollowings,
-  getIncomingFollowRequests,
-  getPendingRequests,
-  updateFollowStatus,
-  deleteFollowRequest,
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchUsersWithStatus, sendFollowRequest, deleteFollow } from "../api/followService";
+import { fetchUsersWithStatus, sendFollowRequest, deleteFollowRequest } from "../api/followService";
 import { useNavigate } from "react-router-dom";
 
 const AllUserList = ({ currentUserId }) => {
@@ -12,11 +12,16 @@ const AllUserList = ({ currentUserId }) => {
 		const fetchData = async () => {
 			try {
 				const usersData = await fetchUsersWithStatus(currentUserId);
-				console.log("Fetched users:", usersData); // 디버깅용
-				setUsers(usersData || []);
+
+				console.log("Fetched users data :", usersData); // 디버깅용
+
+				// followId 매핑 확인
+				setUsers(usersData.map((user) => ({
+					...user,
+					followId: user.followId || null, // followId 명시적으로 설정
+				})));
 			} catch (err) {
 				console.error("Failed to fetch users:", err);
-				setError("사용자 목록을 가져오는 데 실패했습니다.");
 			}
 		};
 
@@ -43,11 +48,16 @@ const AllUserList = ({ currentUserId }) => {
 		}
 	};
 
-	const handleDeleteFollow = async (followingId) => {
+	const handleDeleteFollow = async (followId) => {
 		try {
-			console.log("Deleting follow with ID:", followingId); // 디버깅용
-			await deleteFollow(followingId);
-
+			console.log("Deleting follow with ID:", followId); // 디버깅용
+			await deleteFollowRequest(followId);
+			setUsers((prevUsers) =>
+				prevUsers.map((user) =>
+					user.followId === followId ? { ...user, isFollowing: false, status: null, followId: null } : user
+				)
+			);
+			alert("팔로우가 삭제되었습니다.");
 		} catch (err) {
 			console.error("팔로우 삭제 실패:", err.response?.data || err.message);
 			alert("팔로우를 삭제하는 데 실패했습니다.");
@@ -76,7 +86,7 @@ const AllUserList = ({ currentUserId }) => {
 							{user.isFollowing ? (
 								<>
 									<button onClick={() => handleStartChat(currentUserId)}>메시지</button>
-									<button onClick={() => handleDeleteFollow(user.userId)}>X</button>
+									<button onClick={() => handleDeleteFollow(user.followId)}>X</button>
 								</>
 							) : user.status === "PENDING" ? (
 								<>

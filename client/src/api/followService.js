@@ -81,8 +81,10 @@ export const rejectFollowRequest = async (followId) => {
 };
 
 // 팔로우 삭제
-export const deleteFollow = async (followId) => {
+export const deleteFollowRequest = async (followId) => {
   try {
+    console.log("Request URL:", `/follow/delete/${followId}`); // 요청 URL 디버깅
+    
     const response = await axiosInstance.delete(`/follow/delete/${followId}`);
     return response.data;
   } catch (error) {

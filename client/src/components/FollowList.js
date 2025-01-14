@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { getFollowers, getFollowings, deleteFollow } from "../api/followService";
+import { getFollowers, getFollowings, deleteFollowRequest } from "../api/followService";
 import { useNavigate } from "react-router-dom";
 
 const FollowList = ({ currentUserId }) => {
   const [followers, setFollowers] = useState([]);
   const [followings, setFollowings] = useState([]);
   const [error, setError] = useState("");
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,20 +33,13 @@ const FollowList = ({ currentUserId }) => {
     }
   }, [currentUserId]);
 
-  const handleDeleteFollow = async (followId, type) => {
+  const handleDeleteFollow = async (followId) => {
     try {
       console.log("Deleting follow with ID:", followId); // 디버깅용
-      await deleteFollow(followId);
+      await deleteFollowRequest(followId);
 
-      if (type === "follower") {
-        setFollowers((prev) => prev.filter((f) => f._id !== followId)); // _id 사용
-      } else if (type === "following") {
-        setFollowings((prev) => prev.filter((f) => f._id !== followId)); // _id 사용
-      }
-
-      alert("팔로우가 삭제되었습니다.");
-    } catch (error) {
-      console.error("팔로우 삭제 실패:", error.response?.data || error.message);
+    } catch (err) {
+      console.error("팔로우 삭제 실패:", err.response?.data || err.message);
       alert("팔로우를 삭제하는 데 실패했습니다.");
     }
   };
@@ -70,7 +63,7 @@ const FollowList = ({ currentUserId }) => {
             <li key={follower._id}>
               {follower.username}
               <button onClick={() => handleStartChat(follower.userId)}>메시지</button>
-              <button onClick={() => handleDeleteFollow(follower._id, "follower")}>X</button>
+              <button onClick={() => handleDeleteFollow(follower.followId)}>X</button>
             </li>
           ))}
         </ul>
