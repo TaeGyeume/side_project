@@ -197,21 +197,25 @@ const App = ({ currentUserId }) => {
             </ul>
           </nav>
           <Routes>
-            <Route path="/" element={<h1>메인페이지!</h1>} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/" element={<><h1>메인페이지!</h1><Footer /></>} />
+            <Route path="/register" element={<><Register /><Footer /></>} />
+            <Route path="/login" element={<><Login onLogin={handleLogin} /><Footer /></>} />
             <Route
               path="/profile"
-              element={token ? <Profile /> : <p>Please log in to view this page.</p>}
+              element={<>{token ? <Profile /> : <p>Please log in to view this page.</p>}<Footer /></>}
             />
 
             <Route
               path="/notifications"
               element={
                 currentUser ? (
-                  <Notifications currentUserId={currentUser._id}
-                    onNotificationClear={resetNotificationCount}
-                  />
+                  <>
+                    <Notifications
+                      currentUserId={currentUser._id}
+                      onNotificationClear={resetNotificationCount}
+                    />
+                    <Footer />
+                  </>
                 ) : (
                   <p>알림을 보려면 로그인하세요.</p>
                 )
@@ -221,7 +225,10 @@ const App = ({ currentUserId }) => {
               path="/allUser"
               element={
                 currentUser ? (
-                  <AllUserList currentUserId={currentUser._id} />
+                  <>
+                    <AllUserList currentUserId={currentUser._id} />
+                    <Footer />
+                  </>
                 ) : (
                   <p>사용자 정보를 불러오는 중...</p>
                 )
@@ -234,7 +241,6 @@ const App = ({ currentUserId }) => {
               element={token ? <ChatPage currentUser={currentUser} onMessagesRead={handleRoomMessagesRead} /> : <p>Please log in to view this page.</p>}
             />
           </Routes>
-          <Footer /> {/* 푸터 추가 */}
         </div>
       </div>
     </Router>

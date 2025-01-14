@@ -20,7 +20,25 @@ const ChatList = ({ currentUser, onRoomSelect }) => {
         const response = await axios.get(
           `http://localhost:5000/api/messages/chatUsers?userId=${currentUser._id}`
         );
-        setUsers(response.data || []); // 데이터가 없으면 빈 배열로 설정
+        const sortedUsers = response.data
+          .map((user) => ({
+            ...user,
+            lastMessageTime: user.lastMessageTime ? new Date(user.lastMessageTime) : null,
+          }))
+          .sort((a, b) => {
+            // 최신 메시지 시간 순으로 정렬
+            if (b.lastMessageTime && a.lastMessageTime) {
+              return b.lastMessageTime - a.lastMessageTime;
+            } else if (b.lastMessageTime) {
+              return 1; // b가 최신
+            } else if (a.lastMessageTime) {
+              return -1; // a가 최신
+            } else {
+              return 0; // 둘 다 없음
+            }
+          });
+
+        setUsers(sortedUsers);
       } catch (error) {
         console.error("Failed to fetch chat users:", error);
       }
@@ -117,6 +135,36 @@ const ChatList = ({ currentUser, onRoomSelect }) => {
       socket.off("messageRead");
     };
   }, [currentUser]);
+
+  // 새 메시지 수신 시 마지막 메시지와 시간 업데이트
+  useEffect(() => {
+    socket.on("newMessage", ({ roomId, lastMessage, lastMessageTime }) => {
+      setUsers((prevUsers) => {
+        const updatedUsers = prevUsers.map((user) =>
+          user.roomId === roomId
+            ? { ...user, lastMessage, lastMessageTime: new Date(lastMessageTime) }
+            : user
+        );
+
+        // 최신순으로 정렬
+        return updatedUsers.sort((a, b) => {
+          if (b.lastMessageTime && a.lastMessageTime) {
+            return b.lastMessageTime - a.lastMessageTime;
+          } else if (b.lastMessageTime) {
+            return 1;
+          } else if (a.lastMessageTime) {
+            return -1;
+          } else {
+            return 0;
+          }
+        });
+      });
+    });
+
+    return () => {
+      socket.off("newMessage");
+    };
+  }, []);
 
   if (!currentUser) {
     return <p>Loading...</p>; // currentUser가 없을 경우 로딩 메시지 표시

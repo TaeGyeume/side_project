@@ -108,17 +108,31 @@ exports.markAsRead = async (req, res) => {
   }
 };
 
-// 사용자가 채팅방에 접속할 때, 채팅방의 모든 메시지 가져오기
 exports.getMessages = async (req, res) => {
   const { roomId } = req.params;
+  const { page = 1, limit = 20 } = req.query; // 기본값: 1페이지, 20개 메시지
 
   try {
-    const messages = await Message.find({ roomId }).sort({ createdAt: 1 });
-    res.json(messages);
+    // 메시지 데이터 페이징 처리
+    const messages = await Message.find({ roomId })
+      .sort({ createdAt: -1 }) // 최신 메시지부터 가져오기
+      .skip((page - 1) * limit) // 페이징 처리
+      .limit(parseInt(limit)); // 요청된 개수만큼 가져오기
+
+    // 총 메시지 개수
+    const totalMessages = await Message.countDocuments({ roomId });
+
+    res.json({
+      messages,
+      totalMessages,
+      totalPages: Math.ceil(totalMessages / limit), // 전체 페이지 수
+      currentPage: parseInt(page),
+    });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch messages" });
   }
 };
+
 
 exports.getUnreadMessageCounts = async (req, res) => {
   console.log("getUnreadMessageCounts function called");
