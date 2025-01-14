@@ -12,9 +12,12 @@ import { getIncomingFollowRequests } from "./api/followService";
 import socket from "./socket/socket";
 import Sidebar from "./components/Sidebar";
 import FollowListPage from "./pages/FollowListPage";
+import Board from "./pages/Board";
+import CreateBoard from "./pages/CreateBoard";
 
 import axios from "axios";
 import "./App.css"; // 전체 레이아웃 스타일
+
 
 const App = ({ currentUserId }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -170,7 +173,8 @@ const App = ({ currentUserId }) => {
             </ul>
           </nav>
           <Routes>
-            <Route path="/" element={<h1>메인페이지!</h1>} />
+            <Route path="/" element={<Board />} />
+            <Route path="/create" element={<CreateBoard />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
             <Route
