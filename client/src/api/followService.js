@@ -4,7 +4,7 @@ import axiosInstance from "./axios";
 export const getFollowers = async (userId) => {
   try {
     const response = await axiosInstance.get(`/follow/followers/${userId}`);
-    return response.data.followers;
+    return response.data;
   } catch (error) {
     console.error("Error fetching followers:", error);
     throw error;
@@ -15,7 +15,7 @@ export const getFollowers = async (userId) => {
 export const getFollowings = async (userId) => {
   try {
     const response = await axiosInstance.get(`/follow/followings/${userId}`);
-    return response.data.followings;
+    return response.data;
   } catch (error) {
     console.error("Error fetching followings:", error);
     throw error;

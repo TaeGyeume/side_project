@@ -2,8 +2,8 @@ const mongoose = require("mongoose");
 
 const roomSchema = new mongoose.Schema({
   members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }], // 참여자 목록
-  createdAt: { type: Date, default: () => new Date(Date.now() + 9 * 60 * 60 * 1000), },
-  updatedAt: { type: Date, default: () => new Date(Date.now() + 9 * 60 * 60 * 1000), },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
 const Room = mongoose.model("Room", roomSchema);

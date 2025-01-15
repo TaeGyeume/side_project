@@ -2,34 +2,55 @@ const followService = require('../../services/followService');
 const Follow = require("../../models/Follow");
 const User = require('../../models/User');
 
-// 나를 팔로우 하는 사람 목록록
+// 나를 팔로우 하는 사람 목록
 exports.getFollowers = async (req, res) => {
   const { userId } = req.params;
 
   try {
     const followers = await Follow.find({ followingId: userId, status: "ACCEPTED" })
-      .populate("followerId", "username _id") // `username` 및 `_id` 포함
+      .populate("followerId", "username _id")
       .lean();
 
-    console.log("Followers fetched:", followers); // 디버깅용
-    res.json({ followers: followers.map((follow) => follow.followerId) });
+    // 평탄화 처리
+    const formattedFollowers = followers.map((follow) => ({
+      _id: follow._id, // Follow 관계의 고유 ID
+      followerId: follow.followerId._id, // 평탄화된 followerId
+      username: follow.followerId.username, // 사용자 이름
+      status: follow.status, // 상태 (ACCEPTED)
+    }));
+
+    res.json(formattedFollowers); // 평탄화된 데이터를 반환
   } catch (error) {
     console.error("Error fetching followers:", error);
     res.status(500).json({ message: "Failed to fetch followers." });
   }
 };
 
-// 내가 팔로우 하는 사람 목록록
+// 내가 팔로우 하는 사람 목록
 exports.getFollowings = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const followings = await Follow.find({ followerId: userId, status: "ACCEPTED" })
-      .populate("followingId", "username _id") // `username` 및 `_id` 포함
+    const followings = await Follow.find({ followerId: userId, status: "ACCEPTED" }) // 조건 확인
+      .populate("followingId", "username _id") // `username`과 `_id`를 가져옴
       .lean();
 
-    console.log("Followings fetched:", followings); // 디버깅용
-    res.json({ followings: followings.map((follow) => follow.followingId) });
+    if (!followings) {
+      console.log("No followings found");
+      return res.status(404).json({ message: "No followings found" });
+    }
+
+    console.log("Followings fetched:", followings);
+
+    // 평탄화 처리
+    const formattedFollowings = followings.map((follow) => ({
+      _id: follow._id, // Follow의 고유 ID
+      followingId: follow.followingId._id, // 평탄화된 followingId
+      username: follow.followingId.username, // 사용자 이름
+      status: follow.status, // 상태 (ACCEPTED)
+    }));
+
+    res.json(formattedFollowings); // 응답으로 반환
   } catch (error) {
     console.error("Error fetching followings:", error);
     res.status(500).json({ message: "Failed to fetch followings." });
