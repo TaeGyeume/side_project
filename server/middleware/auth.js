@@ -4,6 +4,9 @@ require("dotenv").config({ path: __dirname + "/.env" }); // .env 파일이 serve
 exports.verifyToken = (req, res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
     console.log("Received token:", token); // 토큰 로그
+    
+    console.log("Middleware: Verifying token for request to", req.originalUrl);
+
 
     if (!token) {
         console.error("No token provided"); // 로그 추가

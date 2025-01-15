@@ -17,6 +17,7 @@ const CreateBoard = () => {
   // 폼 제출 핸들러
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (media.length === 0) {
       setError("이미지 또는 영상을 최소 하나 이상 업로드해야 합니다.");
       return;
@@ -28,20 +29,30 @@ const CreateBoard = () => {
     Array.from(media).forEach((file) => formData.append("media", file));
 
     try {
+      // 로컬 스토리지에서 토큰 가져오기
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("로그인이 필요합니다.");
+        return;
+      }
+
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/boards`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`, // Authorization 헤더 추가
           },
         }
       );
       console.log("게시물 생성 성공:", response.data);
-      navigate("/"); // 메인 페이지로 이동
+      navigate("/"); // 게시물 생성 후 메인 페이지로 이동
     } catch (error) {
       console.error("게시물 생성 실패:", error);
-      setError("게시물 생성에 실패했습니다. 다시 시도해주세요.");
+      setError(
+        error.response?.data?.message || "게시물 생성에 실패했습니다. 다시 시도해주세요."
+      );
     }
   };
 

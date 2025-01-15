@@ -22,12 +22,15 @@ exports.createBoard = async (req, res) => {
 // 게시물 목록 조회
 exports.getBoards = async (req, res) => {
   try {
-    const posts = await Board.find().sort({ createdAt: -1 }); // 최신순 정렬
-    res.status(200).json(posts);
+      console.log("Authenticated user ID:", req.user.id); // 확인용 로그
+      const posts = await Board.find().sort({ createdAt: -1 });
+      res.status(200).json(posts);
   } catch (error) {
-    res.status(500).json({ message: '게시물 목록을 불러오는 중 오류가 발생했습니다.', error });
+      console.error("Error fetching boards:", error.message);
+      res.status(500).json({ message: "게시물 목록을 불러오는 중 오류가 발생했습니다.", error });
   }
 };
+
 
 // 특정 게시물 조회
 exports.getBoardById = async (req, res) => {
@@ -43,3 +46,17 @@ exports.getBoardById = async (req, res) => {
     res.status(500).json({ message: '게시물을 불러오는 중 오류가 발생했습니다.', error });
   }
 };
+
+exports.getUserBoards = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // 현재 사용자가 작성한 게시물만 조회
+    const boards = await Board.find({ createdBy: userId }).sort({ createdAt: -1 });
+    res.status(200).json(boards);
+  } catch (error) {
+    console.error("사용자 게시물 조회 중 오류 발생:", error);
+    res.status(500).json({ message: "사용자 게시물을 불러오는 중 오류가 발생했습니다." });
+  }
+};
+

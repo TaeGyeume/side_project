@@ -13,6 +13,7 @@ import FollowListPage from "./pages/FollowListPage";
 import Board from "./pages/Board";
 import CreateBoard from "./pages/CreateBoard";
 import ChatPage from "./pages/ChatPage";
+import MyBoards from "./pages/MyBoards";
 
 import axios from "axios";
 import "./App.css"; // 전체 레이아웃 스타일
@@ -206,6 +207,7 @@ const App = ({ currentUserId }) => {
           <Routes>
             <Route path="/" element={<><Board /><Footer /></>} />
             <Route path="/create" element={<><CreateBoard /><Footer /></>} />
+            <Route path="/my-boards" element={<><MyBoards /><Footer /></>} />
             <Route path="/register" element={<><Register /><Footer /></>} />
             <Route path="/login" element={<><Login onLogin={handleLogin} /><Footer /></>} />
             <Route
