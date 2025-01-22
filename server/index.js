@@ -1,12 +1,9 @@
 // 서버 실행 파일
 
-const app = require('./app');
-const dotenv = require('dotenv');
+require('dotenv').config();
+const app = require('./app'); // Express 설정 가져옴, 실행은 여기서
 
-// 환경 변수 로드
-dotenv.config();
-
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.SER_PORT || 5000;
 
 // 서버 실행
 app.listen(PORT, () => {
