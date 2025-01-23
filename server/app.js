@@ -9,6 +9,10 @@ const cors = require('cors');
 const routes = require('./routes');
 const connectDB = require('./config/db');
 
+
+const authRoutes = require('./routes/authRoutes'); // 회원가입 라우트 추가
+const cookieParser = require('cookie-parser');  // 쿠키 파싱 추가
+
 const app = express();
 
 // DB 연결
@@ -26,11 +30,18 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 
+app.use(express.urlencoded({ extended: true }));
+
+app.use(cookieParser());  // 쿠키 파싱 추가
+
 // 라우트 설정
 app.use('/', routes); // 기본 서버 엔드포인트
 
 // 테스트 엔드포인트
 app.use('/api', routes);
+
+// API 라우트
+app.use("/api/auth", authRoutes);
 
 // 에러 핸들러
 app.use((err, req, res, next) => {
