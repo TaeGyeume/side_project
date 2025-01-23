@@ -3,7 +3,7 @@
 require('dotenv').config();
 const app = require('./App'); // Express 설정 가져옴, 실행은 여기서
 
-const PORT = process.env.SER_PORT || 5000;
+const PORT = process.env.SERVER_PORT || 5000;
 
 // 서버 실행
 app.listen(PORT, () => {
