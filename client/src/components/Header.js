@@ -1,35 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { authAPI } from "../api";  // API 가져오기
+import { useAuthStore } from "../store/authStore";  // Zustand 스토어 가져오기
 
 const Header = () => {
-  const [user, setUser] = useState(null);
+  const { user, isAuthenticated, fetchUserProfile, logout } = useAuthStore();  // Zustand에서 상태 가져오기
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await authAPI.getUserProfile();
-        setUser(response.data);  // 사용자 데이터 설정
-      } catch (error) {
-        console.error("사용자 정보를 가져오는 데 실패했습니다.", error);
-        setUser(null);
-      }
-    };
+    fetchUserProfile();  // 컴포넌트 마운트 시 사용자 정보 불러오기
+  }, [fetchUserProfile]);
 
-    fetchUserProfile();
-  }, []);
-
-  // 로그아웃 핸들러
-  const handleLogout = async () => {
-    try {
-      await authAPI.logoutUser();
-      localStorage.removeItem("accessToken");
-      setUser(null); // 상태 업데이트
-      navigate("/login");
-    } catch (error) {
-      console.error("로그아웃 실패:", error);
-    }
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
   };
 
   return (
@@ -58,7 +41,7 @@ const Header = () => {
                 메인
               </Link>
             </li>
-            {user ? (
+            {isAuthenticated && user ? (
               <>
                 <li className="nav-item">
                   <Link className="nav-link" to="/profile">

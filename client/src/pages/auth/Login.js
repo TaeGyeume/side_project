@@ -10,7 +10,8 @@ const Login = () => {
   });
 
   const [error, setError] = useState("");
-  const navigate = useNavigate();  // 페이지 이동을 위한 네비게이트 훅
+  const navigate = useNavigate();
+  const { login, fetchUserProfile } = useAuthStore();  // Zustand 스토어에서 함수 가져오기
 
   // 입력값 변경 핸들러
   const handleChange = (e) => {
@@ -24,10 +25,18 @@ const Login = () => {
 
     try {
       const response = await authAPI.loginUser(formData);
-      localStorage.setItem("accessToken", response.data.accessToken);  // JWT 토큰 저장
 
-      alert("로그인 성공! 메인 페이지로 이동합니다.");  // 성공 메시지 알림
-      navigate("/main");  // 로그인 성공 시 메인 페이지로 이동
+      // Zustand 상태 업데이트 (토큰 및 사용자 정보 저장)
+      login({
+        accessToken: response.data.accessToken,
+        user: response.data.user,
+      });
+
+      // 로그인 후 사용자 프로필 즉시 불러오기
+      await fetchUserProfile();
+
+      alert("로그인 성공! 메인 페이지로 이동합니다.");
+      navigate("/main");
     } catch (error) {
       setError(error.response?.data?.message || "로그인에 실패했습니다.");
     }

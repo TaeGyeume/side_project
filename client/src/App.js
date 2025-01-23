@@ -1,17 +1,19 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import api from './api/axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {BrowserRouter as Router, Route, Routes, Navigate} from 'react-router-dom';
-import {AuthPages, Main, UserPages} from './pages';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { AuthPages, Main, UserPages } from './pages';
 import Header from "./components/Header";
+import { useAuthStore } from "./store/authStore";  // Zustand 스토어 가져오기
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
+  const checkAuth = useAuthStore((state) => state.checkAuth);
 
   useEffect(() => {
     const fetchMessage = async () => {
       try {
-        const response = await api.get('/test'); // 백엔드 서버 연결 테스트
+        const response = await api.get('/test');  // 백엔드 서버 연결 테스트
         setServerMessage(response.data.message);
       } catch (error) {
         console.error('서버 연결 실패:', error.message);
@@ -20,7 +22,8 @@ const App = () => {
     };
 
     fetchMessage();
-  }, []);
+    checkAuth();  // Zustand를 통해 새로고침 시 인증 상태 확인
+  }, [checkAuth]);
 
   return (
     <Router>
@@ -37,7 +40,7 @@ const App = () => {
         )}
         <Header />
         <Routes>
-          <Route path="/" element={<Navigate to="/main" />} />{' '}
+          <Route path="/" element={<Navigate to="/main" />} />
           <Route path="/main" element={<Main />} />
           <Route path="/register" element={<AuthPages.Register />} />
           <Route path="/login" element={<AuthPages.Login />} />
