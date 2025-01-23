@@ -16,7 +16,7 @@ connectDB();
 
 // 미들웨어 설정
 const corsOptions = {
-  origin: `http://localhost:${process.env.CLI_PORT || 3000}`,
+  origin: `http://localhost:${process.env.CLIENT_PORT || 3000}`,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   // allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true // 쿠키를 포함한 요청 허용
