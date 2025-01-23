@@ -24,7 +24,7 @@ exports.login = async (req, res) => {
   }
 };
 
-// 사용자 프로필 조회 컨트롤러
+// 사용자 프로필 조회 컨트롤러 (JWT 인증 필요)
 exports.getUserProfile = async (req, res) => {
   try {
     const profile = await authService.getProfile(req.user.id);
@@ -34,7 +34,7 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
-// 사용자 프로필 수정 컨트롤러
+// 사용자 프로필 수정 컨트롤러 (JWT 인증 필요)
 exports.updateProfile = async (req, res) => {
   try {
     const response = await authService.updateUserProfile(req.user.id, req.body);
@@ -44,7 +44,7 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// 비밀번호 변경 컨트롤러
+// 비밀번호 변경 컨트롤러 (JWT 인증 필요)
 exports.changePassword = async (req, res) => {
   try {
     const response = await authService.changePassword(req.user.id, req.body);
@@ -76,16 +76,27 @@ exports.resetPassword = async (req, res) => {
 
 // 로그아웃 컨트롤러
 exports.logout = (req, res) => {
-  authService.logoutUser(res);
-  res.status(200).json({ message: "로그아웃 되었습니다." });
+  try {
+    res.clearCookie("refreshToken", { httpOnly: true, secure: process.env.NODE_ENV === "production" });
+    authService.logoutUser(res);
+    return res.status(200).json({ message: "로그아웃 되었습니다." });
+  } catch (error) {
+    return res.status(500).json({ message: "로그아웃 처리 중 오류가 발생했습니다." });
+  }
 };
 
-// 리프레시 토큰 컨트롤러
-exports.refreshToken = (req, res) => {
+// 리프레시 토큰을 이용한 액세스 토큰 갱신
+exports.refreshToken = async (req, res) => {
   try {
-    const newToken = authService.refreshAccessToken(req.cookies.refreshToken);
-    res.status(200).json({ accessToken: newToken });
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: "리프레시 토큰이 없습니다. 다시 로그인 해주세요." });
+    }
+
+    const newToken = await authService.refreshAccessToken(refreshToken);
+    return res.status(200).json({ accessToken: newToken });
   } catch (error) {
-    res.status(403).json({ message: "유효하지 않은 리프레시 토큰입니다." });
+    return res.status(403).json({ message: "유효하지 않은 리프레시 토큰입니다." });
   }
 };
