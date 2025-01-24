@@ -1,20 +1,20 @@
 const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
-    // 요청 헤더에서 토큰 가져오기
-    const token = req.header("Authorization");
+    // 쿠키에서 accessToken 가져오기
+    const token = req.cookies.accessToken;
 
     if (!token) {
-        return res.status(401).json({ message: "인증 토큰이 필요합니다." });
+        return res.status(401).json({ message: "액세스 토큰이 필요합니다." });
     }
 
     try {
-        // Bearer 부분 제거
-        const decodedToken = jwt.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
-        req.user = decodedToken; // 요청 객체에 사용자 정보 추가
-        next(); // 다음 미들웨어 호출
+        // 토큰 검증
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decodedToken;  // 요청 객체에 사용자 정보 추가
+        next();  // 다음 미들웨어로 이동
     } catch (error) {
-        res.status(401).json({ message: "유효하지 않은 토큰입니다." });
+        return res.status(401).json({ message: "유효하지 않은 토큰입니다. 다시 로그인해주세요." });
     }
 };
 

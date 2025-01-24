@@ -3,24 +3,30 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";  // Zustand 스토어 가져오기
 
 const Header = () => {
-  const { user, isAuthenticated, fetchUserProfile, logout } = useAuthStore();  // Zustand에서 상태 가져오기
+  const { user, isAuthenticated, fetchUserProfile, logout } = useAuthStore();
   const navigate = useNavigate();
 
+  // 컴포넌트 마운트 시 프로필 불러오기
   useEffect(() => {
-    fetchUserProfile();  // 컴포넌트 마운트 시 사용자 정보 불러오기
-  }, [fetchUserProfile]);
+    if (!user && isAuthenticated) {
+      fetchUserProfile();
+    }
+  }, [user, isAuthenticated, fetchUserProfile]);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  // 로그아웃 처리 (쿠키 기반)
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (error) {
+      console.error("로그아웃 실패:", error.message || "알 수 없는 오류 발생");
+    }
   };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
       <div className="container">
-        <Link className="navbar-brand" to="/main">
-          Our Real Trip
-        </Link>
+        <Link className="navbar-brand" to="/main">Our Real Trip</Link>
 
         <button
           className="navbar-toggler"
@@ -37,20 +43,17 @@ const Header = () => {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <Link className="nav-link" to="/main">
-                메인
-              </Link>
+              <Link className="nav-link" to="/main">메인</Link>
             </li>
+
             {isAuthenticated && user ? (
               <>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/profile">
-                    프로필
-                  </Link>
+                  <Link className="nav-link" to="/profile">프로필</Link>
                 </li>
                 <li className="nav-item d-flex align-items-center">
                   <span className="nav-link text-primary fw-bold">
-                    {user.username}님
+                    {user?.username}님
                   </span>
                 </li>
                 <li className="nav-item">
@@ -61,9 +64,7 @@ const Header = () => {
               </>
             ) : (
               <li className="nav-item">
-                <Link className="nav-link" to="/login">
-                  로그인
-                </Link>
+                <Link className="nav-link" to="/login">로그인</Link>
               </li>
             )}
           </ul>

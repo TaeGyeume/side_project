@@ -1,28 +1,43 @@
-import axios from 'axios';
+import axios from "axios";
 
-// 환경 변수에서 API URL 가져오기
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000', // 기본 URL
-  timeout: 5000 // 요청 제한 시간
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000/api",
+  timeout: 5000,
+  withCredentials: true, // httpOnly 쿠키 전송 허용
 });
 
-// 요청 인터셉터 설정 (예: 토큰 자동 추가)
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken"); 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// 응답 인터셉터 설정 (예: 오류 처리)
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    console.error("API 오류 발생:", error.response?.data?.message || error.message);
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        console.log("리프레시 토큰 요청 중...");
+
+        const res = await api.post("/auth/refresh-token");
+
+        if (res.status === 200) {
+          console.log("리프레시 토큰 갱신 성공");
+          return api(originalRequest); // 원래 요청 재시도
+        }
+      } catch (refreshError) {
+        console.error("리프레시 토큰 갱신 실패:", refreshError.response?.data?.message || refreshError.message);
+        
+        if (refreshError.response?.status === 401) {
+          console.error("리프레시 토큰이 유효하지 않음, 로그아웃 처리");
+          window.location.href = "/login";
+        }
+      }
+    }
+
+    if (error.response?.status === 403) {
+      console.error("접근 권한 없음, 로그아웃 처리");
+      window.location.href = "/login";
+    }
+
     return Promise.reject(error);
   }
 );

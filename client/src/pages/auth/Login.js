@@ -10,35 +10,34 @@ const Login = () => {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login, fetchUserProfile } = useAuthStore();  // Zustand 스토어에서 함수 가져오기
+  const { fetchUserProfile } = useAuthStore();
 
   // 입력값 변경 핸들러
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 폼 제출 핸들러
+  // 폼 제출 핸들러 (쿠키 기반 인증 적용)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
-      const response = await authAPI.loginUser(formData);
+      await authAPI.loginUser(formData);
 
-      // Zustand 상태 업데이트 (토큰 및 사용자 정보 저장)
-      login({
-        accessToken: response.data.accessToken,
-        user: response.data.user,
-      });
-
-      // 로그인 후 사용자 프로필 즉시 불러오기
+      // 로그인 후 프로필 조회
       await fetchUserProfile();
 
       alert("로그인 성공! 메인 페이지로 이동합니다.");
       navigate("/main");
     } catch (error) {
+      console.error("로그인 오류:", error);
       setError(error.response?.data?.message || "로그인에 실패했습니다.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,8 +76,8 @@ const Login = () => {
               />
             </div>
 
-            <button type="submit" className="btn btn-primary w-100">
-              로그인
+            <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+              {loading ? "로그인 중..." : "로그인"}
             </button>
           </form>
 

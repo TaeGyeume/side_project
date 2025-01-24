@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { authAPI } from "../../api/auth";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -8,7 +9,6 @@ const Register = () => {
     email: "",
     phone: "",
     password: "",
-    profileImage: "",
     address: "",
     provider: "local",
     membershipLevel: "길초보",
@@ -17,21 +17,29 @@ const Register = () => {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
+  // 입력값 변경 핸들러
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // 회원가입 폼 제출 핸들러 (httpOnly 쿠키 기반 인증 적용)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setLoading(true);
 
     try {
       await authAPI.registerUser(formData);
-      setSuccess("회원가입이 완료되었습니다. 로그인해주세요.");
+      setSuccess("회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.");
+      setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
       setError(error.response?.data?.message || "회원가입에 실패했습니다.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -122,8 +130,8 @@ const Register = () => {
               />
             </div>
 
-            <button type="submit" className="btn btn-primary w-100">
-              가입하기
+            <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+              {loading ? "가입 처리 중..." : "가입하기"}
             </button>
           </form>
         </div>

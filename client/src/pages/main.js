@@ -1,45 +1,34 @@
-import React, {useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {authAPI} from '../api';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore'; // Zustand 상태 사용
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Main = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // 로딩 상태
-  const [error, setError] = useState(null); // 에러 상태
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { user, fetchUserProfile } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        navigate('/login'); // 토큰이 없으면 로그인 페이지로 이동
-        return;
-      }
-
+    const loadUserProfile = async () => {
       try {
-        const response = await authAPI.getUserProfile();
-        setUser(response.data); // 사용자 정보 저장
+        await fetchUserProfile(); // Zustand 스토어에서 사용자 정보 불러오기
       } catch (error) {
         console.error('사용자 정보를 가져오는 데 실패했습니다.', error);
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('user');
-        navigate('/login');
 
-        // 401 (Unauthorized) 오류 처리
-        if (error.response && error.response.status === 401) {
-          localStorage.removeItem('accessToken'); // 액세스 토큰 삭제
-          navigate('/login'); // 로그인 페이지로 이동
+        // 401 (Unauthorized) 처리: 로그인 페이지로 리디렉션
+        if (error.response?.status === 401) {
+          navigate('/login');
         } else {
           setError('사용자 정보를 불러오는 데 실패했습니다.');
         }
       } finally {
-        setLoading(false); // 로딩 완료
+        setLoading(false);
       }
     };
 
-    fetchUserProfile();
-  }, [navigate]);
+    loadUserProfile();
+  }, [fetchUserProfile, navigate]);
 
   return (
     <div className="container mt-5">

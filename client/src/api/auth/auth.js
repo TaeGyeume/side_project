@@ -1,34 +1,38 @@
-import axios from "axios";
+import api from "../axios";  // axios.js에서 공통 설정을 가져옴
 
-// Axios 인스턴스 생성 (백엔드 API 기본 설정)
-const API = axios.create({
-  baseURL: "http://localhost:5000/api",  // 백엔드 API 주소
-  withCredentials: true,  // 쿠키 허용 (JWT 인증 사용 시 필수)
-});
-
-// 요청 인터셉터 (토큰 자동 추가)
-API.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");  // 로컬스토리지에서 토큰 가져오기
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`; // 헤더에 토큰 추가
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+// 공통 요청 처리 함수 (에러 핸들링 통합)
+const handleRequest = async (requestPromise, errorMessage) => {
+  try {
+    const response = await requestPromise;
+    return response.data;
+  } catch (error) {
+    console.error(`${errorMessage}:`, error.response?.data?.message || error.message);
+    throw error.response?.data || new Error(errorMessage);
   }
-);
+};
 
-// 인증 관련 API 함수 목록 (올바르게 axios 인스턴스 적용)
+// 인증 관련 API 함수 목록 (쿠키 기반 httpOnly)
 export const authAPI = {
-  registerUser: (userData) => API.post("/auth/register", userData),
-  loginUser: (loginData) => API.post("/auth/login", loginData),
-  logoutUser: () => API.post("/auth/logout"),  // 로그아웃 API
-  getUserProfile: () => API.get("/auth/profile"),  // 사용자 프로필 조회 API
-  changePassword: (passwordData) => API.put("/auth/change-password", passwordData),
-  forgotPassword: (email) => API.post("/auth/forgot-password", { email }),
-  resetPassword: (resetData) => API.post("/auth/reset-password", resetData),
+  registerUser: (userData) =>
+    handleRequest(api.post("/auth/register", userData), "회원가입 요청 중 오류 발생"),
+
+  loginUser: (loginData) =>
+    handleRequest(api.post("/auth/login", loginData), "로그인 요청 중 오류 발생"),
+
+  logoutUser: () =>
+    handleRequest(api.post("/auth/logout"), "로그아웃 요청 중 오류 발생"),
+
+  getUserProfile: () =>
+    handleRequest(api.get("/auth/profile"), "프로필 조회 중 오류 발생"),
+
+  changePassword: (passwordData) =>
+    handleRequest(api.put("/auth/change-password", passwordData), "비밀번호 변경 중 오류 발생"),
+
+  forgotPassword: (email) =>
+    handleRequest(api.post("/auth/forgot-password", { email }), "비밀번호 찾기 요청 중 오류 발생"),
+
+  resetPassword: (resetData) =>
+    handleRequest(api.post("/auth/reset-password", resetData), "비밀번호 재설정 중 오류 발생"),
 };
 
 export default authAPI;
