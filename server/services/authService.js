@@ -35,14 +35,14 @@ exports.loginUser = async ({ userid, password }, res) => {
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: isProduction,  // 환경에 따라 동적으로 설정
+    secure: isProduction,
     sameSite: isProduction ? "None" : "Lax",
+    path: "/",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   return { accessToken, user: { userid: user.userid, email: user.email, roles: user.roles } };
 };
-
 
 // 사용자 프로필 조회 서비스
 exports.getProfile = async (userId) => {
@@ -78,7 +78,9 @@ exports.forgotPassword = async (email) => {
   if (!user) throw new Error("이메일을 찾을 수 없습니다.");
 
   const resetToken = crypto.randomBytes(32).toString("hex");
-  user.passwordResetToken = resetToken;
+  const hashedToken = await bcrypt.hash(resetToken, 10);
+
+  user.passwordResetToken = hashedToken;
   user.passwordResetExpires = Date.now() + 3600000; // 1시간 후 만료
 
   await user.save();
@@ -89,8 +91,11 @@ exports.forgotPassword = async (email) => {
 
 // 비밀번호 재설정 서비스
 exports.resetPassword = async (token, newPassword) => {
-  const user = await User.findOne({ passwordResetToken: token, passwordResetExpires: { $gt: Date.now() } });
-  if (!user) throw new Error("토큰이 유효하지 않거나 만료되었습니다.");
+  const user = await User.findOne({ passwordResetExpires: { $gt: Date.now() } });
+
+  if (!user || !(await bcrypt.compare(token, user.passwordResetToken))) {
+    throw new Error("토큰이 유효하지 않거나 만료되었습니다.");
+  }
 
   user.password = await bcrypt.hash(newPassword, 10);
   user.passwordResetToken = undefined;
@@ -102,8 +107,8 @@ exports.resetPassword = async (token, newPassword) => {
 
 // 로그아웃 서비스 (쿠키 삭제)
 exports.logoutUser = (res) => {
-  res.clearCookie("accessToken", { httpOnly: true, secure: isProduction, sameSite: isProduction ? "None" : "Lax" });
-  res.clearCookie("refreshToken", { httpOnly: true, secure: isProduction, sameSite: isProduction ? "None" : "Lax" });
+  res.clearCookie("accessToken", { httpOnly: true, secure: isProduction, sameSite: "None", path: "/" });
+  res.clearCookie("refreshToken", { httpOnly: true, secure: isProduction, sameSite: "None", path: "/" });
 };
 
 // 리프레시 토큰 갱신 서비스
@@ -115,12 +120,14 @@ exports.refreshAccessToken = async (refreshToken, res) => {
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? "None" : "Lax",
+      sameSite: "None",
+      path: "/",
       maxAge: 15 * 60 * 1000,
     });
 
     return newAccessToken;
   } catch (error) {
+    res.clearCookie("refreshToken", { httpOnly: true, secure: isProduction, sameSite: "None", path: "/" });
     throw new Error("유효하지 않은 리프레시 토큰입니다.");
   }
 };

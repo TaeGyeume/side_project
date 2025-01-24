@@ -1,4 +1,5 @@
 const authService = require("../services/authService");
+const cookieOptions = require("../config/cookieConfig");
 
 // 회원가입 컨트롤러
 exports.register = async (req, res) => {
@@ -10,33 +11,18 @@ exports.register = async (req, res) => {
   }
 };
 
-// 로그인 컨트롤러 (쿠키에 accessToken 및 refreshToken 저장)
+// 로그인 컨트롤러 (액세스 및 리프레시 토큰 설정)
 exports.login = async (req, res) => {
   try {
-    console.log("로그인 요청 데이터:", req.body);
-
     const { accessToken, refreshToken, user } = await authService.loginUser(req.body, res);
 
-    // 액세스 토큰을 httpOnly 쿠키로 설정
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "None",
-      maxAge: 15 * 60 * 1000,  // 15분
-    });
-
-    // // 리프레시 토큰을 httpOnly 쿠키로 설정
-    // res.cookie("refreshToken", refreshToken, {
-    //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === "production" ? true : false,  // 개발 환경에서는 false
-    //   sameSite: "None",
-    //   maxAge: 7 * 24 * 60 * 60 * 1000,  // 7일
-    // });
+    res.cookie("accessToken", accessToken, cookieOptions);
+    res.cookie("refreshToken", refreshToken, cookieOptions);
 
     res.status(200).json({ user });
   } catch (error) {
     console.error("로그인 오류:", error.message);
-    res.status(400).json({ message: "로그인에 실패했습니다. 아이디와 비밀번호를 확인하세요." });
+    res.status(400).json({ message: "로그인에 실패했습니다." });
   }
 };
 
@@ -90,32 +76,44 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-// 로그아웃 컨트롤러
+// 로그아웃 컨트롤러 (쿠키 삭제)
 exports.logout = (req, res) => {
   try {
-    res.clearCookie("accessToken", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "None" });
-    res.clearCookie("refreshToken", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "None" });
+    res.clearCookie("accessToken", {
+      ...cookieOptions,
+      secure: false,  // 로컬에서 secure false 설정 보장
+    });
+    res.clearCookie("refreshToken", {
+      ...cookieOptions,
+      secure: false,
+    });
 
-    res.status(200).json({ message: "로그아웃 되었습니다." });
+    res.status(200).json({ message: "로그아웃 성공" });
   } catch (error) {
-    res.status(500).json({ message: "로그아웃 처리 중 오류가 발생했습니다." });
+    console.error("로그아웃 오류:", error.message);
+    res.status(500).json({ message: "로그아웃 처리 실패", error: error.message });
   }
 };
 
-// 리프레시 토큰을 이용한 액세스 토큰 갱신 컨트롤러
+// 리프레시 토큰을 이용한 액세스 토큰 갱신
 exports.refreshToken = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
-
     if (!refreshToken) {
-      return res.status(401).json({ message: "리프레시 토큰이 없습니다. 다시 로그인 해주세요." });
+      return res.status(401).json({ message: "리프레시 토큰이 없습니다." });
     }
 
     const newAccessToken = await authService.refreshAccessToken(refreshToken, res);
 
-    res.status(200).json({ message: "토큰이 갱신되었습니다." });
+    res.cookie("accessToken", newAccessToken, cookieOptions);
+
+    res.status(200).json({ message: "토큰 갱신 성공" });
   } catch (error) {
-    res.clearCookie("refreshToken");
-    res.status(403).json({ message: "유효하지 않은 리프레시 토큰입니다. 다시 로그인 해주세요." });
+    res.clearCookie("refreshToken", {
+      path: "/",
+      secure: false,
+      sameSite: "Lax",
+    });
+    res.status(403).json({ message: "유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요." });
   }
 };

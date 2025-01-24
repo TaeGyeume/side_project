@@ -5,7 +5,7 @@ const authMiddleware = (req, res, next) => {
     const token = req.cookies.accessToken;
 
     if (!token) {
-        return res.status(401).json({ message: "액세스 토큰이 필요합니다." });
+        return res.status(401).json({ message: "인증이 필요합니다." });
     }
 
     try {
@@ -14,7 +14,21 @@ const authMiddleware = (req, res, next) => {
         req.user = decodedToken;  // 요청 객체에 사용자 정보 추가
         next();  // 다음 미들웨어로 이동
     } catch (error) {
-        return res.status(401).json({ message: "유효하지 않은 토큰입니다. 다시 로그인해주세요." });
+        // 유효하지 않은 토큰 감지 시 쿠키 삭제
+        res.clearCookie("accessToken", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "None",
+            path: "/",
+        });
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "None",
+            path: "/",
+        });
+        
+        return res.status(401).json({ message: "인증 정보가 유효하지 않습니다. 다시 로그인해주세요." });
     }
 };
 

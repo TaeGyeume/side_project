@@ -11,11 +11,12 @@ const PrivateRoute = () => {
       try {
         await checkAuth(); // 쿠키 기반 인증 확인
       } catch (error) {
-        console.error("인증 확인 실패:", error.message);
+        console.error("인증 확인 실패:", error?.response?.data?.message || error.message);
       } finally {
         setLoading(false);
       }
     };
+
     verifyAuth();
   }, [checkAuth]);
 

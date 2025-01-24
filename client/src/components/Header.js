@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/authStore";  // Zustand 스토어 가져오기
+import { useAuthStore } from "../store/authStore";  
 
 const Header = () => {
   const { user, isAuthenticated, fetchUserProfile, logout } = useAuthStore();
@@ -11,13 +11,13 @@ const Header = () => {
     if (!user && isAuthenticated) {
       fetchUserProfile();
     }
-  }, [user, isAuthenticated, fetchUserProfile]);
+  }, [user, isAuthenticated,fetchUserProfile]);
 
-  // 로그아웃 처리 (쿠키 기반)
+  // 로그아웃 처리 (쿠키 삭제 + 리디렉션)
   const handleLogout = async () => {
     try {
-      await logout();
-      navigate("/login");
+      await logout();  // Zustand의 logout 함수 실행
+      navigate("/login");  // 로그인 페이지로 이동
     } catch (error) {
       console.error("로그아웃 실패:", error.message || "알 수 없는 오류 발생");
     }

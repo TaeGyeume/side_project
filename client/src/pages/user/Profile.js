@@ -56,7 +56,7 @@ const Profile = () => {
         <p><strong>전화번호:</strong> {formatPhoneNumber(userData.phone)}</p>
         <p><strong>주소:</strong> {userData.address || "등록된 주소가 없습니다."}</p>
         <p><strong>현재 등급:</strong> {userData.membershipLevel || "등급 없음"}</p>
-        <p><strong>마일리지:</strong> {userData.mileage} 점</p>
+        <p><strong>마일리지:</strong> {userData.mileage} (작업중)</p>
 
         <div className="d-flex justify-content-between mt-4">
           <button className="btn btn-secondary" disabled>
