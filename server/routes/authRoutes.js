@@ -32,7 +32,7 @@ router.put("/profile/update", authMiddleware, updateProfile);
 router.put("/profile/change-password", authMiddleware, changePassword);
 
 // 비밀번호 재설정 관련
-router.post("/password/forgot", forgotPassword);
-router.post("/password/reset", resetPassword);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 module.exports = router;

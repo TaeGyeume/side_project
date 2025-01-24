@@ -49,10 +49,17 @@ export const useAuthStore = create((set) => ({
   // 페이지 새로고침 시 인증 상태 확인
   checkAuth: async () => {
     try {
-      await useAuthStore.getState().fetchUserProfile();
+      await authAPI.getUserProfile();
     } catch (error) {
-      console.error("자동 로그인 실패:", error?.response?.data?.message || "알 수 없는 오류 발생");
-      set({ user: null, isAuthenticated: false });
+      if (error.response?.status === 401) {
+        try {
+          await authAPI.refreshToken();  // 액세스 토큰 재발급
+          await authAPI.getUserProfile();
+        } catch (refreshError) {
+          console.error("자동 로그인 실패:", refreshError?.response?.data?.message || "알 수 없는 오류");
+          set({ user: null, isAuthenticated: false });
+        }
+      }
     }
   },
 }));

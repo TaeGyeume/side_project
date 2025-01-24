@@ -31,7 +31,8 @@ const Login = () => {
       // 로그인 후 프로필 조회
       await fetchUserProfile();
 
-      alert("로그인 성공! 메인 페이지로 이동합니다.");
+      // 로그인 테스트 창
+      // alert("로그인 성공! 메인 페이지로 이동합니다.");
       navigate("/main");
     } catch (error) {
       console.error("로그인 오류:", error);

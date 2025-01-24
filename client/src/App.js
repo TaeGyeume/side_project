@@ -3,9 +3,11 @@ import api from './api/axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthPages, Main, UserPages } from './pages';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import Header from "./components/Header";
-import { useAuthStore } from "./store/authStore";  // Zustand 스토어 가져오기
-import PrivateRoute from "./routes/PrivateRoute";  // 보호된 라우트 추가
+import { useAuthStore } from "./store/authStore";
+import PrivateRoute from "./routes/PrivateRoute";
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -23,7 +25,8 @@ const App = () => {
     };
 
     fetchMessage();
-    checkAuth();  // Zustand를 통해 새로고침 시 인증 상태 확인
+    checkAuth();  // 불필요한 쿠키 확인 제거, 바로 상태 확인 실행
+
   }, [checkAuth]);
 
   return (
@@ -32,23 +35,25 @@ const App = () => {
         <h1 className="text-center">Our Real Trip</h1>
         {serverMessage && (
           <div
-            className={`alert ${
-              serverMessage.includes('실패') ? 'alert-danger' : 'alert-success'
-            }`}
+            className={`alert ${serverMessage.includes('실패') ? 'alert-danger' : 'alert-success'
+              }`}
             role="alert">
             {serverMessage}
           </div>
         )}
         <Header />
         <Routes>
-             {/* 인증되지않아도 접근가능한 경로 */}
+          {/* 인증되지 않아도 접근 가능한 경로 */}
           <Route path="/" element={<Navigate to="/main" />} />
           <Route path="/main" element={<Main />} />
           <Route path="/register" element={<AuthPages.Register />} />
           <Route path="/login" element={<AuthPages.Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          {/* 인증된 사용자만 접근할 수 있는 경로 로그인상태아닐시 로그인페이지로 이동 */}
+
+          {/* 인증된 사용자만 접근할 수 있는 경로 */}
           <Route element={<PrivateRoute />}>
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<UserPages.Profile />} />
           </Route>
 
