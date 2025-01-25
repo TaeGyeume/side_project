@@ -62,7 +62,7 @@ const Profile = () => {
           <button className="btn btn-secondary" disabled>
             쿠폰함 (작업중)
           </button>
-          <button className="btn btn-primary" onClick={() => navigate("/edit-profile")}>
+          <button className="btn btn-primary" onClick={() => navigate("/profile/update")}>
             프로필 수정하기
           </button>
         </div>

@@ -8,16 +8,16 @@ const Header = () => {
 
   // 컴포넌트 마운트 시 프로필 불러오기
   useEffect(() => {
-    if (!user && isAuthenticated) {
+    if (!user) {
       fetchUserProfile();
     }
-  }, [user, isAuthenticated,fetchUserProfile]);
+  }, [user, fetchUserProfile]);
 
-  // 로그아웃 처리 (쿠키 삭제 + 리디렉션)
+  // 로그아웃 처리 (쿠키 삭제 + 상태 초기화 + 리디렉션)
   const handleLogout = async () => {
     try {
-      await logout();  // Zustand의 logout 함수 실행
-      navigate("/login");  // 로그인 페이지로 이동
+      await logout();
+      navigate("/login");
     } catch (error) {
       console.error("로그아웃 실패:", error.message || "알 수 없는 오류 발생");
     }

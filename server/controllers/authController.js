@@ -16,8 +16,15 @@ exports.login = async (req, res) => {
   try {
     const { accessToken, refreshToken, user } = await authService.loginUser(req.body, res);
 
-    res.cookie("accessToken", accessToken, cookieOptions);
-    res.cookie("refreshToken", refreshToken, cookieOptions);
+    res.cookie("accessToken", accessToken, {
+      ...cookieOptions,
+      secure: false,  // 로컬에서 secure false 설정
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      ...cookieOptions,
+      secure: false,
+    });
 
     res.status(200).json({ user });
   } catch (error) {
@@ -81,8 +88,9 @@ exports.logout = (req, res) => {
   try {
     res.clearCookie("accessToken", {
       ...cookieOptions,
-      secure: false,  // 로컬에서 secure false 설정 보장
+      secure: false,  // 로컬 환경에서는 false
     });
+
     res.clearCookie("refreshToken", {
       ...cookieOptions,
       secure: false,
@@ -105,7 +113,10 @@ exports.refreshToken = async (req, res) => {
 
     const newAccessToken = await authService.refreshAccessToken(refreshToken, res);
 
-    res.cookie("accessToken", newAccessToken, cookieOptions);
+    res.cookie("accessToken", newAccessToken, {
+      ...cookieOptions,
+      secure: false,  // 로컬 환경에서는 false
+    });
 
     res.status(200).json({ message: "토큰 갱신 성공" });
   } catch (error) {
