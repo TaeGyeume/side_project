@@ -1,41 +1,54 @@
-// Express 프레임워크 설정
-
 const express = require('express');
-
-// 악의적인 사용자가 .put, .delete 등
-// 이런 메소드를 통해 URI에서 서버로
-// 데이터 전송하는 것을 막기 위해서 사용
+const cookieOptions = require("./config/cookieConfig");  // 쿠키 설정 불러오기
 const cors = require('cors');
 const routes = require('./routes');
 const connectDB = require('./config/db');
+require("dotenv").config();
+
+const authRoutes = require('./routes/authRoutes');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
 // DB 연결
 connectDB();
 
-// 미들웨어 설정
 const corsOptions = {
   origin: `http://localhost:${process.env.CLIENT_PORT || 3000}`,
+  credentials: true,  // 쿠키를 포함한 요청 허용
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  // allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true // 쿠키를 포함한 요청 허용
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'],
+  exposedHeaders: ['set-cookie'],  
 };
 
+// 미들웨어 설정
 app.use(cors(corsOptions));
-
 app.use(express.json());
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 
 // 라우트 설정
-app.use('/', routes); // 기본 서버 엔드포인트
-
-// 테스트 엔드포인트
+app.use('/', routes);
 app.use('/api', routes);
+app.use("/api/auth", authRoutes);
+
+// 리프레시 토큰 엔드포인트
+app.post("/api/auth/refresh-token", (req, res) => {
+  const newToken = "new_refresh_token"; // 실제 토큰 생성 로직 필요
+
+  res.cookie('refreshToken', newToken, {
+    ...cookieOptions,
+    httpOnly: true, 
+    secure: false,   // 로컬 환경에서는 false 설정 유지
+  });
+
+  res.status(200).json({ message: "토큰 갱신 성공" });
+});
 
 // 에러 핸들러
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Something broke!');
+  res.status(500).send('서버 오류가 발생했습니다.');
 });
 
 module.exports = app;
