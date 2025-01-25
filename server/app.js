@@ -15,6 +15,7 @@ connectDB();
 
 const corsOptions = {
   origin: `http://localhost:${process.env.CLIENT_PORT || 3000}`,
+  credentials: true,  // 쿠키를 포함한 요청 허용
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'],
   exposedHeaders: ['set-cookie'],  
