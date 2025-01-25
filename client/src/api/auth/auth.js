@@ -43,6 +43,11 @@ export const authAPI = {
   getUserProfile: () =>
     handleRequest(api.get("/auth/profile", requestConfig), "프로필 조회 중 오류 발생"),
 
+  checkDuplicate: (data) => api.post("/auth/check-duplicate", data, "프로필 중복확인중 오류 발생생"),
+
+  updateProfile: (userData) =>
+    api.put("/auth/profile/update", userData,"프로필 수정중 오류 발생생"),  
+
   changePassword: (passwordData) =>
     handleRequest(api.put("/auth/change-password", passwordData, requestConfig), "비밀번호 변경 중 오류 발생"),
 

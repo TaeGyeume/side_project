@@ -8,7 +8,8 @@ const {
   updateProfile, 
   changePassword, 
   forgotPassword, 
-  resetPassword 
+  resetPassword,
+  checkDuplicate
 } = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
 
@@ -30,6 +31,7 @@ router.post("/refresh-token", refreshToken);
 router.get("/profile", authMiddleware, getUserProfile);
 router.put("/profile/update", authMiddleware, updateProfile);
 router.put("/profile/change-password", authMiddleware, changePassword);
+router.post("/check-duplicate", checkDuplicate); 
 
 // 비밀번호 재설정 관련
 router.post("/forgot-password", forgotPassword);

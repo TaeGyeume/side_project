@@ -6,15 +6,34 @@ const crypto = require("crypto");
 
 const isProduction = process.env.NODE_ENV === "production";
 
-// 회원가입 서비스
-exports.registerUser = async ({ userid, username, email, phone, password }) => {
-  const existingUser = await User.findOne({ $or: [{ userid }, { email }, { phone }] });
-  if (existingUser) {
-    throw new Error("이미 등록된 아이디, 이메일 또는 전화번호입니다.");
+// 아이디, 이메일, 전화번호 중복 확인 서비스 추가
+exports.checkDuplicate = async ({ userid, email, phone }) => {
+  let existingUser = null;
+
+  if (userid) {
+    existingUser = await User.findOne({ userid });
+    if (existingUser) throw new Error("이미 사용 중인 아이디입니다.");
   }
 
+  if (email) {
+    existingUser = await User.findOne({ email });
+    if (existingUser) throw new Error("이미 사용 중인 이메일입니다.");
+  }
+
+  if (phone) {
+    existingUser = await User.findOne({ phone });
+    if (existingUser) throw new Error("이미 사용 중인 전화번호입니다.");
+  }
+
+  return { message: "사용 가능한 정보입니다." };
+};
+
+// 회원가입 서비스
+exports.registerUser = async ({ userid, username, email, phone, password, address }) => {
+  await this.checkDuplicate({ userid, email, phone });
+
   const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = new User({ userid, username, email, phone, password: hashedPassword });
+  const newUser = new User({ userid, username, email, phone,address, password: hashedPassword });
   await newUser.save();
 
   return { message: "회원가입이 완료되었습니다." };
@@ -51,10 +70,15 @@ exports.getProfile = async (userId) => {
   return user;
 };
 
+
 // 사용자 프로필 업데이트 서비스
-exports.updateUserProfile = async (userId, updateData) => {
+exports.updateProfile = async (userId, updateData) => {
+  // 중복 검사 시 자기 자신 제외
+  await exports.checkDuplicate(updateData, userId);
+
   const user = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true }).select("-password");
   if (!user) throw new Error("사용자 업데이트 실패");
+  
   return { message: "프로필이 성공적으로 업데이트되었습니다.", user };
 };
 

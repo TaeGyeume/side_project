@@ -15,14 +15,19 @@ const EditProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [checkMessage, setCheckMessage] = useState({
+    userid: "",
+    email: "",
+    phone: "",
+  });
   const navigate = useNavigate();
   const { checkAuth } = useAuthStore();
 
-  // 사용자 프로필 불러오기 (쿠키 인증 기반)
+  // 사용자 프로필 불러오기
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        await checkAuth();  // 쿠키 인증 상태 확인
+        await checkAuth();
         const response = await authAPI.getUserProfile();
         setFormData(response);
       } catch (error) {
@@ -40,9 +45,24 @@ const EditProfile = () => {
   // 입력 값 변경 핸들러
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setCheckMessage({ ...checkMessage, [e.target.name]: "" });
   };
 
-  // 폼 제출 핸들러 (프로필 업데이트)
+  // 중복 확인 API 호출
+  const handleCheckDuplicate = async (field) => {
+    console.log(`중복 확인 요청: ${field} =`, formData[field]);  // 클릭 시 확인 로그
+  
+    try {
+      const response = await authAPI.checkDuplicate({ [field]: formData[field] });
+      console.log("서버 응답:", response.data);
+      setCheckMessage({ ...checkMessage, [field]: response.data.message });
+    } catch (error) {
+      console.error("중복 확인 실패:", error.response?.data || error.message);
+      setCheckMessage({ ...checkMessage, [field]: error.response?.data?.message || "중복 확인에 실패했습니다." });
+    }
+  };
+
+  // 폼 제출 핸들러
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -51,7 +71,7 @@ const EditProfile = () => {
     try {
       await authAPI.updateProfile(formData);
       setSuccess("프로필이 성공적으로 업데이트되었습니다.");
-      setTimeout(() => navigate("/profile"), 2000);  
+      setTimeout(() => navigate("/profile"), 2000);
     } catch (error) {
       setError(error.response?.data?.message || "프로필 업데이트에 실패했습니다.");
     }
@@ -69,13 +89,24 @@ const EditProfile = () => {
       <form onSubmit={handleSubmit} className="p-4 border rounded shadow">
         <div className="mb-3">
           <label className="form-label">아이디</label>
-          <input
-            type="text"
-            name="userid"
-            className="form-control"
-            value={formData.userid}
-            disabled
-          />
+          <div className="d-flex">
+            <input
+              type="text"
+              name="userid"
+              className="form-control me-2"
+              value={formData.userid}
+              onChange={handleChange}
+              required
+            />
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={() => handleCheckDuplicate("userid")}
+            >
+              중복 확인
+            </button>
+          </div>
+          {checkMessage.userid && <small className="text-danger">{checkMessage.userid}</small>}
         </div>
 
         <div className="mb-3">
@@ -92,26 +123,46 @@ const EditProfile = () => {
 
         <div className="mb-3">
           <label className="form-label">이메일</label>
-          <input
-            type="email"
-            name="email"
-            className="form-control"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
+          <div className="d-flex">
+            <input
+              type="email"
+              name="email"
+              className="form-control me-2"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={() => handleCheckDuplicate("email")}
+            >
+              중복 확인
+            </button>
+          </div>
+          {checkMessage.email && <small className="text-danger">{checkMessage.email}</small>}
         </div>
 
         <div className="mb-3">
           <label className="form-label">전화번호</label>
-          <input
-            type="text"
-            name="phone"
-            className="form-control"
-            value={formData.phone}
-            onChange={handleChange}
-            required
-          />
+          <div className="d-flex">
+            <input
+              type="text"
+              name="phone"
+              className="form-control me-2"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+            />
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={() => handleCheckDuplicate("phone")}
+            >
+              중복 확인
+            </button>
+          </div>
+          {checkMessage.phone && <small className="text-danger">{checkMessage.phone}</small>}
         </div>
 
         <div className="mb-3">

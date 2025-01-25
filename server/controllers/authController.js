@@ -1,6 +1,17 @@
 const authService = require("../services/authService");
 const cookieOptions = require("../config/cookieConfig");
 
+// 아이디, 이메일, 전화번호 중복 확인 컨트롤러 추가
+exports.checkDuplicate = async (req, res) => {
+  try {
+    const response = await authService.checkDuplicate(req.body);
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+
 // 회원가입 컨트롤러
 exports.register = async (req, res) => {
   try {
@@ -43,15 +54,22 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
+
 // 사용자 프로필 수정 컨트롤러
 exports.updateProfile = async (req, res) => {
   try {
-    const response = await authService.updateUserProfile(req.user.id, req.body);
+    const userId = req.user.id;
+    const updateData = req.body;
+
+    const response = await authService.updateProfile(userId, updateData);
+    
     res.status(200).json(response);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("프로필 업데이트 오류:", error.message);
+    res.status(400).json({ message: error.message || "서버 오류가 발생했습니다." });
   }
 };
+
 
 // 비밀번호 변경 컨트롤러
 exports.changePassword = async (req, res) => {
