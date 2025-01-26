@@ -15,8 +15,7 @@ const RoomSchema = new mongoose.Schema({
   },
   pricePerNight: {
     type: Number, // 1박당 가격
-    required: true,
-    index: true
+    required: true
   },
   maxGuests: {
     type: Number, // 최대 숙박 가능 인원
@@ -51,13 +50,9 @@ RoomSchema.index({pricePerNight: 1});
 
 // 객실 추가, 수정, 삭제 시 숙소의 minPrice& maxPrice 가격 자동 업데이트
 RoomSchema.pre('save', async function (next) {
-  if (this.isModified('pricePerNight') || this.isNew) {
-    await updateAccommodationPriceRange(this.accommodation);
-  }
   next();
 });
 RoomSchema.pre('remove', async function (next) {
-  await updateAccommodationPriceRange(this.accommodation);
   next();
 });
 

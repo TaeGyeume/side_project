@@ -6,6 +6,8 @@ const connectDB = require('./config/db');
 require("dotenv").config();
 
 const authRoutes = require('./routes/authRoutes');
+const accommodationRoutes = require("./routes/accommodationRoutes");
+const roomRoutes = require("./routes/roomRoutes");
 const cookieParser = require('cookie-parser');
 
 const app = express();
@@ -29,6 +31,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // 라우트 설정
 app.use('/', routes);
+app.use("/api/accommodations", accommodationRoutes);
+app.use("/api/rooms", roomRoutes);
 app.use('/api', routes);
 app.use("/api/auth", authRoutes);
 
