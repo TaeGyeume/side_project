@@ -1,32 +1,33 @@
-const mongoose = require('mongoose');
-
 const bookingSchema = new mongoose.Schema(
   {
     type: {
-      // 예약 유형
       type: String,
       required: true,
-      enum: ['flight', 'accommodation', 'TourTicket'] // 각자 작성한 테이블 이름으로 하면됨(똑같이 작성해야 됨)
+      enum: ['flight', 'accommodation', 'tourTicket'] // 상품 유형
     },
     productId: {
-      // 참조하는 상품 ID
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      refPath: 'type'
+      refPath: 'type' // 참조할 상품 모델
     },
     startDate: {type: Date, required: true}, // 이용 시작일
-    endDate:{type: Date, required: true}, // 이용 종료일
+    endDate: {type: Date, required: true}, // 이용 종료일
     adults: {type: Number, default: 0}, // 성인 인원
     children: {type: Number, default: 0}, // 소아 인원
     totalPrice: {type: Number, required: true}, // 총 결제 금액
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'User' // User 컬렉션 참조
+    },
     reservationInfo: {
-      // 예약자 정보
-      name: {type: String, required: true},
-      email: {type: String, required: true},
-      phone: {type: String, required: true}
+      // 기본적으로는 userId를 참조하여 정보를 채우지만, 수정된 경우 저장
+      name: {type: String}, // 수정된 이름
+      email: {type: String}, // 수정된 이메일
+      phone: {type: String} // 수정된 전화번호
     },
     paymentMethod: {type: String, required: true}, // 결제 방법
-    paymentStatus: {type: String, default: 'COMPLETED'}, // 결제 상태(완료, 취소 둘 중 하나)
+    paymentStatus: {type: String, default: 'COMPLETED'}, // 결제 상태
     createdAt: {
       type: Date,
       default: () => new Date(Date.now() + 9 * 60 * 60 * 1000) // KST
@@ -36,9 +37,5 @@ const bookingSchema = new mongoose.Schema(
       default: () => new Date(Date.now() + 9 * 60 * 60 * 1000) // KST
     }
   },
-
-  {timestamps: false} // 이거 T하면 UTC 시간으로 저장됨
+  {timestamps: false}
 );
-
-const Booking = mongoose.model('Booking', bookingSchema);
-module.exports = Booking;
