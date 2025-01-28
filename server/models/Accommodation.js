@@ -46,7 +46,7 @@ const AccommodationSchema = new mongoose.Schema({
   },
   category: {
     type: String, // 숙소 유형
-    enum: ['Hotel', 'Guesthouse', 'Resort', 'Motel'],
+    enum: ['Hotel', 'Pension', 'Resort', 'Motel'],
     required: true,
     index: true
   },
@@ -67,7 +67,7 @@ const AccommodationSchema = new mongoose.Schema({
   ]
 });
 
-// 🔹 위치 기반 검색을 위한 2dsphere 인덱스 추가
+// 위치 기반 검색을 위한 2dsphere 인덱스 추가
 AccommodationSchema.index({coordinates: '2dsphere'});
 
 module.exports = mongoose.model('Accommodation', AccommodationSchema);
