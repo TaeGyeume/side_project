@@ -48,12 +48,4 @@ const RoomSchema = new mongoose.Schema({
 // 가격 검색 최적화를 위한 인덱스 추가
 RoomSchema.index({pricePerNight: 1});
 
-// 객실 추가, 수정, 삭제 시 숙소의 minPrice& maxPrice 가격 자동 업데이트
-RoomSchema.pre('save', async function (next) {
-  next();
-});
-RoomSchema.pre('remove', async function (next) {
-  next();
-});
-
 module.exports = mongoose.model('Room', RoomSchema);

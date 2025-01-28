@@ -1,13 +1,14 @@
 const express = require('express');
-const cookieOptions = require("./config/cookieConfig");  // 쿠키 설정 불러오기
+const cookieOptions = require('./config/cookieConfig'); // 쿠키 설정 불러오기
 const cors = require('cors');
 const routes = require('./routes');
 const connectDB = require('./config/db');
-require("dotenv").config();
+require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
-const accommodationRoutes = require("./routes/accommodationRoutes");
-const roomRoutes = require("./routes/roomRoutes");
+const locationRoutes = require('./routes/locationRoutes');
+const accommodationRoutes = require('./routes/accommodationRoutes');
+const roomRoutes = require('./routes/roomRoutes');
 const cookieParser = require('cookie-parser');
 
 const app = express();
@@ -17,36 +18,37 @@ connectDB();
 
 const corsOptions = {
   origin: `http://localhost:${process.env.CLIENT_PORT || 3000}`,
-  credentials: true,  // 쿠키를 포함한 요청 허용
+  credentials: true, // 쿠키를 포함한 요청 허용
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'],
-  exposedHeaders: ['set-cookie'],  
+  exposedHeaders: ['set-cookie']
 };
 
 // 미들웨어 설정
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 
 // 라우트 설정
 app.use('/', routes);
-app.use("/api/accommodations", accommodationRoutes);
-app.use("/api/rooms", roomRoutes);
+app.use('/api/locations', locationRoutes);
+app.use('/api/accommodations', accommodationRoutes);
+app.use('/api/rooms', roomRoutes);
 app.use('/api', routes);
-app.use("/api/auth", authRoutes);
+app.use('/api/auth', authRoutes);
 
 // 리프레시 토큰 엔드포인트
-app.post("/api/auth/refresh-token", (req, res) => {
-  const newToken = "new_refresh_token"; // 실제 토큰 생성 로직 필요
+app.post('/api/auth/refresh-token', (req, res) => {
+  const newToken = 'new_refresh_token'; // 실제 토큰 생성 로직 필요
 
   res.cookie('refreshToken', newToken, {
     ...cookieOptions,
-    httpOnly: true, 
-    secure: false,   // 로컬 환경에서는 false 설정 유지
+    httpOnly: true,
+    secure: false // 로컬 환경에서는 false 설정 유지
   });
 
-  res.status(200).json({ message: "토큰 갱신 성공" });
+  res.status(200).json({message: '토큰 갱신 성공'});
 });
 
 // 에러 핸들러
