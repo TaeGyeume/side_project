@@ -1,0 +1,94 @@
+.search-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 요소들을 한 줄로 정렬 */
+  gap: 15px;
+  padding: 15px;
+  border-radius: 10px;
+  background-color: #f8f8f8;
+  flex-wrap: nowrap; /* 한 줄 유지 */
+  position: relative;
+  width: 100%;
+}
+
+.input-group {
+  width: 250px; /* 🔹 검색창과 자동완성 목록의 부모 크기를 통일 */
+  position: relative;
+}
+
+.suggestions-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%; /* 🔹 검색창과 정확히 동일한 너비 */
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  overflow: hidden; /* 🔹 리스트 내부 여백 제거 */
+}
+
+.suggestion-item {
+  padding: 12px; /* 🔹 높이 조정 */
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  font-size: 16px; /* 🔹 글자 크기 검색창과 동일하게 */
+  text-align: left;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none; /* 마지막 요소 테두리 제거 */
+}
+
+.input {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%; /* 🔹 부모 요소에 맞게 자동 조절 */
+  font-size: 16px;
+  box-sizing: border-box; /* 🔹 padding 포함하여 크기 유지 */
+}
+
+.date-container {
+  display: flex;
+  gap: 10px;
+}
+
+.date-picker {
+  padding: 8px;
+  border-radius: 5px;
+  width: 150px;
+}
+
+.guest-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.button {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.search-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap; /* 버튼이 한 줄 유지되도록 설정 */
+}
+
+.suggestion-item .highlight {
+  color: blue; /* 검색어와 일치하는 부분의 색상을 변경 */
+  font-weight: bold; /* 강조 효과 */
+}

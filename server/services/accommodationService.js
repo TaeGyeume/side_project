@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 const Accommodation = require('../models/Accommodation');
 const Booking = require('../models/Booking');
 const Room = require('../models/Room');
@@ -20,26 +20,44 @@ exports.autocompleteSearch = async query => {
   try {
     if (!query) return {locations: [], accommodations: []};
 
-    // 1️⃣ `text index` 검색 (우선 적용)
+    // 🔹 공백 제거 및 정규식 변환 (띄어쓰기 무시)
+    const normalizedQuery = query.replace(/\s+/g, ''); // 모든 공백 제거
+    const regex = new RegExp(normalizedQuery.split('').join('.*'), 'i'); // 띄어쓰기 없는 검색
+
+    // 1️⃣ **도시(Location) 검색 (`text index` & `regex`)**
     let locations = await Location.find(
-      {$text: {$search: query}},
+      {$text: {$search: query}}, // MongoDB Full-Text Search
       {score: {$meta: 'textScore'}} // 검색 관련성 점수 추가
     )
-      .sort({score: {$meta: 'textScore'}}) // 검색 관련성이 높은 순으로 정렬
+      .sort({score: {$meta: 'textScore'}}) // 관련성 높은 순 정렬
       .limit(10);
 
-    // 2️⃣ `text index` 검색 결과가 없을 경우 `$regex` 사용
-    if (locations.length === 0) {
-      locations = await Location.find({name: new RegExp(query, 'i')}).limit(10);
-    }
+    // 🔹 `text index` 결과가 없으면 정규식 검색으로 대체
+    let regexLocations = await Location.find({name: {$regex: regex}}).limit(10);
 
-    // 3️⃣ 숙소(Accommodation) 검색
-    const accommodations = await Accommodation.find(
-      {name: new RegExp(query, 'i')} // 부분 검색 (대소문자 구분 없음)
+    // 🔹 두 검색 결과를 합치고 중복 제거
+    locations = [...locations, ...regexLocations].filter(
+      (v, i, a) => a.findIndex(t => t._id.toString() === v._id.toString()) === i
+    );
+
+    // 2️⃣ **숙소(Accommodation) 검색 (`text index` & `regex`)**
+    let accommodations = await Accommodation.find(
+      {$text: {$search: query}}, // Full-Text Search 적용
+      {score: {$meta: 'textScore'}}
     )
-      .select('name coordinates')
+      .sort({score: {$meta: 'textScore'}}) // 검색 관련성 순 정렬
+      .limit(10);
+
+    // 🔹 `text index` 결과가 없으면 정규식 검색으로 대체
+    let regexAccommodations = await Accommodation.find({name: {$regex: regex}})
+      .select('name coordinates description images')
       .populate('location', 'name country')
       .limit(10);
+
+    // 🔹 두 검색 결과를 합치고 중복 제거
+    accommodations = [...accommodations, ...regexAccommodations].filter(
+      (v, i, a) => a.findIndex(t => t._id.toString() === v._id.toString()) === i
+    );
 
     return {locations, accommodations};
   } catch (error) {
@@ -53,21 +71,38 @@ exports.getAccommodationsBySearch = async ({
   startDate,
   endDate,
   adults,
-  minPrice = 0, // 기본값: 0원
-  maxPrice = 500000, // 기본값: 500,000원 이상
-  category = 'all', // 기본값: all
-  sortBy = 'default' // 기본값: 기본순 (평점 높은 순)
+  minPrice = 0,
+  maxPrice = 500000,
+  category = 'all',
+  sortBy = 'default'
 }) => {
   try {
     const checkInDate = new Date(startDate);
     const checkOutDate = new Date(endDate);
 
-    // 1️⃣ 해당 도시(Location)의 ObjectId 가져오기
-    const location = await Location.findOne({name: city});
-    if (!location) return [];
-    const locationId = location._id;
+    // 🔹 **검색어 전처리 (띄어쓰기 제거 및 정규식 변환)**
+    const normalizedCity = city.replace(/\s+/g, ''); // 공백 제거
+    const regexCity = new RegExp(normalizedCity.split('').join('.*'), 'i'); // 띄어쓰기 무시
 
-    // 2️⃣ 예약된 방 ID 조회
+    // 1️⃣ **도시 검색 (`text index` & `regex`)**
+    let locations = await Location.find(
+      {$text: {$search: city}}, // Full-Text Search 적용
+      {score: {$meta: 'textScore'}} // 검색 관련성 점수 추가
+    )
+      .sort({score: {$meta: 'textScore'}})
+      .limit(10);
+
+    // 🔹 `text index` 결과가 없으면 정규식 검색으로 대체
+    let regexLocations = await Location.find({name: {$regex: regexCity}}).limit(10);
+
+    // 🔹 두 검색 결과를 합치고 중복 제거
+    locations = [...locations, ...regexLocations].filter(
+      (v, i, a) => a.findIndex(t => t._id.toString() === v._id.toString()) === i
+    );
+
+    const locationIds = locations.map(loc => loc._id);
+
+    // 2️⃣ **예약된 방 ID 조회**
     const bookedRooms = await Booking.find({
       type: 'accommodation',
       $or: [{startDate: {$lt: checkOutDate}, endDate: {$gt: checkInDate}}]
@@ -81,7 +116,7 @@ exports.getAccommodationsBySearch = async ({
     const availableRooms = await Room.find({
       maxGuests: {$gte: adults}, // 최소 인원 충족하는 방만 선택
       _id: {$nin: bookedRooms}, // 예약된 방 제외
-      pricePerNight: priceFilter // 가격 필터링 수정됨
+      pricePerNight: priceFilter // 가격 필터 적용
     }).select('_id accommodation maxGuests pricePerNight');
 
     // 5️⃣ **사용 가능한 숙소 ID 리스트 생성**
@@ -89,15 +124,37 @@ exports.getAccommodationsBySearch = async ({
       ...new Set(availableRooms.map(room => room.accommodation.toString()))
     ];
 
-    // 6️⃣ **특정 도시(Location)에 속한 숙소만 조회**
-    let filter = {location: locationId, _id: {$in: availableAccommodationIds}};
-    if (category && category !== 'all') filter.category = category; // 특정 숙소 유형만 필터링
+    // 6️⃣ **숙소 검색 (`text index` & `regex`)**
+    let accommodations = await Accommodation.find(
+      {
+        $text: {$search: city}, // Full-Text Search 적용
+        ...(category !== 'all' && {category}) // ✅ 카테고리 필터 추가
+      },
+      {score: {$meta: 'textScore'}}
+    )
+      .sort({score: {$meta: 'textScore'}})
+      .limit(10);
 
-    let accommodations = await Accommodation.find(filter).populate({
-      path: 'rooms',
-      match: {maxGuests: {$gte: adults}, pricePerNight: priceFilter}, // 방 필터 적용
-      select: 'name pricePerNight images maxGuests'
-    });
+    // 🔹 `text index` 결과가 없으면 정규식 검색으로 대체
+    let regexAccommodations = await Accommodation.find({
+      $and: [
+        {
+          $or: [
+            {location: {$in: locationIds}}, // 도시가 일치하는 숙소
+            {name: {$regex: regexCity}} // 숙소 이름에 해당 검색어 포함
+          ]
+        },
+        {_id: {$in: availableAccommodationIds}}, // 예약 가능 숙소
+        ...(category !== 'all' ? [{category}] : []) // ✅ 카테고리 필터 추가
+      ]
+    })
+      .populate('rooms', 'name pricePerNight images maxGuests')
+      .limit(10);
+
+    // 🔹 두 검색 결과를 합치고 중복 제거
+    accommodations = [...accommodations, ...regexAccommodations].filter(
+      (v, i, a) => a.findIndex(t => t._id.toString() === v._id.toString()) === i
+    );
 
     // 7️⃣ **방이 없는 숙소 제거**
     accommodations = accommodations.filter(
@@ -117,9 +174,7 @@ exports.getAccommodationsBySearch = async ({
         const bMaxPrice = Math.max(...b.rooms.map(r => r.pricePerNight));
         return bMaxPrice - aMaxPrice;
       });
-    }
-    // 기본순 정렬: 평점 높은 순
-    else if (sortBy === 'default') {
+    } else if (sortBy === 'default') {
       accommodations = accommodations.sort((a, b) => b.rating - a.rating);
     }
 
