@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const sendResetPasswordEmail = require("../config/emailConfig");
+const RefreshToken = require("../models/RefreshToken");
 const crypto = require("crypto");
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -39,7 +40,8 @@ exports.registerUser = async ({ userid, username, email, phone, password, addres
   return { message: "회원가입이 완료되었습니다." };
 };
 
-// 로그인 서비스 (쿠키 기반 인증)
+
+//  로그인 서비스 
 exports.loginUser = async ({ userid, password }, res) => {
   console.log("로그인 요청:", userid);
 
@@ -52,12 +54,22 @@ exports.loginUser = async ({ userid, password }, res) => {
   const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "15m" });
   const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
 
+  //  기존 리프레시 토큰 삭제 후 새 토큰 저장
+  await RefreshToken.deleteMany({ userId: user._id });
+
+  const refreshTokenDoc = new RefreshToken({
+    userId: user._id,
+    token: refreshToken,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  });
+  await refreshTokenDoc.save();
+
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? "None" : "Lax",
     path: "/",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
   });
 
   return { accessToken, user: { userid: user.userid, email: user.email, roles: user.roles } };
@@ -130,23 +142,50 @@ exports.resetPassword = async (token, newPassword) => {
 };
 
 // 로그아웃 서비스 (쿠키 삭제)
-exports.logoutUser = (res) => {
+// ✅ 로그아웃 서비스 (리프레시 토큰 삭제 추가)
+exports.logoutUser = async (res, userId) => {
+  if (userId) {
+    await RefreshToken.deleteMany({ userId }); //  유저의 모든 리프레시 토큰 삭제
+  }
+
   res.clearCookie("accessToken", { httpOnly: true, secure: isProduction, sameSite: "None", path: "/" });
   res.clearCookie("refreshToken", { httpOnly: true, secure: isProduction, sameSite: "None", path: "/" });
 };
 
-// 리프레시 토큰 갱신 서비스
+//  리프레시 토큰 갱신 서비스 (DB에서 검증 후 재발급)
 exports.refreshAccessToken = async (refreshToken, res) => {
   try {
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    const newAccessToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, { expiresIn: "15m" });
+    if (!refreshToken) throw new Error("리프레시 토큰이 없습니다.");
 
-    res.cookie("accessToken", newAccessToken, {
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const storedToken = await RefreshToken.findOne({ userId: decoded.id, token: refreshToken });
+
+    //  DB에 저장된 리프레시 토큰과 비교
+    if (!storedToken) {
+      throw new Error("유효하지 않은 리프레시 토큰입니다.");
+    }
+
+    //  새 액세스 토큰 및 리프레시 토큰 발급
+    const newAccessToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, { expiresIn: "15m" });
+    const newRefreshToken = jwt.sign({ id: decoded.id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+
+    //  기존 리프레시 토큰 삭제 후 새로운 토큰 저장
+    await RefreshToken.deleteMany({ userId: decoded.id });
+
+    const newRefreshTokenDoc = new RefreshToken({
+      userId: decoded.id,
+      token: newRefreshToken,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+    await newRefreshTokenDoc.save();
+
+    //  새로운 리프레시 토큰을 쿠키에 저장
+    res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: "None",
+      sameSite: isProduction ? "None" : "Lax",
       path: "/",
-      maxAge: 15 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return newAccessToken;

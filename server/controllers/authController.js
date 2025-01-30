@@ -1,7 +1,7 @@
 const authService = require("../services/authService");
 const cookieOptions = require("../config/cookieConfig");
 
-// 아이디, 이메일, 전화번호 중복 확인 컨트롤러 추가
+// 아이디, 이메일, 전화번호 중복 확인 컨트롤러
 exports.checkDuplicate = async (req, res) => {
   try {
     const response = await authService.checkDuplicate(req.body);
@@ -10,7 +10,6 @@ exports.checkDuplicate = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
 
 // 회원가입 컨트롤러
 exports.register = async (req, res) => {
@@ -29,13 +28,20 @@ exports.login = async (req, res) => {
 
     res.cookie("accessToken", accessToken, {
       ...cookieOptions,
-      secure: false,  // 로컬에서 secure false 설정
+      httpOnly: true,
+      secure: false, // 로컬 환경에서는 false
+      sameSite: "Lax", // 또는 "None" (크로스사이트 필요 시)
     });
 
-    res.cookie("refreshToken", refreshToken, {
-      ...cookieOptions,
-      secure: false,
-    });
+    if (refreshToken) {
+      res.cookie("refreshToken", refreshToken, {
+        ...cookieOptions,
+        httpOnly: true,
+        secure: false, // 로컬 환경에서는 false
+        sameSite: "Lax",
+      });
+    }
+
 
     res.status(200).json({ user });
   } catch (error) {
@@ -54,7 +60,6 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
-
 // 사용자 프로필 수정 컨트롤러
 exports.updateProfile = async (req, res) => {
   try {
@@ -62,14 +67,13 @@ exports.updateProfile = async (req, res) => {
     const updateData = req.body;
 
     const response = await authService.updateProfile(userId, updateData);
-    
+
     res.status(200).json(response);
   } catch (error) {
     console.error("프로필 업데이트 오류:", error.message);
     res.status(400).json({ message: error.message || "서버 오류가 발생했습니다." });
   }
 };
-
 
 // 비밀번호 변경 컨트롤러
 exports.changePassword = async (req, res) => {
@@ -101,12 +105,16 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-// 로그아웃 컨트롤러 (쿠키 삭제)
-exports.logout = (req, res) => {
+// 로그아웃 컨트롤러 (쿠키 삭제 + DB에서 리프레시 토큰 삭제)
+exports.logout = async (req, res) => {
   try {
+    const userId = req.user?.id;
+
+    await authService.logoutUser(res, userId);
+
     res.clearCookie("accessToken", {
       ...cookieOptions,
-      secure: false,  // 로컬 환경에서는 false
+      secure: false,
     });
 
     res.clearCookie("refreshToken", {
@@ -133,7 +141,7 @@ exports.refreshToken = async (req, res) => {
 
     res.cookie("accessToken", newAccessToken, {
       ...cookieOptions,
-      secure: false,  // 로컬 환경에서는 false
+      secure: false,
     });
 
     res.status(200).json({ message: "토큰 갱신 성공" });
