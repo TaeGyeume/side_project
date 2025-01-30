@@ -15,7 +15,8 @@ const handleRequest = async (requestPromise, errorMessage) => {
     const response = await requestPromise;
     return response.data;
   } catch (error) {
-    console.error(`${errorMessage}:`, error.response?.data?.message || error.message);
+    // 
+    // console.error(`${errorMessage}:`, error.response?.data?.message || error.message);
     throw error.response?.data || new Error(errorMessage);
   }
 };
@@ -47,7 +48,6 @@ export const authAPI = {
 
   updateProfile: (userData) =>
     api.put("/auth/profile/update", userData,"프로필 수정중 오류 발생생"),  
-
   changePassword: (passwordData) =>
     handleRequest(api.put("/auth/change-password", passwordData, requestConfig), "비밀번호 변경 중 오류 발생"),
 

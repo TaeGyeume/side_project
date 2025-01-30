@@ -33,7 +33,7 @@ app.use('/api', routes);
 app.use("/api/auth", authRoutes);
 
 // 리프레시 토큰 엔드포인트
-app.post("/api/auth/refresh-token", (req, res) => {
+app.post("/auth/refresh-token", (req, res) => {
   const newToken = "new_refresh_token"; // 실제 토큰 생성 로직 필요
 
   res.cookie('refreshToken', newToken, {
