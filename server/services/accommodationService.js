@@ -86,16 +86,14 @@ exports.getAccommodationsBySearch = async ({
 
     // 1️⃣ **도시 검색 (`text index` & `regex`)**
     let locations = await Location.find(
-      {$text: {$search: city}}, // Full-Text Search 적용
-      {score: {$meta: 'textScore'}} // 검색 관련성 점수 추가
+      {$text: {$search: city}},
+      {score: {$meta: 'textScore'}}
     )
       .sort({score: {$meta: 'textScore'}})
       .limit(10);
 
-    // 🔹 `text index` 결과가 없으면 정규식 검색으로 대체
     let regexLocations = await Location.find({name: {$regex: regexCity}}).limit(10);
 
-    // 🔹 두 검색 결과를 합치고 중복 제거
     locations = [...locations, ...regexLocations].filter(
       (v, i, a) => a.findIndex(t => t._id.toString() === v._id.toString()) === i
     );
@@ -114,10 +112,13 @@ exports.getAccommodationsBySearch = async ({
 
     // 4️⃣ **객실 단위로 필터링 (가격 + 인원)**
     const availableRooms = await Room.find({
-      maxGuests: {$gte: adults}, // 최소 인원 충족하는 방만 선택
-      _id: {$nin: bookedRooms}, // 예약된 방 제외
-      pricePerNight: priceFilter // 가격 필터 적용
+      maxGuests: {$gte: adults},
+      _id: {$nin: bookedRooms},
+      pricePerNight: priceFilter // ✅ 가격 필터 적용
     }).select('_id accommodation maxGuests pricePerNight');
+
+    // ✅ 가격 필터링이 적용된 방의 ID 목록 생성
+    const availableRoomIds = availableRooms.map(room => room._id);
 
     // 5️⃣ **사용 가능한 숙소 ID 리스트 생성**
     const availableAccommodationIds = [
@@ -127,55 +128,55 @@ exports.getAccommodationsBySearch = async ({
     // 6️⃣ **숙소 검색 (`text index` & `regex`)**
     let accommodations = await Accommodation.find(
       {
-        $text: {$search: city}, // Full-Text Search 적용
-        ...(category !== 'all' && {category}) // ✅ 카테고리 필터 추가
+        $text: {$search: city},
+        ...(category !== 'all' && {category}),
+        _id: {$in: availableAccommodationIds} // ✅ 예약 가능한 숙소만 검색
       },
       {score: {$meta: 'textScore'}}
     )
       .sort({score: {$meta: 'textScore'}})
       .limit(10);
 
-    // 🔹 `text index` 결과가 없으면 정규식 검색으로 대체
     let regexAccommodations = await Accommodation.find({
       $and: [
         {
-          $or: [
-            {location: {$in: locationIds}}, // 도시가 일치하는 숙소
-            {name: {$regex: regexCity}} // 숙소 이름에 해당 검색어 포함
-          ]
+          $or: [{location: {$in: locationIds}}, {name: {$regex: regexCity}}]
         },
-        {_id: {$in: availableAccommodationIds}}, // 예약 가능 숙소
-        ...(category !== 'all' ? [{category}] : []) // ✅ 카테고리 필터 추가
+        {_id: {$in: availableAccommodationIds}},
+        ...(category !== 'all' ? [{category}] : [])
       ]
-    })
-      .populate('rooms', 'name pricePerNight images maxGuests')
-      .limit(10);
+    }).limit(10);
 
-    // 🔹 두 검색 결과를 합치고 중복 제거
     accommodations = [...accommodations, ...regexAccommodations].filter(
       (v, i, a) => a.findIndex(t => t._id.toString() === v._id.toString()) === i
     );
 
-    // 7️⃣ **방이 없는 숙소 제거**
-    accommodations = accommodations.filter(
-      accommodation => accommodation.rooms.length > 0
-    );
+    // 7️⃣ **방이 없는 숙소 제거 및 가격 필터링된 방만 유지**
+    accommodations = accommodations.filter(accommodation => {
+      // ✅ 숙소 내에서 필터링된 방만 유지
+      accommodation.rooms = availableRooms.filter(
+        room => room.accommodation.toString() === accommodation._id.toString()
+      );
 
-    // 8️⃣ **정렬 적용 (기본순 / 가격순)**
+      // ✅ 숙소의 `minPrice` 업데이트
+      if (accommodation.rooms.length > 0) {
+        accommodation.minPrice = Math.min(
+          ...accommodation.rooms.map(r => r.pricePerNight)
+        );
+      }
+
+      return accommodation.rooms.length > 0; // 방이 없는 숙소 제거
+    });
+
+    // 8️⃣ **정렬 적용 (검색 관련성 / 가격 / 평점)**
     if (sortBy === 'priceLow') {
-      accommodations = accommodations.sort((a, b) => {
-        const aMinPrice = Math.min(...a.rooms.map(r => r.pricePerNight));
-        const bMinPrice = Math.min(...b.rooms.map(r => r.pricePerNight));
-        return aMinPrice - bMinPrice;
-      });
+      accommodations = accommodations.sort((a, b) => a.minPrice - b.minPrice);
     } else if (sortBy === 'priceHigh') {
-      accommodations = accommodations.sort((a, b) => {
-        const aMaxPrice = Math.max(...a.rooms.map(r => r.pricePerNight));
-        const bMaxPrice = Math.max(...b.rooms.map(r => r.pricePerNight));
-        return bMaxPrice - aMaxPrice;
-      });
-    } else if (sortBy === 'default') {
+      accommodations = accommodations.sort((a, b) => b.minPrice - a.minPrice);
+    } else if (sortBy === 'rating') {
       accommodations = accommodations.sort((a, b) => b.rating - a.rating);
+    } else if (sortBy === 'default') {
+      accommodations = accommodations.sort((a, b) => b.score - a.score);
     }
 
     return accommodations;
