@@ -6,14 +6,14 @@ const Header = () => {
   const {user, isAuthenticated, fetchUserProfile, logout} = useAuthStore();
   const navigate = useNavigate();
 
-  // ✅ 로그인된 경우에만 프로필 불러오기 (401 방지)
+  //  로그인된 경우에만 프로필 불러오기 (401 방지)
   useEffect(() => {
     if (isAuthenticated && !user) {
       fetchUserProfile();
     }
   }, [isAuthenticated, user, fetchUserProfile]);
 
-  // ✅ 로그아웃 처리 (쿠키 삭제 + 상태 초기화 + 리디렉션)
+  //  로그아웃 처리 (쿠키 삭제 + 상태 초기화 + 리디렉션)
   const handleLogout = async () => {
     try {
       await logout();
@@ -53,23 +53,34 @@ const Header = () => {
                 숙소 검색
               </Link>
             </li>
+
             {isAuthenticated && user ? (
               <>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/product">
-                    +상품+
-                  </Link>
-                </li>
+                {/* 관리자(admin) 전용 메뉴 */}
+
+                {user?.roles.includes('admin') && (
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/product">
+                      +상품+
+                    </Link>
+                  </li>
+                )}
+
+                {/* 다른 사용자들도 접근 가능한 메뉴 */}
                 <li className="nav-item">
                   <Link className="nav-link" to="/profile">
                     프로필
                   </Link>
                 </li>
+
+                {/* 사용자 이름 표시 */}
                 <li className="nav-item d-flex align-items-center">
                   <span className="nav-link text-primary fw-bold">
                     {user?.username}님
                   </span>
                 </li>
+
+                {/* 로그아웃 버튼 */}
                 <li className="nav-item">
                   <button className="btn btn-outline-danger" onClick={handleLogout}>
                     로그아웃
@@ -77,11 +88,19 @@ const Header = () => {
                 </li>
               </>
             ) : (
-              <li className="nav-item">
-                <Link className="nav-link" to="/login">
-                  로그인
-                </Link>
-              </li>
+              <>
+                {/* 비로그인 사용자 메뉴 */}
+                <li className="nav-item">
+                  <Link className="nav-link" to="/login">
+                    로그인
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/register">
+                    회원가입
+                  </Link>
+                </li>
+              </>
             )}
           </ul>
         </div>
