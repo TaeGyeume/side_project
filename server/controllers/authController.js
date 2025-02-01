@@ -95,15 +95,24 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
+
 // 비밀번호 재설정 컨트롤러
 exports.resetPassword = async (req, res) => {
   try {
-    const response = await authService.resetPassword(req.body.token, req.body.newPassword);
+    const { token, currentPassword, newPassword } = req.body;
+    const userId = req.user ? req.user.id : null;
+
+    if (!newPassword) {
+      return res.status(400).json({ message: "새 비밀번호를 입력해주세요." });
+    }
+
+    const response = await authService.resetPassword({ userId, token, currentPassword, newPassword });
     res.status(200).json(response);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: error.message || "비밀번호 변경에 실패했습니다." });
   }
 };
+
 
 // 로그아웃 컨트롤러 (쿠키 삭제 + DB에서 리프레시 토큰 삭제)
 exports.logout = async (req, res) => {

@@ -85,14 +85,34 @@ exports.getProfile = async (userId) => {
 
 // 사용자 프로필 업데이트 서비스
 exports.updateProfile = async (userId, updateData) => {
-  // 중복 검사 시 자기 자신 제외
-  await exports.checkDuplicate(updateData, userId);
+  const user = await User.findById(userId);
+  if (!user) throw new Error("사용자를 찾을 수 없습니다.");
 
-  const user = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true }).select("-password");
-  if (!user) throw new Error("사용자 업데이트 실패");
+  //  변경된 데이터만 검사 (자기 자신의 기존 데이터 제외)
+  if (updateData.userid && updateData.userid !== user.userid) {
+    const existingUser = await User.findOne({ userid: updateData.userid });
+    if (existingUser) throw new Error("이미 사용 중인 아이디입니다.");
+  }
   
-  return { message: "프로필이 성공적으로 업데이트되었습니다.", user };
+  if (updateData.email && updateData.email !== user.email) {
+    const existingEmail = await User.findOne({ email: updateData.email });
+    if (existingEmail) throw new Error("이미 사용 중인 이메일입니다.");
+  }
+  
+  if (updateData.phone && updateData.phone !== user.phone) {
+    const existingPhone = await User.findOne({ phone: updateData.phone });
+    if (existingPhone) throw new Error("이미 사용 중인 전화번호입니다.");
+  }
+
+  //  변경된 필드만 업데이트
+  const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+    new: true,
+    runValidators: true,
+  }).select("-password");
+
+  return { message: "프로필이 성공적으로 업데이트되었습니다.", user: updatedUser };
 };
+
 
 // 비밀번호 변경 서비스
 exports.changePassword = async (userId, { currentPassword, newPassword }) => {
@@ -126,20 +146,38 @@ exports.forgotPassword = async (email) => {
 };
 
 // 비밀번호 재설정 서비스
-exports.resetPassword = async (token, newPassword) => {
-  const user = await User.findOne({ passwordResetExpires: { $gt: Date.now() } });
+exports.resetPassword = async ({ userId, token, currentPassword, newPassword }) => {
+  let user = null;
 
-  if (!user || !(await bcrypt.compare(token, user.passwordResetToken))) {
-    throw new Error("토큰이 유효하지 않거나 만료되었습니다.");
+  //  로그인된 사용자의 비밀번호 변경 (현재 비밀번호 확인 필요)
+  if (userId) {
+    user = await User.findById(userId);
+    if (!user) throw new Error("사용자를 찾을 수 없습니다.");
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) throw new Error("현재 비밀번호가 일치하지 않습니다.");
   }
 
+  //  비밀번호 재설정 (비밀번호 찾기 후 이메일 링크로 받은 토큰 기반)
+  if (token) {
+    user = await User.findOne({ passwordResetToken: token, passwordResetExpires: { $gt: Date.now() } });
+
+    if (!user) {
+      throw new Error("토큰이 유효하지 않거나 만료되었습니다.");
+    }
+  }
+
+  if (!user) throw new Error("비밀번호를 변경할 수 없습니다.");
+
+  //  새 비밀번호 설정
   user.password = await bcrypt.hash(newPassword, 10);
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
   await user.save();
 
-  return { message: "비밀번호가 성공적으로 재설정되었습니다." };
+  return { message: "비밀번호가 성공적으로 변경되었습니다." };
 };
+
 
 // 로그아웃 서비스 (쿠키 삭제)
 // ✅ 로그아웃 서비스 (리프레시 토큰 삭제 추가)
@@ -175,7 +213,7 @@ exports.refreshAccessToken = async (refreshToken, res) => {
     const newRefreshTokenDoc = new RefreshToken({
       userId: decoded.id,
       token: newRefreshToken,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7일
     });
     await newRefreshTokenDoc.save();
 
@@ -185,7 +223,7 @@ exports.refreshAccessToken = async (refreshToken, res) => {
       secure: isProduction,
       sameSite: isProduction ? "None" : "Lax",
       path: "/",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
     });
 
     return newAccessToken;

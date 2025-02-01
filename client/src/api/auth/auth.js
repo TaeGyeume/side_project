@@ -63,8 +63,12 @@ export const authAPI = {
   getUserProfile: () =>
     handleRequest(api.get("/auth/profile", requestConfig), "프로필 조회 중 오류 발생"),
 
-  checkDuplicate: (data) =>
-    handleRequest(api.post("/auth/check-duplicate", data, requestConfig), "중복 확인 중 오류 발생"),
+  checkDuplicate: (data) =>{
+    if (!data || Object.values(data).every((val) => !val.trim())) {
+      return Promise.reject({ message: "입력된 값이 없습니다." });
+    }
+    return handleRequest(api.post("/auth/check-duplicate", data, requestConfig), "중복 확인 중 오류 발생");
+  },
 
   updateProfile: (userData) =>
     handleRequest(api.put("/auth/profile/update", userData, requestConfig), "프로필 수정 중 오류 발생"),
@@ -76,7 +80,7 @@ export const authAPI = {
     handleRequest(api.post("/auth/forgot-password", { email }, requestConfig), "비밀번호 찾기 요청 중 오류 발생"),
 
   resetPassword: (resetData) =>
-    handleRequest(api.post("/auth/reset-password", resetData, requestConfig), "비밀번호 재설정 중 오류 발생"),
+    handleRequest(api.post("/auth/reset-password", resetData, requestConfig), "비밀번호 변경 중 오류 발생"),
 
   refreshToken: () =>
     handleRequest(api.post("/auth/refresh-token", {}, requestConfig), "토큰 갱신 요청 중 오류 발생"),

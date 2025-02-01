@@ -10,8 +10,11 @@ const EditProfile = () => {
     email: "",
     phone: "",
     address: "",
+    membershipLevel: "",
+    roles: "",
   });
 
+  const [originalData, setOriginalData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -20,16 +23,33 @@ const EditProfile = () => {
     email: "",
     phone: "",
   });
+
+  const [showModal, setShowModal] = useState(false);
+  const [editingField, setEditingField] = useState("");
+
   const navigate = useNavigate();
   const { checkAuth } = useAuthStore();
 
-  // 사용자 프로필 불러오기
+  // ✅ 사용자 프로필 불러오기 (필요한 데이터만 추출)
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         await checkAuth();
         const response = await authAPI.getUserProfile();
-        setFormData(response);
+        
+        // 필요한 데이터만 저장
+        const filteredData = {
+          userid: response.userid,
+          username: response.username,
+          email: response.email,
+          phone: response.phone,
+          address: response.address,
+          membershipLevel: response.membershipLevel,
+          roles: response.roles,
+        };
+
+        setFormData(filteredData);
+        setOriginalData(filteredData);
       } catch (error) {
         console.error("프로필 정보를 불러오는 데 실패했습니다.", error);
         setError("프로필 정보를 불러오는 데 실패했습니다. 다시 로그인해주세요.");
@@ -42,39 +62,78 @@ const EditProfile = () => {
     fetchProfile();
   }, [navigate, checkAuth]);
 
-  // 입력 값 변경 핸들러
+  // ✅ 입력 값 변경 감지
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setCheckMessage({ ...checkMessage, [e.target.name]: "" });
   };
 
-  // 중복 확인 API 호출
+  // ✅ 중복 확인 API 호출
   const handleCheckDuplicate = async (field) => {
-    console.log(`중복 확인 요청: ${field} =`, formData[field]);  // 클릭 시 확인 로그
-  
+    if (!["userid", "email", "phone"].includes(field)) return;
+
+    if (formData[field] === originalData[field]) {
+      setCheckMessage({ ...checkMessage, [field]: "현재 값과 동일합니다." });
+      return;
+    }
+
     try {
       const response = await authAPI.checkDuplicate({ [field]: formData[field] });
-      console.log("서버 응답:", response.data);
-      setCheckMessage({ ...checkMessage, [field]: response.data.message });
+      setCheckMessage({ ...checkMessage, [field]: response.message });
     } catch (error) {
-      console.error("중복 확인 실패:", error.response?.data || error.message);
-      setCheckMessage({ ...checkMessage, [field]: error.response?.data?.message || "중복 확인에 실패했습니다." });
+      setCheckMessage({
+        ...checkMessage,
+        [field]: error.response?.data?.message || "중복 확인에 실패했습니다.",
+      });
     }
   };
 
-  // 폼 제출 핸들러
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // ✅ 변경된 값만 서버로 전송
+  const handleSubmit = async () => {
     setError("");
     setSuccess("");
 
+    const updatedData = {};
+    Object.keys(formData).forEach((key) => {
+      if (formData[key] !== originalData[key]) {
+        updatedData[key] = formData[key];
+      }
+    });
+
+    if (Object.keys(updatedData).length === 0) {
+      setError("변경된 내용이 없습니다.");
+      return;
+    }
+
+    for (const field of ["userid", "email", "phone"]) {
+      if (updatedData[field]) {
+        try {
+          const response = await authAPI.checkDuplicate({ [field]: updatedData[field] });
+          if (response.message !== "사용 가능한 정보입니다.") {
+            setError(`${field}이(가) 중복되었습니다.`);
+            return;
+          }
+        } catch (error) {
+          setError(error.response?.data?.message || `${field} 중복 확인 중 오류 발생`);
+          return;
+        }
+      }
+    }
+
     try {
-      await authAPI.updateProfile(formData);
+      await authAPI.updateProfile(updatedData);
       setSuccess("프로필이 성공적으로 업데이트되었습니다.");
       setTimeout(() => navigate("/profile"), 2000);
     } catch (error) {
       setError(error.response?.data?.message || "프로필 업데이트에 실패했습니다.");
     }
+    setShowModal(false);
+  };
+
+  // ✅ 모달 열기
+  const openModal = (field) => {
+    setEditingField(field);
+    setShowModal(true);
   };
 
   if (loading) return <p className="text-center">프로필 정보를 불러오는 중...</p>;
@@ -86,100 +145,59 @@ const EditProfile = () => {
       {error && <div className="alert alert-danger text-center">{error}</div>}
       {success && <div className="alert alert-success text-center">{success}</div>}
 
-      <form onSubmit={handleSubmit} className="p-4 border rounded shadow">
-        <div className="mb-3">
-          <label className="form-label">아이디</label>
-          <div className="d-flex">
-            <input
-              type="text"
-              name="userid"
-              className="form-control me-2"
-              value={formData.userid}
-              onChange={handleChange}
-              required
-            />
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={() => handleCheckDuplicate("userid")}
-            >
-              중복 확인
+      <div className="p-4 border rounded shadow">
+        {Object.entries(formData).map(([key, value]) => (
+          <div key={key} className="mb-3 d-flex justify-content-between">
+            <p>
+              <strong>{key.toUpperCase()}:</strong> {value}
+            </p>
+            <button className="btn btn-outline-primary btn-sm" onClick={() => openModal(key)}>
+              수정
             </button>
           </div>
-          {checkMessage.userid && <small className="text-danger">{checkMessage.userid}</small>}
-        </div>
+        ))}
+      </div>
 
-        <div className="mb-3">
-          <label className="form-label">이름</label>
-          <input
-            type="text"
-            name="username"
-            className="form-control"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">이메일</label>
-          <div className="d-flex">
-            <input
-              type="email"
-              name="email"
-              className="form-control me-2"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={() => handleCheckDuplicate("email")}
-            >
-              중복 확인
-            </button>
+      {/* ✅ 모달 창 */}
+      {showModal && (
+        <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ background: "rgba(0,0,0,0.5)" }}>
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{editingField.toUpperCase()} 수정</h5>
+                <button type="button" className="close" onClick={() => setShowModal(false)}>
+                  &times;
+                </button>
+              </div>
+              <div className="modal-body">
+                <input
+                  type="text"
+                  name={editingField}
+                  className="form-control"
+                  value={formData[editingField]}
+                  onChange={handleChange}
+                />
+                {["userid", "email", "phone"].includes(editingField) && (
+                  <button className="btn btn-outline-secondary mt-2" onClick={() => handleCheckDuplicate(editingField)}>
+                    중복 확인
+                  </button>
+                )}
+                {checkMessage[editingField] && (
+                  <small className="text-danger d-block mt-1">{checkMessage[editingField]}</small>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
+                  닫기
+                </button>
+                <button type="button" className="btn btn-primary" onClick={handleSubmit}>
+                  저장
+                </button>
+              </div>
+            </div>
           </div>
-          {checkMessage.email && <small className="text-danger">{checkMessage.email}</small>}
         </div>
-
-        <div className="mb-3">
-          <label className="form-label">전화번호</label>
-          <div className="d-flex">
-            <input
-              type="text"
-              name="phone"
-              className="form-control me-2"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-            />
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={() => handleCheckDuplicate("phone")}
-            >
-              중복 확인
-            </button>
-          </div>
-          {checkMessage.phone && <small className="text-danger">{checkMessage.phone}</small>}
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">주소</label>
-          <input
-            type="text"
-            name="address"
-            className="form-control"
-            value={formData.address}
-            onChange={handleChange}
-          />
-        </div>
-
-        <button type="submit" className="btn btn-primary w-100">
-          수정하기
-        </button>
-      </form>
+      )}
     </div>
   );
 };
