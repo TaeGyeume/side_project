@@ -48,7 +48,11 @@ const Header = () => {
                 메인
               </Link>
             </li>
-
+            <li className="nav-item">
+              <Link className="nav-link" to="/accommodations/search">
+                숙소 검색
+              </Link>
+            </li>
             {isAuthenticated && user ? (
               <>
                 <li className="nav-item">

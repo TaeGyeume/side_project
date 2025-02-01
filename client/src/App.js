@@ -9,6 +9,8 @@ import EditProfile from './pages/user/EditProfile';
 import Header from './components/Header';
 import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
+import AccommodationSearch from './pages/accommodation/AccommodationSearch';
+import AccommodationResults from './pages/accommodation/AccommodationResults';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -55,6 +57,8 @@ const App = () => {
             element={isAuthenticated ? <Navigate to="/profile" /> : <AuthPages.Login />}
           />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/accommodations/search" element={<AccommodationSearch />} />
+          <Route path="/accommodations/results" element={<AccommodationResults />} />
 
           {/* 인증된 사용자만 접근 가능 */}
           <Route element={<PrivateRoute />}>
