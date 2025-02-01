@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import Slider from 'react-slider';
-import './FilterPanel.css';
+import './styles/FilterPanel.css';
 
 const FilterPanel = ({onFilterChange}) => {
   const [priceRange, setPriceRange] = useState([0, 500000]);

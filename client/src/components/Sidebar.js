@@ -14,7 +14,7 @@ const Sidebar = () => {
           <button onClick={() => navigate('/product/air')}>항공</button>
         </li>
         <li>
-          <button onClick={() => navigate('/product/accommodation')}>숙소</button>
+          <button onClick={() => navigate('/product/accommodations/list')}>숙소</button>
         </li>
         <li>
           <button onClick={() => navigate('/product/tourTicket/list')}>투어.티켓</button>

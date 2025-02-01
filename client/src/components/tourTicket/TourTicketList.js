@@ -9,8 +9,12 @@ const TourTicketList = () => {
 
   useEffect(() => {
     const fetchTickets = async () => {
-      const data = await getTourTickets();
-      setTickets(data);
+      try {
+        const data = await getTourTickets();
+        setTickets(data);
+      } catch (error) {
+        console.error('상품 목록을 가져오는 중 오류 발생:', error);
+      }
     };
 
     fetchTickets();
@@ -28,7 +32,10 @@ const TourTicketList = () => {
       <div className="tour-ticket-grid">
         {tickets.length > 0 ? (
           tickets.map(ticket => (
-            <div key={ticket._id} className="tour-ticket-card">
+            <div
+              key={ticket._id}
+              className="tour-ticket-card"
+              onClick={() => navigate(`/product/tourTicket/${ticket._id}`)}>
               <img
                 src={`http://localhost:5000${ticket.images[0]}`}
                 alt={ticket.title}

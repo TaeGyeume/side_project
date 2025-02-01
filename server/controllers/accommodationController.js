@@ -118,3 +118,12 @@ exports.deleteAccommodation = async (req, res) => {
     res.status(500).json({message: '숙소 삭제 중 오류 발생', error: error.message});
   }
 };
+
+exports.getAllAccommodations = async (req, res) => {
+  try {
+    const accommodations = await accommodationService.getAllAccommodations();
+    res.status(200).json(accommodations);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

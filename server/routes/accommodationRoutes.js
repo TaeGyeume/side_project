@@ -17,5 +17,7 @@ router.get(
 router.patch('/:accommodationId', accommodationController.updateAccommodation);
 // 숙소 삭제 API (DELETE /api/accommodations/:accommodationId)
 router.delete('/:accommodationId', accommodationController.deleteAccommodation);
+// ✅ 숙소 전체 리스트 조회 API (GET /api/accommodations/list)
+router.get('/list', accommodationController.getAllAccommodations);
 
 module.exports = router;

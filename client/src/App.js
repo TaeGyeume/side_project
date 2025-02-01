@@ -14,11 +14,15 @@ import Unauthorized from './pages/Unauthorized'; // 권한 없음 페이지 추�
 // import AdminSettings from './pages/admin/AdminSettings'; // 어드민 설정 추가
 import AccommodationSearch from './pages/accommodation/AccommodationSearch';
 import AccommodationResults from './pages/accommodation/AccommodationResults';
+import AccommodationDetail from './pages/accommodation/AccommodationDetail';
 import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이지 추가
 import Reservation from './pages/reservations/Reservation'; // 🎫 예약 페이지 추가
 import ProductPage from './pages/product/ProductPage';
+import AccommodationList from './pages/product/AccommodationList';
 import TourTicketList from './components/tourTicket/TourTicketList';
 import TourTicketForm from './components/tourTicket/TourTicketForm';
+import TourTicketDetail from './components/tourTicket/TourTicketDetail';
+import TourTicketModify from './components/tourTicket/TourTicketModify';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -68,6 +72,9 @@ const App = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/accommodations/search" element={<AccommodationSearch />} />
           <Route path="/accommodations/results" element={<AccommodationResults />} />
+          <Route path="/accommodations/:accommodationId/detail" element={<AccommodationDetail />} />
+
+          {/* ✈️ 항공편 목록 페이지 추가 */}
           <Route path="/flights" element={<Flights />} />
 
           {/* 🔐 인증된 사용자만 접근 가능 */}
@@ -82,8 +89,14 @@ const App = () => {
           <Route path="/product" element={<ProductPage />} />
           <Route path="/product/tourTicket/list" element={<TourTicketList />} />
           <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
+          <Route path="/product/accommodations/list" element={<AccommodationList />} />
             {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
             {/* <Route path="/admin/settings" element={<AdminSettings />} /> */}
+            <Route path="/product" element={<ProductPage />} />
+            <Route path="/product/tourTicket/list" element={<TourTicketList />} />
+            <Route path="/product/tourTicket/:id" element={<TourTicketDetail />} />
+            <Route path="/product/tourTicket/modify/:id" element={<TourTicketModify />} />
+            <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
           </Route>
 
           {/* ❌ 권한 없음 페이지 */}

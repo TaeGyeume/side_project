@@ -271,3 +271,11 @@ exports.deleteAccommodation = async accommodationId => {
     throw new Error('숙소 삭제 중 오류 발생: ' + error.message);
   }
 };
+
+exports.getAllAccommodations = async () => {
+  try {
+    return await Accommodation.find().populate('rooms'); // 숙소와 관련된 방 정보도 가져오기
+  } catch (error) {
+    throw new Error('숙소 목록을 불러오는 중 오류 발생: ' + error.message);
+  }
+};
