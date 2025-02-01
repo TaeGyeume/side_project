@@ -1,14 +1,17 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import api from './api/axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {BrowserRouter as Router, Route, Routes, Navigate} from 'react-router-dom';
-import {AuthPages, Main, UserPages} from './pages';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { AuthPages, Main, UserPages } from './pages';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import EditProfile from './pages/user/EditProfile';
 import Header from './components/Header';
-import {useAuthStore} from './store/authStore'; // Zustand 스토어
+import { useAuthStore } from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
+import Unauthorized from './pages/Unauthorized'; // 권한 없음 페이지 추가
+// import AdminDashboard from './pages/admin/AdminDashboard'; // 어드민 대시보드 추가
+// import AdminSettings from './pages/admin/AdminSettings'; // 어드민 설정 추가
 import AccommodationSearch from './pages/accommodation/AccommodationSearch';
 import AccommodationResults from './pages/accommodation/AccommodationResults';
 import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이지 추가
@@ -61,25 +64,30 @@ const App = () => {
             path="/login"
             element={isAuthenticated ? <Navigate to="/profile" /> : <AuthPages.Login />}
           />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/accommodations/search" element={<AccommodationSearch />} />
           <Route path="/accommodations/results" element={<AccommodationResults />} />
-
-          {/* ✈️ 항공편 목록 페이지 추가 */}
           <Route path="/flights" element={<Flights />} />
 
-          {/* 인증된 사용자만 접근 가능 */}
+          {/* 🔐 인증된 사용자만 접근 가능 */}
           <Route element={<PrivateRoute />}>
-            <Route path="/reservation/:flightId" element={<Reservation />} />{' '}
-            {/* 🎫 특정 항공편 예약 페이지 추가 (PrivateRoute 필요) */}
-            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/reservation/:flightId" element={<Reservation />} />
             <Route path="/profile" element={<UserPages.Profile />} />
             <Route path="/profile/update" element={<EditProfile />} />
-            <Route path="/product" element={<ProductPage />} />
-            <Route path="/product/tourTicket/list" element={<TourTicketList />} />
-            {/* <Route path="/product/tourTicket/list/:id" element={<TourTicketDetail />} /> */}
-            <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
           </Route>
+
+          {/* 🔒 어드민 전용 페이지 */}
+          <Route element={<PrivateRoute allowedRoles={['admin']} />}>
+          <Route path="/product" element={<ProductPage />} />
+          <Route path="/product/tourTicket/list" element={<TourTicketList />} />
+          <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
+            {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
+            {/* <Route path="/admin/settings" element={<AdminSettings />} /> */}
+          </Route>
+
+          {/* ❌ 권한 없음 페이지 */}
+          <Route path="/unauthorized" element={<Unauthorized />} />
 
           {/* 404 처리 */}
           <Route path="*" element={<div>페이지를 찾을 수 없습니다.</div>} />
