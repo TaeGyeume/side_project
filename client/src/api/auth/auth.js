@@ -94,9 +94,19 @@ export const authAPI = {
       '비밀번호 변경 중 오류 발생'
     ),
 
+  // ✅ 비밀번호 찾기 요청에서만 withCredentials 제거
   forgotPassword: email =>
     handleRequest(
-      api.post('/auth/forgot-password', {email}, requestConfig),
+      api.post(
+        '/auth/forgot-password',
+        {email},
+        {
+          headers: {
+            'Cache-Control': 'no-store',
+            'Content-Type': 'application/json'
+          }
+        }
+      ),
       '비밀번호 찾기 요청 중 오류 발생'
     ),
 
