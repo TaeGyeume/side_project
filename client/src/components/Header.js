@@ -6,14 +6,14 @@ const Header = () => {
   const {user, isAuthenticated, fetchUserProfile, logout} = useAuthStore();
   const navigate = useNavigate();
 
-  // 컴포넌트 마운트 시 프로필 불러오기
+  // ✅ 로그인된 경우에만 프로필 불러오기 (401 방지)
   useEffect(() => {
-    if (!user) {
+    if (isAuthenticated && !user) {
       fetchUserProfile();
     }
-  }, [user, fetchUserProfile]);
+  }, [isAuthenticated, user, fetchUserProfile]);
 
-  // 로그아웃 처리 (쿠키 삭제 + 상태 초기화 + 리디렉션)
+  // ✅ 로그아웃 처리 (쿠키 삭제 + 상태 초기화 + 리디렉션)
   const handleLogout = async () => {
     try {
       await logout();
