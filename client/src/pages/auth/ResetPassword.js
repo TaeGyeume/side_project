@@ -1,22 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { authAPI } from "../../api/auth";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuthStore } from "../../store/authStore"; // 로그인 상태 확인
 
 const ResetPassword = () => {
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get("token"); // URL에서 토큰 추출
-
   const [formData, setFormData] = useState({
+    currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
 
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const token = new URLSearchParams(location.search).get("token"); // URL에서 토큰 추출
+  const { isAuthenticated } = useAuthStore(); // 로그인 상태 확인
 
-  // 입력 변경 핸들러
+  useEffect(() => {
+    if (!token && !isAuthenticated) {
+      setError("유효하지 않은 접근입니다.");
+    }
+  }, [token, isAuthenticated]);
+
+  // 입력 값 변경 감지
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -24,76 +31,89 @@ const ResetPassword = () => {
   // 폼 제출 핸들러
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
     setError("");
+    setSuccess("");
 
     if (formData.newPassword !== formData.confirmPassword) {
-      setError("비밀번호가 일치하지 않습니다.");
+      setError("새 비밀번호가 일치하지 않습니다.");
       return;
     }
 
-    setLoading(true);
-
     try {
-      await authAPI.resetPassword({
-        token,
-        newPassword: formData.newPassword,
-      });
-      setMessage("비밀번호가 성공적으로 재설정되었습니다.");
+      if (token) {
+        // 🔹 비밀번호 찾기 후 재설정 (토큰 기반)
+        await authAPI.resetPassword({
+          token: token,
+          newPassword: formData.newPassword,
+        });
+      } else if (isAuthenticated) {
+        // 🔹 로그인된 사용자 비밀번호 변경
+        if (!formData.currentPassword) {
+          setError("현재 비밀번호를 입력해주세요.");
+          return;
+        }
+        await authAPI.resetPassword({
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword,
+        });
+      }
+
+      setSuccess("비밀번호가 변경되었습니다. 다시 로그인해주세요.");
       setTimeout(() => navigate("/login"), 3000);
     } catch (error) {
-      setError(error.response?.data?.message || "비밀번호 재설정에 실패했습니다.");
-    } finally {
-      setLoading(false);
+      setError(error.response?.data?.message || "비밀번호 변경에 실패했습니다.");
     }
   };
 
   return (
     <div className="container mt-5">
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <h2 className="text-center mb-4">비밀번호 재설정</h2>
+      <h2 className="text-center mb-4">비밀번호 변경</h2>
+      {error && <div className="alert alert-danger text-center">{error}</div>}
+      {success && <div className="alert alert-success text-center">{success}</div>}
 
-          {message && <div className="alert alert-success">{message}</div>}
-          {error && <div className="alert alert-danger">{error}</div>}
-
-          <form onSubmit={handleSubmit} className="p-4 border rounded shadow">
-            <div className="mb-3">
-              <label className="form-label">새 비밀번호</label>
-              <input
-                type="password"
-                name="newPassword"
-                className="form-control"
-                placeholder="새 비밀번호를 입력하세요"
-                value={formData.newPassword}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">비밀번호 확인</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                className="form-control"
-                placeholder="비밀번호를 다시 입력하세요"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-              {loading ? "처리 중..." : "비밀번호 변경"}
-            </button>
-          </form>
-
-          <div className="text-center mt-3">
-            <a href="/login" className="text-decoration-none">로그인 페이지로 돌아가기</a>
+      <form onSubmit={handleSubmit} className="p-4 border rounded shadow">
+        {!token && (
+          <div className="mb-3">
+            <label className="form-label">현재 비밀번호</label>
+            <input
+              type="password"
+              name="currentPassword"
+              className="form-control"
+              value={formData.currentPassword}
+              onChange={handleChange}
+              required
+            />
           </div>
+        )}
+
+        <div className="mb-3">
+          <label className="form-label">새 비밀번호</label>
+          <input
+            type="password"
+            name="newPassword"
+            className="form-control"
+            value={formData.newPassword}
+            onChange={handleChange}
+            required
+          />
         </div>
-      </div>
+
+        <div className="mb-3">
+          <label className="form-label">새 비밀번호 확인</label>
+          <input
+            type="password"
+            name="confirmPassword"
+            className="form-control"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <button type="submit" className="btn btn-primary w-100">
+          비밀번호 변경
+        </button>
+      </form>
     </div>
   );
 };

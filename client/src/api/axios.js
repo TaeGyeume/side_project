@@ -6,7 +6,7 @@ const api = axios.create({
   withCredentials: true, // httpOnly 쿠키 전송 허용
 });
 
-let isRefreshing = false;
+let isRefreshing = false; 
 
 // 응답 인터셉터
 api.interceptors.response.use(
