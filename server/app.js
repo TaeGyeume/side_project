@@ -7,7 +7,7 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
-
+const path = require('path');
 const cookieParser = require('cookie-parser');
 
 const app = express();
@@ -28,12 +28,14 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({extended: true}));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // 라우트 설정
 app.use('/', routes);
 app.use('/api', routes);
 app.use('/api/auth', authRoutes);
 app.use('/product', productRoutes);
+app.use('/uploads', express.static('uploads'));
 
 // 리프레시 토큰 엔드포인트
 app.post('/api/auth/refresh-token', (req, res) => {

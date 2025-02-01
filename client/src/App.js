@@ -9,6 +9,9 @@ import EditProfile from './pages/user/EditProfile';
 import Header from './components/Header';
 import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
+import ProductPage from './pages/product/ProductPage';
+import TourTicketList from './components/tourTicket/TourTicketList';
+import TourTicketForm from './components/tourTicket/TourTicketForm';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -61,6 +64,10 @@ const App = () => {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<UserPages.Profile />} />
             <Route path="/profile/update" element={<EditProfile />} />
+            <Route path="/product" element={<ProductPage />} />
+            <Route path="/product/tourTicket/list" element={<TourTicketList />} />
+            {/* <Route path="/product/tourTicket/list/:id" element={<TourTicketDetail />} /> */}
+            <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
           </Route>
 
           {/* 404 처리 */}

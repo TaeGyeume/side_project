@@ -11,9 +11,18 @@ exports.getTicketById = async id => {
 };
 
 // 새 투어.티켓 생성
+// exports.createTicket = async ticketData => {
+//   const ticket = new TourTicket(ticketData);
+//   return await ticket.save();
+// };
+
 exports.createTicket = async ticketData => {
-  const ticket = new TourTicket(ticketData);
-  return await ticket.save();
+  try {
+    const ticket = new TourTicket(ticketData);
+    return await ticket.save();
+  } catch (error) {
+    throw new Error(`상품 등록 오류: ${error.message}`);
+  }
 };
 
 // 기존 투어.티켓 수정

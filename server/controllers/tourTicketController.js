@@ -32,21 +32,48 @@ exports.getTicketById = async (req, res) => {
 };
 
 // 새 투어.티켓 생성
-exports.createTicket = async (req, res) => {
-  const {title, description, location, price, stock, images} = req.body;
+// exports.createTicket = async (req, res) => {
+//   const {title, description, location, price, stock, images} = req.body;
 
+//   try {
+//     const newTicket = await tourTicketService.createTicket({
+//       title,
+//       description,
+//       location,
+//       price,
+//       stock,
+//       images: imagePath ? [imagePath] : []
+//     });
+
+//     const savedTicket = await newTicket.save();
+//     res.status(201).json(savedTicket);
+//   } catch (error) {
+//     res.status(400).json({message: '유효하지 않은 요청 데이터', error});
+//   }
+// };
+
+exports.createTicket = async (req, res) => {
   try {
+    const {title, description, location, price, stock} = req.body;
+
+    // 업로드된 파일 경로 리스트 생성
+    const imagePaths = req.files
+      ? req.files.map(file => `/uploads/${file.filename}`)
+      : [];
+
     const newTicket = await tourTicketService.createTicket({
       title,
       description,
       location,
       price,
       stock,
-      images
+      images: imagePaths
     });
-    res.status(201).json(newTicket);
+
+    res.status(201).json({message: '상품 등록 성공', ticket: newTicket});
   } catch (error) {
-    res.status(400).json({message: '유효하지 않은 요청 데이터', error});
+    console.error('상품 등록 오류:', error);
+    res.status(400).json({message: '상품 등록 실패', error: error.message});
   }
 };
 
