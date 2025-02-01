@@ -9,6 +9,8 @@ import EditProfile from "./pages/user/EditProfile";
 import Header from "./components/Header";
 import { useAuthStore } from "./store/authStore"; // Zustand 스토어
 import PrivateRoute from "./routes/PrivateRoute"; // 보호된 라우트 추가
+import Flights from "./pages/flights/Flights"; // ✈️ 항공편 목록 페이지 추가
+import Reservation from "./pages/reservations/Reservation"; // 🎫 예약 페이지 추가
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState("");
@@ -51,19 +53,25 @@ const App = () => {
           <Route path="/register" element={<AuthPages.Register />} />
           <Route path="/login" element={isAuthenticated ? <Navigate to="/profile" /> : <AuthPages.Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          
+          {/* ✈️ 항공편 목록 페이지 추가 */}
+          <Route path="/flights" element={<Flights />} />
 
           {/* 인증된 사용자만 접근 가능 */}
           <Route element={<PrivateRoute />}>
+            <Route path="/reservation/:flightId" element={<Reservation />} /> {/* 🎫 특정 항공편 예약 페이지 추가 (PrivateRoute 필요) */}
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<UserPages.Profile />} />
             <Route path="/profile/update" element={<EditProfile />} />
           </Route>
 
           {/* 404 처리 */}
-          <Route path="*" element={<div>페이지를 찾을 수 없습니다.</div>} />
+          <Route path="*" element={<div>페이지를 찾을 수 없습니다.</div>} />          
         </Routes>
       </div>
     </Router>
+
+    
   );
 };
 

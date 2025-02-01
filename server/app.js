@@ -7,6 +7,8 @@ require("dotenv").config();
 
 const authRoutes = require('./routes/authRoutes');
 const cookieParser = require('cookie-parser');
+const flightRoutes = require('./routes/flightRoutes');  // ✈️ 항공편 라우트 추가
+const reservationRoutes = require('./routes/reservationRoutes');  // 🎫 예약 라우트 추가
 
 const app = express();
 
@@ -31,6 +33,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/', routes);
 app.use('/api', routes);
 app.use("/api/auth", authRoutes);
+app.use("/api/flights", flightRoutes);  // ✈️ 항공편 관련 API
+app.use("/api/reservations", reservationRoutes);  // 🎫 예약 관련 API
 
 // 리프레시 토큰 엔드포인트
 app.post("/api/auth/refresh-token", (req, res) => {
