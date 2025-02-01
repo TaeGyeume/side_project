@@ -2,12 +2,11 @@
 
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import axios from 'axios';
 import {createTourTicket} from '../../api/tourTicket/tourTicketService';
 
 const TourTicketForm = () => {
   const navigate = useNavigate();
-  // const [ticket, setTicket] = useState({
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -16,27 +15,6 @@ const TourTicketForm = () => {
     stock: '',
     images: []
   });
-
-  // const [imageFile, setImageFile] = useState(null); // 파일 선택
-  // const [previewImage, setPreviewImage] = useState(null); // 파일 미리보기
-
-  // const handleChange = e => {
-  //   // setTicket({...ticket, [e.target.name]: e.target.value});
-
-  //   if (e.target.name === 'image') {
-  //     setFormData({...formData, image: e.target.files[0]}); // 파일 저장
-  //   } else {
-  //     setFormData({...formData, [e.target.name]: e.target.value});
-  //   }
-  // };
-
-  // const handleFileChange = e => {
-  //   const file = e.target.files[0];
-  //   if (file) {
-  //     setImageFile(file);
-  //     setPreviewImage(URL.createObjectURL(file)); // 미리보기 URL 생성
-  //   }
-  // };
 
   const handleFileChange = e => {
     setFormData({...formData, images: [...e.target.files]});
