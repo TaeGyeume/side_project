@@ -137,8 +137,8 @@ exports.changePassword = async (userId, {currentPassword, newPassword}) => {
 };
 
 // 비밀번호 찾기 서비스 (비밀번호 재설정 링크 전송)
-exports.forgotPassword = async email => {
-  const user = await User.findOne({email});
+exports.forgotPassword = async (email) => {
+  const user = await User.findOne({ email });
   if (!user) throw new Error('이메일을 찾을 수 없습니다.');
 
   const resetToken = crypto.randomBytes(32).toString('hex');
@@ -150,14 +150,16 @@ exports.forgotPassword = async email => {
   await user.save();
   await sendResetPasswordEmail(email, resetToken);
 
-  return {message: '비밀번호 재설정 이메일이 발송되었습니다.'};
+  return { message: '비밀번호 재설정 이메일이 발송되었습니다.' };
 };
 
+
 // 비밀번호 재설정 서비스
-exports.resetPassword = async ({userId, token, currentPassword, newPassword}) => {
+// 비밀번호 재설정 서비스
+exports.resetPassword = async ({ userId, token, currentPassword, newPassword }) => {
   let user = null;
 
-  //  로그인된 사용자의 비밀번호 변경 (현재 비밀번호 확인 필요)
+  // 🔐 로그인된 사용자의 비밀번호 변경 (현재 비밀번호 확인)
   if (userId) {
     user = await User.findById(userId);
     if (!user) throw new Error('사용자를 찾을 수 없습니다.');
@@ -166,27 +168,32 @@ exports.resetPassword = async ({userId, token, currentPassword, newPassword}) =>
     if (!isMatch) throw new Error('현재 비밀번호가 일치하지 않습니다.');
   }
 
-  //  비밀번호 재설정 (비밀번호 찾기 후 이메일 링크로 받은 토큰 기반)
+  // 📧 비밀번호 재설정 (비밀번호 찾기 후 이메일 링크로 받은 토큰 기반)
   if (token) {
     user = await User.findOne({
-      passwordResetToken: token,
-      passwordResetExpires: {$gt: Date.now()}
+      passwordResetExpires: { $gt: Date.now() }
     });
 
     if (!user) {
       throw new Error('토큰이 유효하지 않거나 만료되었습니다.');
     }
+
+    // 🔑 토큰 검증 (bcrypt.compare 사용)
+    const isValidToken = await bcrypt.compare(token, user.passwordResetToken);
+    if (!isValidToken) {
+      throw new Error('토큰이 유효하지 않습니다.');
+    }
   }
 
   if (!user) throw new Error('비밀번호를 변경할 수 없습니다.');
 
-  //  새 비밀번호 설정
+  // 🔒 새 비밀번호 설정
   user.password = await bcrypt.hash(newPassword, 10);
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
   await user.save();
 
-  return {message: '비밀번호가 성공적으로 변경되었습니다.'};
+  return { message: '비밀번호가 성공적으로 변경되었습니다.' };
 };
 
 // 로그아웃 서비스 (쿠키 삭제)
