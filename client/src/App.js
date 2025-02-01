@@ -9,6 +9,8 @@ import EditProfile from './pages/user/EditProfile';
 import Header from './components/Header';
 import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
+import AccommodationSearch from './pages/accommodation/AccommodationSearch';
+import AccommodationResults from './pages/accommodation/AccommodationResults';
 import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이지 추가
 import Reservation from './pages/reservations/Reservation'; // 🎫 예약 페이지 추가
 
@@ -57,6 +59,8 @@ const App = () => {
             element={isAuthenticated ? <Navigate to="/profile" /> : <AuthPages.Login />}
           />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/accommodations/search" element={<AccommodationSearch />} />
+          <Route path="/accommodations/results" element={<AccommodationResults />} />
 
           {/* ✈️ 항공편 목록 페이지 추가 */}
           <Route path="/flights" element={<Flights />} />

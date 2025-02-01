@@ -1,6 +1,5 @@
 import api from '../axios'; // axios.js에서 공통 설정을 가져옴
 
-// 요청 기본 옵션 설정 (쿠키 및 캐시 방지)
 const requestConfig = {
   withCredentials: true,
   headers: {
@@ -9,25 +8,46 @@ const requestConfig = {
   }
 };
 
-// 공통 요청 처리 함수 (에러 핸들링 통합)
+let isRefreshing = false;
+
+// 공통 요청 처리 함수 (에러 핸들링 + 리프레시 토큰 처리 추가)
 const handleRequest = async (requestPromise, errorMessage) => {
   try {
     const response = await requestPromise;
     return response.data;
   } catch (error) {
-    console.error(`${errorMessage}:`, error.response?.data?.message || error.message);
+    const originalRequest = requestPromise.config;
+
+    // 401 Unauthorized 발생 시 리프레시 토큰으로 재시도
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return Promise.reject(error);
+      }
+      isRefreshing = true;
+
+      try {
+        console.log(' 액세스 토큰 만료, 리프레시 토큰 요청 중...');
+        await authAPI.refreshToken(); // 새 액세스 토큰 요청
+        isRefreshing = false;
+        return api(originalRequest); // 원래 요청 다시 시도
+      } catch (refreshError) {
+        console.error(' 리프레시 토큰 만료, 로그인 필요');
+        authAPI.logoutUser();
+        isRefreshing = false;
+        throw refreshError;
+      }
+    }
     throw error.response?.data || new Error(errorMessage);
   }
 };
 
-// 브라우저 쿠키 수동 삭제 (필요할 경우)
+// 브라우저 쿠키 수동 삭제
 const clearCookiesManually = () => {
   document.cookie = 'accessToken=; Max-Age=0; path=/;';
   document.cookie = 'refreshToken=; Max-Age=0; path=/;';
   console.log('브라우저 쿠키 수동 삭제 완료');
 };
 
-// 인증 관련 API 함수 목록 (쿠키 기반 httpOnly)
 export const authAPI = {
   registerUser: userData =>
     handleRequest(
@@ -52,11 +72,21 @@ export const authAPI = {
   getUserProfile: () =>
     handleRequest(api.get('/auth/profile', requestConfig), '프로필 조회 중 오류 발생'),
 
-  checkDuplicate: data =>
-    api.post('/auth/check-duplicate', data, '프로필 중복확인중 오류 발생생'),
+  checkDuplicate: data => {
+    if (!data || Object.values(data).every(val => !val.trim())) {
+      return Promise.reject({message: '입력된 값이 없습니다.'});
+    }
+    return handleRequest(
+      api.post('/auth/check-duplicate', data, requestConfig),
+      '중복 확인 중 오류 발생'
+    );
+  },
 
   updateProfile: userData =>
-    api.put('/auth/profile/update', userData, '프로필 수정중 오류 발생생'),
+    handleRequest(
+      api.put('/auth/profile/update', userData, requestConfig),
+      '프로필 수정 중 오류 발생'
+    ),
 
   changePassword: passwordData =>
     handleRequest(
@@ -73,7 +103,13 @@ export const authAPI = {
   resetPassword: resetData =>
     handleRequest(
       api.post('/auth/reset-password', resetData, requestConfig),
-      '비밀번호 재설정 중 오류 발생'
+      '비밀번호 변경 중 오류 발생'
+    ),
+
+  refreshToken: () =>
+    handleRequest(
+      api.post('/auth/refresh-token', {}, requestConfig),
+      '토큰 갱신 요청 중 오류 발생'
     )
 };
 
