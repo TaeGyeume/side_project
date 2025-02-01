@@ -11,6 +11,7 @@ import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
 import AccommodationSearch from './pages/accommodation/AccommodationSearch';
 import AccommodationResults from './pages/accommodation/AccommodationResults';
+import AccommodationDetail from './pages/accommodation/AccommodationDetail';
 import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이지 추가
 import Reservation from './pages/reservations/Reservation'; // 🎫 예약 페이지 추가
 import ProductPage from './pages/product/ProductPage';
@@ -64,6 +65,7 @@ const App = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/accommodations/search" element={<AccommodationSearch />} />
           <Route path="/accommodations/results" element={<AccommodationResults />} />
+          <Route path="/accommodations/:accommodationId/detail" element={<AccommodationDetail />} />
 
           {/* ✈️ 항공편 목록 페이지 추가 */}
           <Route path="/flights" element={<Flights />} />
