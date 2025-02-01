@@ -1,8 +1,12 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 
+console.log("🔍 현재 환경 변수 값:");
+console.log("SERVICE_KEY:", process.env.SERVICE_KEY ? "✅ 설정됨" : "❌ 없음");
+console.log("서비스 키 값:", process.env.SERVICE_KEY);  // 실제 값 확인
+
 const mongoose = require('mongoose');
 const axios = require('axios');
-const Flight = require('../models/Flight'); // Flight 모델 가져오기
+const Flight = require('../models/Flight');
 
 // ✅ 환경 변수 설정
 const { DB_URI, SERVICE_KEY } = process.env;
@@ -22,29 +26,36 @@ mongoose.connect(DB_URI, {
 // ✅ OpenAPI에서 운항 정보 가져오기 및 DB 저장
 const fetchFlights = async () => {
     const url = 'http://openapi.airport.co.kr/service/rest/FlightScheduleList/getDflightScheduleList';
-    const queryParams = `?serviceKey=${SERVICE_KEY}`
-        + `&schDate=20240201`  // 검색 날짜 (예제)
-        + `&schDeptCityCode=GMP`  // 출발지 (김포)
-        + `&schArrvCityCode=PUS`  // 도착지 (부산)
+    const queryParams = `?serviceKey=${encodeURIComponent(SERVICE_KEY)}`
+        + `&schDate=20240201`
+        + `&schDeptCityCode=GMP`
+        + `&schArrvCityCode=PUS`
         + `&schAirLine=AB`
         + `&schFlightNum=1`;
 
     try {
         console.log("🔄 항공편 데이터를 가져오는 중...");
         const response = await axios.get(url + queryParams);
-        const data = response.data.response.body.items.item;
 
-        if (!data) {
-            console.error("❌ 가져온 항공편 데이터가 없습니다.");
+        console.log("📜 API 응답 데이터:", JSON.stringify(response.data, null, 2));
+
+        if (response.data?.response?.header?.resultCode !== "00") {
+            console.error("❌ API 요청 실패:", response.data.response.header.resultMsg);
             return;
         }
 
-        const flights = Array.isArray(data) ? data : [data];
+        const items = response.data?.response?.body?.items?.item;
 
-        // ✅ 가져온 데이터를 `Flight` 스키마에 맞게 변환하여 저장
+        if (!items) {
+            console.error("❌ 'items' 속성이 없습니다. 데이터가 없을 수 있습니다.");
+            return;
+        }
+
+        const flights = Array.isArray(items) ? items : [items];
+
         const flightDocs = flights.map(flight => ({
-            airline: flight.airline, // 항공사
-            flightNumber: flight.flightId, // 항공편 번호
+            airline: flight.airline,
+            flightNumber: flight.flightId,
             departure: {
                 airport: flight.depAirport,
                 city: flight.depAirportNm,
@@ -55,8 +66,8 @@ const fetchFlights = async () => {
                 city: flight.arrAirportNm,
                 time: new Date(flight.arrPlandTime)
             },
-            price: Math.floor(Math.random() * (500000 - 100000) + 100000), // 랜덤 가격 (10만 ~ 50만)
-            seatsAvailable: Math.floor(Math.random() * 200) // 랜덤 좌석 (최대 200석)
+            price: Math.floor(Math.random() * (500000 - 100000) + 100000),
+            seatsAvailable: Math.floor(Math.random() * 200)
         }));
 
         await Flight.insertMany(flightDocs);
