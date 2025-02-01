@@ -31,27 +31,6 @@ exports.getTicketById = async (req, res) => {
   }
 };
 
-// 새 투어.티켓 생성
-// exports.createTicket = async (req, res) => {
-//   const {title, description, location, price, stock, images} = req.body;
-
-//   try {
-//     const newTicket = await tourTicketService.createTicket({
-//       title,
-//       description,
-//       location,
-//       price,
-//       stock,
-//       images: imagePath ? [imagePath] : []
-//     });
-
-//     const savedTicket = await newTicket.save();
-//     res.status(201).json(savedTicket);
-//   } catch (error) {
-//     res.status(400).json({message: '유효하지 않은 요청 데이터', error});
-//   }
-// };
-
 exports.createTicket = async (req, res) => {
   try {
     const {title, description, location, price, stock} = req.body;
@@ -77,32 +56,34 @@ exports.createTicket = async (req, res) => {
   }
 };
 
-// 기존 투어.티켓 수정
 exports.updateTicket = async (req, res) => {
-  const {id} = req.params;
-  const {title, description, location, price, stock, images} = req.body;
-
   try {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({message: '유효하지 않은 ID 형식입니다.'});
+    const {title, price, stock, deleteImages} = req.body;
+    const ticketId = req.params.id;
+
+    let parsedDeleteImages = [];
+
+    if (deleteImages) {
+      try {
+        parsedDeleteImages = JSON.parse(deleteImages);
+      } catch (error) {
+        console.error('JSON 파싱 오류:', error);
+        return res.status(400).json({message: '잘못된 JSON 형식입니다.'});
+      }
     }
 
-    const updatedTicket = await tourTicketService.updateTicket(id, {
+    const updatedTicket = await tourTicketService.updateTourTicket(ticketId, {
       title,
-      description,
-      location,
       price,
       stock,
-      images
+      deleteImages: parsedDeleteImages,
+      newImages: req.files // 새 이미지 추가
     });
 
-    if (updatedTicket) {
-      res.json(updatedTicket);
-    } else {
-      res.status(404).json({message: '상품을 찾을 수 없습니다.'});
-    }
+    res.status(200).json({message: '상품이 수정되었습니다.', updatedTicket});
   } catch (error) {
-    res.status(400).json({message: '유효하지 않은 요청 데이터', error});
+    console.error('상품 수정 오류:', error);
+    res.status(500).json({message: '서버 오류가 발생했습니다.', error: error.message});
   }
 };
 

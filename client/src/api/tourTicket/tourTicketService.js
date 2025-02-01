@@ -12,13 +12,15 @@ export const getTourTickets = async () => {
   }
 };
 
-// export const createTourTicket = async formData => {
-//   const response = await axios.post(`${API_URL}/new`, formData, {
-//     headers: {'Content-Type': 'multipart/form-data'} // Authorization 헤더 제거
-//   });
-
-//   return response.data;
-// };
+export const getTourTicketById = async id => {
+  try {
+    const response = await axios.get(`${API_URL}/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('상품 정보를 가져오는 중 오류 발생:', error);
+    throw error;
+  }
+};
 
 export const createTourTicket = async formData => {
   return await axios.post(`${API_URL}/new`, formData, {
@@ -26,4 +28,16 @@ export const createTourTicket = async formData => {
       'Content-Type': 'multipart/form-data'
     }
   });
+};
+
+export const updateTourTicket = async (id, updatedData) => {
+  try {
+    const response = await axios.put(`${API_URL}/modify/${id}`, updatedData, {
+      headers: {'Content-Type': 'multipart/form-data'}
+    });
+    return response.data;
+  } catch (error) {
+    console.error('상품 수정 중 오류 발생:', error);
+    throw error;
+  }
 };
