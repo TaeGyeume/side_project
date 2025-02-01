@@ -16,6 +16,8 @@ import Reservation from './pages/reservations/Reservation'; // 🎫 예약 페�
 import ProductPage from './pages/product/ProductPage';
 import TourTicketList from './components/tourTicket/TourTicketList';
 import TourTicketForm from './components/tourTicket/TourTicketForm';
+import TourTicketDetail from './components/tourTicket/TourTicketDetail';
+import TourTicketModify from './components/tourTicket/TourTicketModify';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -77,7 +79,8 @@ const App = () => {
             <Route path="/profile/update" element={<EditProfile />} />
             <Route path="/product" element={<ProductPage />} />
             <Route path="/product/tourTicket/list" element={<TourTicketList />} />
-            {/* <Route path="/product/tourTicket/list/:id" element={<TourTicketDetail />} /> */}
+            <Route path="/product/tourTicket/:id" element={<TourTicketDetail />} />
+            <Route path="/product/tourTicket/modify/:id" element={<TourTicketModify />} />
             <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
           </Route>
 
