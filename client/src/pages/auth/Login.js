@@ -1,44 +1,44 @@
-import React, { useState } from "react";
-import { authAPI } from "../../api/auth";
-import { useAuthStore } from "../../store/authStore";
-import { useNavigate } from "react-router-dom";
+import React, {useState} from 'react';
+import {authAPI} from '../../api/auth';
+import {useAuthStore} from '../../store/authStore';
+import {useNavigate} from 'react-router-dom';
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    userid: "",
-    password: "",
+    userid: '',
+    password: ''
   });
 
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { fetchUserProfile } = useAuthStore();
+  const {fetchUserProfile} = useAuthStore();
 
   // 입력값 변경 핸들러
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = e => {
+    setFormData({...formData, [e.target.name]: e.target.value});
   };
 
   // 폼 제출 핸들러 (쿠키 기반 인증 적용)
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
       await authAPI.loginUser(formData);
       await fetchUserProfile();
-      navigate("/main");
+      navigate('/main');
     } catch (error) {
-      console.error("로그인 오류:", error);
-      
+      console.error('로그인 오류:', error);
+
       // 인증 오류 상태에 따른 메시지 처리
       if (error.response?.status === 401) {
-        setError("아이디 또는 비밀번호가 잘못되었습니다.");
+        setError('아이디 또는 비밀번호가 잘못되었습니다.');
       } else if (error.response?.status === 500) {
-        setError("서버에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        setError('서버에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
       } else {
-        setError(error.response?.data?.message || "로그인에 실패했습니다.");
+        setError(error.response?.data?.message || '로그인에 실패했습니다.');
       }
     } finally {
       setLoading(false);
@@ -81,7 +81,7 @@ const Login = () => {
             </div>
 
             <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-              {loading ? "로그인 중..." : "로그인"}
+              {loading ? '로그인 중...' : '로그인'}
             </button>
           </form>
 

@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from "react";
-import { authAPI } from "../../api/auth";
-import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../store/authStore";
+import React, {useState, useEffect} from 'react';
+import {authAPI} from '../../api/auth';
+import {useNavigate} from 'react-router-dom';
+import {useAuthStore} from '../../store/authStore';
 
 const EditProfile = () => {
   const [formData, setFormData] = useState({
-    userid: "",
-    username: "",
-    email: "",
-    phone: "",
-    address: "",
+    userid: '',
+    username: '',
+    email: '',
+    phone: '',
+    address: ''
   });
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [checkMessage, setCheckMessage] = useState({
-    userid: "",
-    email: "",
-    phone: "",
+    userid: '',
+    email: '',
+    phone: ''
   });
   const navigate = useNavigate();
-  const { checkAuth } = useAuthStore();
+  const {checkAuth} = useAuthStore();
 
   // 사용자 프로필 불러오기
   useEffect(() => {
@@ -31,9 +31,9 @@ const EditProfile = () => {
         const response = await authAPI.getUserProfile();
         setFormData(response);
       } catch (error) {
-        console.error("프로필 정보를 불러오는 데 실패했습니다.", error);
-        setError("프로필 정보를 불러오는 데 실패했습니다. 다시 로그인해주세요.");
-        setTimeout(() => navigate("/login"), 3000);
+        console.error('프로필 정보를 불러오는 데 실패했습니다.', error);
+        setError('프로필 정보를 불러오는 데 실패했습니다. 다시 로그인해주세요.');
+        setTimeout(() => navigate('/login'), 3000);
       } finally {
         setLoading(false);
       }
@@ -43,37 +43,40 @@ const EditProfile = () => {
   }, [navigate, checkAuth]);
 
   // 입력 값 변경 핸들러
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setCheckMessage({ ...checkMessage, [e.target.name]: "" });
+  const handleChange = e => {
+    setFormData({...formData, [e.target.name]: e.target.value});
+    setCheckMessage({...checkMessage, [e.target.name]: ''});
   };
 
   // 중복 확인 API 호출
-  const handleCheckDuplicate = async (field) => {
-    console.log(`중복 확인 요청: ${field} =`, formData[field]);  // 클릭 시 확인 로그
-  
+  const handleCheckDuplicate = async field => {
+    console.log(`중복 확인 요청: ${field} =`, formData[field]); // 클릭 시 확인 로그
+
     try {
-      const response = await authAPI.checkDuplicate({ [field]: formData[field] });
-      console.log("서버 응답:", response.data);
-      setCheckMessage({ ...checkMessage, [field]: response.data.message });
+      const response = await authAPI.checkDuplicate({[field]: formData[field]});
+      console.log('서버 응답:', response.data);
+      setCheckMessage({...checkMessage, [field]: response.data.message});
     } catch (error) {
-      console.error("중복 확인 실패:", error.response?.data || error.message);
-      setCheckMessage({ ...checkMessage, [field]: error.response?.data?.message || "중복 확인에 실패했습니다." });
+      console.error('중복 확인 실패:', error.response?.data || error.message);
+      setCheckMessage({
+        ...checkMessage,
+        [field]: error.response?.data?.message || '중복 확인에 실패했습니다.'
+      });
     }
   };
 
   // 폼 제출 핸들러
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    setError('');
+    setSuccess('');
 
     try {
       await authAPI.updateProfile(formData);
-      setSuccess("프로필이 성공적으로 업데이트되었습니다.");
-      setTimeout(() => navigate("/profile"), 2000);
+      setSuccess('프로필이 성공적으로 업데이트되었습니다.');
+      setTimeout(() => navigate('/profile'), 2000);
     } catch (error) {
-      setError(error.response?.data?.message || "프로필 업데이트에 실패했습니다.");
+      setError(error.response?.data?.message || '프로필 업데이트에 실패했습니다.');
     }
   };
 
@@ -101,12 +104,13 @@ const EditProfile = () => {
             <button
               type="button"
               className="btn btn-outline-secondary"
-              onClick={() => handleCheckDuplicate("userid")}
-            >
+              onClick={() => handleCheckDuplicate('userid')}>
               중복 확인
             </button>
           </div>
-          {checkMessage.userid && <small className="text-danger">{checkMessage.userid}</small>}
+          {checkMessage.userid && (
+            <small className="text-danger">{checkMessage.userid}</small>
+          )}
         </div>
 
         <div className="mb-3">
@@ -135,12 +139,13 @@ const EditProfile = () => {
             <button
               type="button"
               className="btn btn-outline-secondary"
-              onClick={() => handleCheckDuplicate("email")}
-            >
+              onClick={() => handleCheckDuplicate('email')}>
               중복 확인
             </button>
           </div>
-          {checkMessage.email && <small className="text-danger">{checkMessage.email}</small>}
+          {checkMessage.email && (
+            <small className="text-danger">{checkMessage.email}</small>
+          )}
         </div>
 
         <div className="mb-3">
@@ -157,12 +162,13 @@ const EditProfile = () => {
             <button
               type="button"
               className="btn btn-outline-secondary"
-              onClick={() => handleCheckDuplicate("phone")}
-            >
+              onClick={() => handleCheckDuplicate('phone')}>
               중복 확인
             </button>
           </div>
-          {checkMessage.phone && <small className="text-danger">{checkMessage.phone}</small>}
+          {checkMessage.phone && (
+            <small className="text-danger">{checkMessage.phone}</small>
+          )}
         </div>
 
         <div className="mb-3">

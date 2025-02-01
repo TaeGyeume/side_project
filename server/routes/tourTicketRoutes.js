@@ -26,11 +26,7 @@ router.get('/list', getAllTickets);
 router.get('/list/:id', getTicketById);
 
 // [관리자만 접근] 새 투어.티켓 생성
-router.post(
-  '/new',
-  upload,
-  /*authMiddleware, adminMiddleware,*/ createTicket
-);
+router.post('/new', upload, /*authMiddleware, adminMiddleware,*/ createTicket);
 
 // [관리자만 접근] 기존 투어.티켓 수정
 router.put('/modify/:id', /*authMiddleware, adminMiddleware,*/ updateTicket);
