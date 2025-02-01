@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import axios from '../../api/axios';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import './SearchBar.css';
+import './styles/SearchBar.css';
 
 const SearchBar = ({onSearch}) => {
   const [searchTerm, setSearchTerm] = useState('서울');

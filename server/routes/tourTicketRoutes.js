@@ -12,7 +12,7 @@ const upload = require('../middleware/uploadMiddleware');
 
 // 관리자 권한 확인 미들웨어
 const adminMiddleware = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
+  if (req.user && req.user.roles === 'admin') {
     next(); // 관리자 권한 확인 후 다음 미들웨어 실행
   } else {
     res.status(403).json({message: '관리자 권한이 필요합니다.'});

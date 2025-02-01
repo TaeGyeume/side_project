@@ -17,10 +17,11 @@ export const useAuthStore = create(
       fetchUserProfile: async () => {
         try {
           const user = await authAPI.getUserProfile();
-          set({user, isAuthenticated: true});
+          console.log('유저 정보:', user);  // ✅ 역할(role) 출력 확인
+          set({ user, isAuthenticated: true });
           return user;
         } catch (error) {
-          set({user: null, isAuthenticated: false});
+          set({ user: null, isAuthenticated: false });
           return null;
         }
       },
