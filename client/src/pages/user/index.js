@@ -1,4 +1,4 @@
-import Profile from "./Profile";
-import EditProfile from "./EditProfile";
+import Profile from './Profile';
+import EditProfile from './EditProfile';
 
-export { Profile, EditProfile };
+export {Profile, EditProfile};
