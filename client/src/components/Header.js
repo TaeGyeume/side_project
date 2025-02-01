@@ -56,6 +56,11 @@ const Header = () => {
             {isAuthenticated && user ? (
               <>
                 <li className="nav-item">
+                  <Link className="nav-link" to="/product">
+                    +상품+
+                  </Link>
+                </li>
+                <li className="nav-item">
                   <Link className="nav-link" to="/profile">
                     프로필
                   </Link>
