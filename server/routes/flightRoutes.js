@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getFlights, getFlightById } = require('../controllers/flightController');
+const {getFlights, getFlightById} = require('../controllers/flightController');
 
 // ✈️ 모든 항공편 조회
 router.get('/', getFlights);

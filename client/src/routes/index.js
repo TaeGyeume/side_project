@@ -1,7 +1,7 @@
-import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Flights from "../pages/flights/Flights";
-import Reservation from "../pages/reservations/Reservation";
+import React from 'react';
+import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import Flights from '../pages/flights/Flights';
+import Reservation from '../pages/reservations/Reservation';
 
 const AppRoutes = () => {
   return (

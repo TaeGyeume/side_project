@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import { createReservation } from "../../api/flights";
+import React, {useState} from 'react';
+import {createReservation} from '../../api/flights';
 
-const Reservation = ({ flightId }) => {
-  const [passengers, setPassengers] = useState([{ name: "", age: "", passportNumber: "" }]);
+const Reservation = ({flightId}) => {
+  const [passengers, setPassengers] = useState([{name: '', age: '', passportNumber: ''}]);
 
   const handleReservation = async () => {
     const response = await createReservation(flightId, passengers);
     if (response) {
-      alert("예약 완료!");
+      alert('예약 완료!');
     }
   };
 
