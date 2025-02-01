@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const bookingSchema = new mongoose.Schema(
   {
     type: {
@@ -9,6 +11,13 @@ const bookingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       refPath: 'type' // 참조할 상품 모델
+    },
+    roomId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Room',
+      required: function () {
+        return this.type === 'accommodation';
+      } // 숙소 예약 시 필수
     },
     startDate: {type: Date, required: true}, // 이용 시작일
     endDate: {type: Date, required: true}, // 이용 종료일
@@ -39,3 +48,6 @@ const bookingSchema = new mongoose.Schema(
   },
   {timestamps: false}
 );
+
+const Booking = mongoose.model('Booking', bookingSchema);
+module.exports = Booking;

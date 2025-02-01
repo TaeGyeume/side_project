@@ -6,9 +6,14 @@ const connectDB = require('./config/db');
 require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
+const locationRoutes = require('./routes/locationRoutes');
+const accommodationRoutes = require('./routes/accommodationRoutes');
+const roomRoutes = require('./routes/roomRoutes');
 const productRoutes = require('./routes/productRoutes');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const flightRoutes = require('./routes/flightRoutes'); // ✈️ 항공편 라우트 추가
+const reservationRoutes = require('./routes/reservationRoutes'); // 🎫 예약 라우트 추가
 
 const app = express();
 
@@ -32,8 +37,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // 라우트 설정
 app.use('/', routes);
+app.use('/api/locations', locationRoutes);
+app.use('/api/accommodations', accommodationRoutes);
+app.use('/api/rooms', roomRoutes);
 app.use('/api', routes);
 app.use('/api/auth', authRoutes);
+app.use('/api/flights', flightRoutes); // ✈️ 항공편 관련 API
+app.use('/api/reservations', reservationRoutes); // 🎫 예약 관련 API
 app.use('/product', productRoutes);
 app.use('/uploads', express.static('uploads'));
 

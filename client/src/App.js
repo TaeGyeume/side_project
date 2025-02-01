@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import api from './api/axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {BrowserRouter as Router, Route, Routes, Navigate, Link} from 'react-router-dom';
+import {BrowserRouter as Router, Route, Routes, Navigate} from 'react-router-dom';
 import {AuthPages, Main, UserPages} from './pages';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
@@ -9,6 +9,10 @@ import EditProfile from './pages/user/EditProfile';
 import Header from './components/Header';
 import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
+import AccommodationSearch from './pages/accommodation/AccommodationSearch';
+import AccommodationResults from './pages/accommodation/AccommodationResults';
+import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이지 추가
+import Reservation from './pages/reservations/Reservation'; // 🎫 예약 페이지 추가
 import ProductPage from './pages/product/ProductPage';
 import TourTicketList from './components/tourTicket/TourTicketList';
 import TourTicketForm from './components/tourTicket/TourTicketForm';
@@ -58,9 +62,16 @@ const App = () => {
             element={isAuthenticated ? <Navigate to="/profile" /> : <AuthPages.Login />}
           />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/accommodations/search" element={<AccommodationSearch />} />
+          <Route path="/accommodations/results" element={<AccommodationResults />} />
+
+          {/* ✈️ 항공편 목록 페이지 추가 */}
+          <Route path="/flights" element={<Flights />} />
 
           {/* 인증된 사용자만 접근 가능 */}
           <Route element={<PrivateRoute />}>
+            <Route path="/reservation/:flightId" element={<Reservation />} />{' '}
+            {/* 🎫 특정 항공편 예약 페이지 추가 (PrivateRoute 필요) */}
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<UserPages.Profile />} />
             <Route path="/profile/update" element={<EditProfile />} />
