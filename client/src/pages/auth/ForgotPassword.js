@@ -1,29 +1,29 @@
-import React, { useState } from "react";
-import { authAPI } from "../../api/auth";
+import React, {useState} from 'react';
+import {authAPI} from '../../api/auth';
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   // 입력 변경 핸들러
-  const handleChange = (e) => {
+  const handleChange = e => {
     setEmail(e.target.value);
   };
 
   // 폼 제출 핸들러
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    setMessage("");
-    setError("");
+    setMessage('');
+    setError('');
     setLoading(true);
 
     try {
       await authAPI.forgotPassword(email);
-      setMessage("비밀번호 재설정 링크가 이메일로 전송되었습니다.");
+      setMessage('비밀번호 재설정 링크가 이메일로 전송되었습니다.');
     } catch (error) {
-      setError(error.response?.data?.message || "비밀번호 찾기 요청에 실패했습니다.");
+      setError(error.response?.data?.message || '비밀번호 찾기 요청에 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -52,12 +52,14 @@ const ForgotPassword = () => {
             </div>
 
             <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-              {loading ? "전송 중..." : "비밀번호 재설정 링크 보내기"}
+              {loading ? '전송 중...' : '비밀번호 재설정 링크 보내기'}
             </button>
           </form>
 
           <div className="text-center mt-3">
-            <a href="/login" className="text-decoration-none">로그인 페이지로 돌아가기</a>
+            <a href="/login" className="text-decoration-none">
+              로그인 페이지로 돌아가기
+            </a>
           </div>
         </div>
       </div>

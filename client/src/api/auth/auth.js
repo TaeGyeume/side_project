@@ -1,11 +1,11 @@
-import api from "../axios"; // axios.js에서 공통 설정을 가져옴
+import api from '../axios'; // axios.js에서 공통 설정을 가져옴
 
 const requestConfig = {
   withCredentials: true,
   headers: {
-    "Cache-Control": "no-store", // 캐시 방지
-    "Content-Type": "application/json",
-  },
+    'Cache-Control': 'no-store', // 캐시 방지
+    'Content-Type': 'application/json'
+  }
 };
 
 let isRefreshing = false;
@@ -24,14 +24,14 @@ const handleRequest = async (requestPromise, errorMessage) => {
         return Promise.reject(error);
       }
       isRefreshing = true;
-      
+
       try {
-        console.log(" 액세스 토큰 만료, 리프레시 토큰 요청 중...");
+        console.log(' 액세스 토큰 만료, 리프레시 토큰 요청 중...');
         await authAPI.refreshToken(); // 새 액세스 토큰 요청
         isRefreshing = false;
         return api(originalRequest); // 원래 요청 다시 시도
       } catch (refreshError) {
-        console.error(" 리프레시 토큰 만료, 로그인 필요");
+        console.error(' 리프레시 토큰 만료, 로그인 필요');
         authAPI.logoutUser();
         isRefreshing = false;
         throw refreshError;
@@ -43,47 +43,74 @@ const handleRequest = async (requestPromise, errorMessage) => {
 
 // 브라우저 쿠키 수동 삭제
 const clearCookiesManually = () => {
-  document.cookie = "accessToken=; Max-Age=0; path=/;";
-  document.cookie = "refreshToken=; Max-Age=0; path=/;";
-  console.log("브라우저 쿠키 수동 삭제 완료");
+  document.cookie = 'accessToken=; Max-Age=0; path=/;';
+  document.cookie = 'refreshToken=; Max-Age=0; path=/;';
+  console.log('브라우저 쿠키 수동 삭제 완료');
 };
 
 export const authAPI = {
-  registerUser: (userData) =>
-    handleRequest(api.post("/auth/register", userData, requestConfig), "회원가입 요청 중 오류 발생"),
+  registerUser: userData =>
+    handleRequest(
+      api.post('/auth/register', userData, requestConfig),
+      '회원가입 요청 중 오류 발생'
+    ),
 
-  loginUser: (loginData) =>
-    handleRequest(api.post("/auth/login", loginData, requestConfig), "로그인 요청 중 오류 발생"),
+  loginUser: loginData =>
+    handleRequest(
+      api.post('/auth/login', loginData, requestConfig),
+      '로그인 요청 중 오류 발생'
+    ),
 
   logoutUser: async () => {
-    await handleRequest(api.post("/auth/logout", {}, requestConfig), "로그아웃 요청 중 오류 발생");
+    await handleRequest(
+      api.post('/auth/logout', {}, requestConfig),
+      '로그아웃 요청 중 오류 발생'
+    );
     clearCookiesManually();
   },
 
   getUserProfile: () =>
-    handleRequest(api.get("/auth/profile", requestConfig), "프로필 조회 중 오류 발생"),
+    handleRequest(api.get('/auth/profile', requestConfig), '프로필 조회 중 오류 발생'),
 
-  checkDuplicate: (data) =>{
-    if (!data || Object.values(data).every((val) => !val.trim())) {
-      return Promise.reject({ message: "입력된 값이 없습니다." });
+  checkDuplicate: data => {
+    if (!data || Object.values(data).every(val => !val.trim())) {
+      return Promise.reject({message: '입력된 값이 없습니다.'});
     }
-    return handleRequest(api.post("/auth/check-duplicate", data, requestConfig), "중복 확인 중 오류 발생");
+    return handleRequest(
+      api.post('/auth/check-duplicate', data, requestConfig),
+      '중복 확인 중 오류 발생'
+    );
   },
 
-  updateProfile: (userData) =>
-    handleRequest(api.put("/auth/profile/update", userData, requestConfig), "프로필 수정 중 오류 발생"),
+  updateProfile: userData =>
+    handleRequest(
+      api.put('/auth/profile/update', userData, requestConfig),
+      '프로필 수정 중 오류 발생'
+    ),
 
-  changePassword: (passwordData) =>
-    handleRequest(api.put("/auth/change-password", passwordData, requestConfig), "비밀번호 변경 중 오류 발생"),
+  changePassword: passwordData =>
+    handleRequest(
+      api.put('/auth/change-password', passwordData, requestConfig),
+      '비밀번호 변경 중 오류 발생'
+    ),
 
-  forgotPassword: (email) =>
-    handleRequest(api.post("/auth/forgot-password", { email }, requestConfig), "비밀번호 찾기 요청 중 오류 발생"),
+  forgotPassword: email =>
+    handleRequest(
+      api.post('/auth/forgot-password', {email}, requestConfig),
+      '비밀번호 찾기 요청 중 오류 발생'
+    ),
 
-  resetPassword: (resetData) =>
-    handleRequest(api.post("/auth/reset-password", resetData, requestConfig), "비밀번호 변경 중 오류 발생"),
+  resetPassword: resetData =>
+    handleRequest(
+      api.post('/auth/reset-password', resetData, requestConfig),
+      '비밀번호 변경 중 오류 발생'
+    ),
 
   refreshToken: () =>
-    handleRequest(api.post("/auth/refresh-token", {}, requestConfig), "토큰 갱신 요청 중 오류 발생"),
+    handleRequest(
+      api.post('/auth/refresh-token', {}, requestConfig),
+      '토큰 갱신 요청 중 오류 발생'
+    )
 };
 
 export default authAPI;
