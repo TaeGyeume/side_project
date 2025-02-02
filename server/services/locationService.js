@@ -47,3 +47,27 @@ exports.searchLocations = async query => {
     throw new Error('도시/국가 검색 중 오류 발생: ' + error.message);
   }
 };
+
+// ✅ 국가 목록 조회
+exports.getCountries = async () => {
+  try {
+    const countries = await Location.distinct('country'); // 중복 제거하여 국가 목록 반환
+    return countries;
+  } catch (error) {
+    throw new Error('국가 목록 조회 중 오류 발생: ' + error.message);
+  }
+};
+
+// ✅ 특정 국가의 도시 목록 조회
+exports.getCitiesByCountry = async (country) => {
+  try {
+    if (!country) {
+      throw new Error('국가명을 입력해주세요.');
+    }
+
+    const cities = await Location.find({ country }).select('_id name');
+    return cities;
+  } catch (error) {
+    throw new Error('도시 목록 조회 중 오류 발생: ' + error.message);
+  }
+};

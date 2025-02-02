@@ -1,6 +1,7 @@
 // src/components/accommodations/AccommodationCard.js
 import React from 'react';
-import {useNavigate, createSearchParams} from 'react-router-dom';
+import {createSearchParams} from 'react-router-dom';
+import './styles/AccommodationCard.css';
 
 // ✅ 기본 날짜 설정 함수 (오늘 + n일)
 const getFormattedDate = (daysToAdd = 0) => {
@@ -10,7 +11,6 @@ const getFormattedDate = (daysToAdd = 0) => {
 };
 
 const AccommodationCard = ({accommodation, queryOptions = {}}) => {
-  const navigate = useNavigate();
 
   // ✅ 기본 필터값 설정 (queryOptions가 없을 경우 적용)
   const params = {
@@ -32,14 +32,21 @@ const AccommodationCard = ({accommodation, queryOptions = {}}) => {
     // ✅ 새 탭에서 상세 페이지 열기
     window.open(url, '_blank');
   };
+  
+  // ✅ 이미지 URL 변환 로직 추가
+  const SERVER_URL = 'http://localhost:5000';
+  let imageUrl = accommodation.images?.[0] || '/default-image.jpg';
+
+  // 이미지가 상대 경로(`/uploads/...`)일 경우, 서버 주소 추가
+  if (imageUrl.startsWith('/uploads/')) {
+    imageUrl = `${SERVER_URL}${imageUrl}`;
+  }
+
+  console.log('Accommodation Image:', imageUrl); // 디버깅용
 
   return (
-    <div className="card mb-3">
-      <img
-        src={accommodation.images?.[0] || '/default-image.jpg'}
-        className="card-img-top"
-        alt={accommodation.name}
-      />
+    <div className="card accommodation-card mb-3">
+      <img src={imageUrl} className="card-img-top accommodation-image" alt={accommodation.name} />
       <div className="card-body">
         <h5 className="card-title">{accommodation.name}</h5>
         <p className="card-text">{accommodation.description}</p>

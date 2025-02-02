@@ -19,6 +19,7 @@ import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이
 import Reservation from './pages/reservations/Reservation'; // 🎫 예약 페이지 추가
 import ProductPage from './pages/product/ProductPage';
 import AccommodationList from './pages/product/AccommodationList';
+import AccommodationCreate from './pages/product/AccommodationCreate';
 import TourTicketList from './components/tourTicket/TourTicketList';
 import TourTicketForm from './components/tourTicket/TourTicketForm';
 import TourTicketDetail from './components/tourTicket/TourTicketDetail';
@@ -90,6 +91,7 @@ const App = () => {
           <Route path="/product/tourTicket/list" element={<TourTicketList />} />
           <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
           <Route path="/product/accommodations/list" element={<AccommodationList />} />
+          <Route path="/product/accommodations/new" element={<AccommodationCreate />} />
             {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
             {/* <Route path="/admin/settings" element={<AdminSettings />} /> */}
             <Route path="/product" element={<ProductPage />} />
