@@ -279,3 +279,39 @@ exports.getAllAccommodations = async () => {
     throw new Error('숙소 목록을 불러오는 중 오류 발생: ' + error.message);
   }
 };
+
+// ✅ 숙소 이름으로 검색 함수
+exports.getAccommodationsByName = async name => {
+  try {
+    if (!name) {
+      throw new Error('검색할 숙소 이름을 입력해주세요.');
+    }
+
+    // 🔹 정규식 기반 검색 (대소문자 무시, 띄어쓰기 무시)
+    const normalizedName = name.replace(/\s+/g, ''); // 공백 제거
+    const regexName = new RegExp(normalizedName.split('').join('.*'), 'i'); // 띄어쓰기 무시
+
+    // 1️⃣ **정확한 이름 검색 (`text index` 활용)**
+    let accommodations = await Accommodation.find(
+      {$text: {$search: name}},
+      {score: {$meta: 'textScore'}}
+    )
+      .sort({score: {$meta: 'textScore'}})
+      .limit(10);
+
+    // 2️⃣ **정규식 검색 (띄어쓰기 무시)**
+    let regexAccommodations = await Accommodation.find({
+      name: {$regex: regexName}
+    }).limit(10);
+
+    // 3️⃣ **중복 제거 후 최종 결과 반환**
+    accommodations = [...accommodations, ...regexAccommodations].filter(
+      (v, i, a) => a.findIndex(t => t._id.toString() === v._id.toString()) === i
+    );
+
+    return accommodations;
+  } catch (error) {
+    console.error('❌ 숙소 이름 검색 중 오류 발생:', error);
+    throw new Error('숙소 이름 검색 중 오류 발생: ' + error.message);
+  }
+};

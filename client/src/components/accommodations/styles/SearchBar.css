@@ -1,4 +1,4 @@
-.search-container {
+.searchBar-container {
   display: flex;
   align-items: center;
   justify-content: space-between; /* 요소들을 한 줄로 정렬 */
