@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const accommodationController = require('../controllers/accommodationController');
+const upload = require('../middleware/uploadMiddleware');
 
 // 숙소 생성 API (POST /api/accommodations)
-router.post('/', accommodationController.createAccommodation);
+router.post('/new', upload, accommodationController.createAccommodation);
 // 자동완성 검색
 router.get('/autocomplete', accommodationController.autocompleteSearch);
 // 날짜 및 인원수에 맞는 숙소 검색
@@ -17,7 +18,9 @@ router.get(
 router.patch('/:accommodationId', accommodationController.updateAccommodation);
 // 숙소 삭제 API (DELETE /api/accommodations/:accommodationId)
 router.delete('/:accommodationId', accommodationController.deleteAccommodation);
-// ✅ 숙소 전체 리스트 조회 API (GET /api/accommodations/list)
+// 숙소 전체 리스트 조회 API (GET /api/accommodations/list)
 router.get('/list', accommodationController.getAllAccommodations);
+// 숙소 이름 검색 API
+router.get('/searchByName', accommodationController.searchAccommodationsByName);
 
 module.exports = router;

@@ -28,7 +28,7 @@ const AccommodationResults = () => {
   // ✅ 첫 렌더링 또는 URL 파라미터 변경 시 실행
   useEffect(() => {
     fetchAccommodations(filters);
-  }, [searchParams]); // `searchParams`가 변경될 때만 실행하여 무한 루프 방지
+  }, [searchParams, filters]); // `searchParams`가 변경될 때만 실행하여 무한 루프 방지
 
   const fetchAccommodations = async updatedFilters => {
     try {

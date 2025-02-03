@@ -38,3 +38,28 @@ exports.searchLocations = async (req, res) => {
     res.status(500).json({message: '도시/국가 검색 중 오류 발생', error: error.message});
   }
 };
+
+// ✅ 국가 목록 조회 API
+exports.getCountries = async (req, res) => {
+  try {
+    const countries = await locationService.getCountries();
+    res.status(200).json(countries);
+  } catch (error) {
+    res.status(500).json({message: '국가 목록 조회 중 오류 발생', error: error.message});
+  }
+};
+
+// ✅ 특정 국가의 도시 목록 조회 API
+exports.getCitiesByCountry = async (req, res) => {
+  try {
+    const {country} = req.query;
+    if (!country) {
+      return res.status(400).json({message: '국가명을 입력해주세요.'});
+    }
+
+    const cities = await locationService.getCitiesByCountry(country);
+    res.status(200).json(cities);
+  } catch (error) {
+    res.status(500).json({message: '도시 목록 조회 중 오류 발생', error: error.message});
+  }
+};

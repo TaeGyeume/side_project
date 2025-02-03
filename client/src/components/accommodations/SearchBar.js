@@ -79,7 +79,7 @@ const SearchBar = ({onSearch}) => {
   };
 
   return (
-    <div ref={searchRef} className="search-container">
+    <div ref={searchRef} className="searchBar-container">
       {/* 여행지 입력 */}
       <div className="input-group">
         <label>여행지</label>

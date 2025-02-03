@@ -1,12 +1,14 @@
 // src/product/AccommodationList.js
 import React, {useState, useEffect} from 'react';
-import axios from '../../api/axios';
-import AccommodationCard from '../../components/accommodations/AccommodationCard';
+import {useNavigate} from 'react-router-dom';
+import axios from '../../../api/axios';
+import AccommodationCard from '../../../components/accommodations/AccommodationCard';
 
 const AccommodationList = () => {
   const [accommodations, setAccommodations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAccommodations = async () => {
@@ -29,6 +31,11 @@ const AccommodationList = () => {
   return (
     <div className="container mt-3">
       <h2>숙소 목록</h2>
+      <button
+        className="btn btn-success"
+        onClick={() => navigate('/product/accommodations/new')}>
+        + 숙소 등록
+      </button>
       <div className="row">
         {accommodations.length > 0 ? (
           accommodations.map(acc => (
