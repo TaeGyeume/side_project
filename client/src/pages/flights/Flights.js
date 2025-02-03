@@ -1,54 +1,38 @@
-import React, {useEffect, useState} from 'react';
-import {useLocation} from 'react-router-dom';
-import {getFlights} from '../../api/flights';
-import FlightSearch from '../../components/FlightSearch';
+import React, { useEffect, useState } from "react";
+import { fetchFlights } from "../../api/flight/flights";
 
 const Flights = () => {
   const [flights, setFlights] = useState([]);
-  const location = useLocation();
 
   useEffect(() => {
-    async function fetchFlights() {
-      const queryParams = new URLSearchParams(location.search);
-      const departure = queryParams.get('departure');
-      const arrival = queryParams.get('arrival');
-      const date = queryParams.get('date');
-      const returnDate = queryParams.get('returnDate');
-      const passengers = queryParams.get('passengers');
-
-      // 왕복 검색 시 두 날짜를 검색
-      const data = await getFlights({departure, arrival, date, returnDate, passengers});
+    const getFlights = async () => {
+      const data = await fetchFlights();
       setFlights(data);
-    }
-
-    fetchFlights();
-  }, [location.search]);
+    };
+    getFlights();
+  }, []);
 
   return (
-    <div>
-      <h1>항공편 검색 결과</h1>
-      <FlightSearch />
-      <ul>
-        {flights.length > 0 ? (
-          flights.map(flight => (
-            <li key={flight._id}>
-              ✈️ {flight.airline} - {flight.flightNumber}
-              <br />
-              🛫 출발: {flight.departure.city} ({flight.departure.airport}) -{' '}
-              {new Date(flight.departure.time).toLocaleString()}
-              <br />
-              🛬 도착: {flight.arrival.city} ({flight.arrival.airport}) -{' '}
-              {new Date(flight.arrival.time).toLocaleString()}
-              <br />
-              💰 가격: {flight.price.toLocaleString()}원 | 좌석 수:{' '}
-              {flight.seatsAvailable}석
-              <hr />
-            </li>
-          ))
+    <div className="container mx-auto p-4">
+      <h2 className="text-2xl font-bold mb-4">✈️ 항공편 리스트</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {flights.length === 0 ? (
+          <p className="text-gray-600">항공편 데이터를 불러오는 중...</p>
         ) : (
-          <p>검색 결과가 없습니다.</p>
+          flights.map((flight) => (
+            <div key={flight.flightNumber} className="border p-4 rounded-lg shadow-md flex items-center space-x-4">
+              <img src={flight.airlineLogo} alt={flight.airline} className="w-12 h-12" />
+              <div>
+                <h3 className="text-lg font-semibold">{flight.airline} ({flight.flightNumber})</h3>
+                <p className="text-gray-600">{flight.departure.city} → {flight.arrival.city}</p>
+                <p className="text-gray-500">🕒 {new Date(flight.departure.time).toLocaleTimeString()} → {new Date(flight.arrival.time).toLocaleTimeString()} ({flight.flightDuration})</p>
+                <p className="text-gray-700">좌석: {flight.seatsAvailable}석 | {flight.seatClass}</p>
+                <p className="text-lg font-bold text-blue-600">{flight.price.toLocaleString()}원</p>
+              </div>
+            </div>
+          ))
         )}
-      </ul>
+      </div>
     </div>
   );
 };

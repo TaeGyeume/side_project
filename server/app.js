@@ -42,7 +42,7 @@ app.use('/api/accommodations', accommodationRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api', routes);
 app.use('/api/auth', authRoutes);
-app.use('/api/flights', flightRoutes); // ✈️ 항공편 관련 API
+app.use('/api', flightRoutes); // ✈️ 항공편 관련 API
 app.use('/api/reservations', reservationRoutes); // 🎫 예약 관련 API
 app.use('/product', productRoutes);
 app.use('/uploads', express.static('uploads'));
