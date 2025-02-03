@@ -12,17 +12,18 @@ import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
 import Unauthorized from './pages/Unauthorized'; // 권한 없음 페이지 추가
 // import AdminDashboard from './pages/admin/AdminDashboard'; // 어드민 대시보드 추가
 // import AdminSettings from './pages/admin/AdminSettings'; // 어드민 설정 추가
-import AccommodationSearch from './pages/accommodation/AccommodationSearch';
-import AccommodationResults from './pages/accommodation/AccommodationResults';
-import AccommodationDetail from './pages/accommodation/AccommodationDetail';
+import AccommodationSearch from './pages/accommodations/AccommodationSearch';
+import AccommodationResults from './pages/accommodations/AccommodationResults';
+import AccommodationDetail from './pages/accommodations/AccommodationDetail';
 import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이지 추가
 import Reservation from './pages/reservations/Reservation'; // 🎫 예약 페이지 추가
 import ProductPage from './pages/product/ProductPage';
-import AccommodationList from './pages/product/AccommodationList';
-import TourTicketList from './components/product/tourTicket/TourTicketList';
-import TourTicketForm from './components/product/tourTicket/TourTicketForm';
-import TourTicketDetail from './components/product/tourTicket/TourTicketDetail';
-import TourTicketModify from './components/product/tourTicket/TourTicketModify';
+import AccommodationList from './pages/product/accommodations/AccommodationList';
+import AccommodationCreate from './pages/product/accommodations/AccommodationCreate';
+import TourTicketList from './components/tourTicket/TourTicketList';
+import TourTicketForm from './components/tourTicket/TourTicketForm';
+import TourTicketDetail from './components/tourTicket/TourTicketDetail';
+import TourTicketModify from './components/tourTicket/TourTicketModify';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -93,6 +94,7 @@ const App = () => {
             <Route path="/product/tourTicket/list" element={<TourTicketList />} />
             <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
             <Route path="/product/accommodations/list" element={<AccommodationList />} />
+            <Route path="/product/accommodations/new" element={<AccommodationCreate />} />
             {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
             {/* <Route path="/admin/settings" element={<AdminSettings />} /> */}
             <Route path="/product" element={<ProductPage />} />
