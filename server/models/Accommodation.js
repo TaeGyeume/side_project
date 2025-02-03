@@ -56,8 +56,8 @@ const AccommodationSchema = new mongoose.Schema({
     required: true
   },
   createdAt: {
-    type: Date, // 숙소 등록 날짜
-    default: Date.now
+    type: Date,
+    default: () => new Date(Date.now() + 9 * 60 * 60 * 1000) // KST
   },
   rooms: [
     {

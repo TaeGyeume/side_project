@@ -155,3 +155,18 @@ exports.getAllAccommodations = async (req, res) => {
     res.status(500).json({message: error.message});
   }
 };
+
+// ✅ 숙소 이름으로 검색하는 컨트롤러
+exports.searchAccommodationsByName = async (req, res) => {
+  try {
+    const {name} = req.query;
+    if (!name) {
+      return res.status(400).json({message: '검색할 숙소 이름을 입력해주세요.'});
+    }
+
+    const accommodations = await accommodationService.getAccommodationsByName(name);
+    res.status(200).json(accommodations);
+  } catch (error) {
+    res.status(500).json({message: '숙소 이름 검색 중 오류 발생', error: error.message});
+  }
+};

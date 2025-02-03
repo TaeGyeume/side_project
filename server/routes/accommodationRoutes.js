@@ -20,5 +20,7 @@ router.patch('/:accommodationId', accommodationController.updateAccommodation);
 router.delete('/:accommodationId', accommodationController.deleteAccommodation);
 // 숙소 전체 리스트 조회 API (GET /api/accommodations/list)
 router.get('/list', accommodationController.getAllAccommodations);
+// 숙소 이름 검색 API
+router.get('/searchByName', accommodationController.searchAccommodationsByName);
 
 module.exports = router;
