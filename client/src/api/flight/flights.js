@@ -13,6 +13,17 @@ const API_URL = 'http://localhost:5000/api';
 //   }
 // };
 
+// ✈️ 모든 항공편 리스트 가져오기
+export const fetchFlights = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/flights`);
+    return response.data;
+  } catch (error) {
+    console.error("❌ 항공편 데이터를 불러오는 중 오류 발생:", error);
+    return [];
+  }
+};
+
 // ✈️ 항공편 검색 API (검색 조건 적용)
 export const getFlights = async ({departure, arrival, date, passengers}) => {
   try {
