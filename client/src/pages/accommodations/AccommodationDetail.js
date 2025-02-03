@@ -3,6 +3,9 @@ import React, {useState, useEffect} from 'react';
 import {useParams, useSearchParams} from 'react-router-dom';
 import axios from '../../api/axios';
 import RoomCard from '../../components/accommodations/RoomCard';
+import Slider from 'react-slick'; // ✅ React Slick 추가
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 // ✅ 기본 날짜 설정 함수 (오늘 + n일)
 const getFormattedDate = (daysToAdd = 0) => {
@@ -19,8 +22,8 @@ const AccommodationDetail = () => {
   const [error, setError] = useState('');
 
   // ✅ `searchParams`에서 검색 조건 가져오되, 값이 없으면 기본값 사용
-  const startDate = searchParams.get('startDate') || getFormattedDate(1); // 기본값: 내일
-  const endDate = searchParams.get('endDate') || getFormattedDate(2); // 기본값: 모레
+  const startDate = searchParams.get('startDate') || getFormattedDate(1);
+  const endDate = searchParams.get('endDate') || getFormattedDate(2);
   const adults = searchParams.get('adults') || 1;
   const minPrice = searchParams.get('minPrice') || 0;
   const maxPrice = searchParams.get('maxPrice') || 500000;
@@ -52,6 +55,19 @@ const AccommodationDetail = () => {
   if (!accommodationData) return <div>데이터가 없습니다.</div>;
 
   const {accommodation, availableRooms} = accommodationData;
+  const SERVER_URL = 'http://localhost:5000';
+
+  // ✅ React Slick 설정
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    arrows: true
+  };
 
   return (
     <div className="container mt-3">
@@ -60,17 +76,54 @@ const AccommodationDetail = () => {
       <p>
         <strong>주소:</strong> {accommodation.address}
       </p>
-      {accommodation.images?.length > 0 && (
-        <div className="mb-3">
-          {accommodation.images.map((img, index) => (
+
+      {/* ✅ 이미지가 2개 이상이면 Slick 캐러셀 적용 */}
+      {accommodation.images?.length > 1 ? (
+        <Slider {...settings} className="mb-3">
+          {accommodation.images.map((img, index) => {
+            let imageUrl = img;
+
+            // 이미지 경로가 `/uploads/...` 형식이면 절대 경로로 변환
+            if (imageUrl.startsWith('/uploads/')) {
+              imageUrl = `${SERVER_URL}${imageUrl}`;
+            }
+
+            return (
+              <div key={index} className="carousel-slide">
+                <img
+                  src={imageUrl}
+                  alt={`${accommodation.name} 이미지 ${index + 1}`}
+                  style={{
+                    width: '100%',
+                    height: '400px',
+                    objectFit: 'cover',
+                    borderRadius: '8px'
+                  }}
+                />
+              </div>
+            );
+          })}
+        </Slider>
+      ) : (
+        // ✅ 이미지가 1개일 경우 그냥 단일 이미지 표시
+        accommodation.images?.length === 1 && (
+          <div className="single-image">
             <img
-              key={index}
-              src={img}
-              alt={`${accommodation.name} 이미지 ${index + 1}`}
-              style={{maxWidth: '300px', marginRight: '10px'}}
+              src={
+                accommodation.images[0].startsWith('/uploads/')
+                  ? `${SERVER_URL}${accommodation.images[0]}`
+                  : accommodation.images[0]
+              }
+              alt={`${accommodation.name} 이미지`}
+              style={{
+                width: '100%',
+                height: '400px',
+                objectFit: 'cover',
+                borderRadius: '8px'
+              }}
             />
-          ))}
-        </div>
+          </div>
+        )
       )}
 
       <h3>예약 가능한 객실</h3>
