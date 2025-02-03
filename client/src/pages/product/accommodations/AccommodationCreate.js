@@ -1,12 +1,12 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from '../../api/axios';
-import AccommodationForm from '../../components/accommodations/AccommodationForm';
+import {useNavigate} from 'react-router-dom';
+import axios from '../../../api/axios';
+import AccommodationForm from '../../../components/accommodations/AccommodationForm';
 
 const AccommodationCreate = () => {
   const navigate = useNavigate();
 
-  const handleSubmit = async (formData) => {
+  const handleSubmit = async formData => {
     try {
       const form = new FormData();
       Object.keys(formData).forEach(key => {
@@ -18,7 +18,7 @@ const AccommodationCreate = () => {
       });
 
       await axios.post('/accommodations/new', form, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: {'Content-Type': 'multipart/form-data'}
       });
 
       alert('숙소가 성공적으로 등록되었습니다.');

@@ -1,6 +1,6 @@
 // src/components/accommodations/AccommodationCard.js
 import React from 'react';
-import {createSearchParams} from 'react-router-dom';
+import {createSearchParams, useNavigate} from 'react-router-dom';
 import './styles/AccommodationCard.css';
 
 // ✅ 기본 날짜 설정 함수 (오늘 + n일)
@@ -11,6 +11,7 @@ const getFormattedDate = (daysToAdd = 0) => {
 };
 
 const AccommodationCard = ({accommodation, queryOptions = {}}) => {
+  const navigate = useNavigate(); // ✅ 페이지 이동을 위한 `useNavigate` 사용
 
   // ✅ 기본 필터값 설정 (queryOptions가 없을 경우 적용)
   const params = {
@@ -24,15 +25,14 @@ const AccommodationCard = ({accommodation, queryOptions = {}}) => {
     sortBy: queryOptions.sortBy || 'default'
   };
 
-  const handleDetailClick = () => {
+  // ✅ 카드 클릭 시 상세 페이지로 이동
+  const handleCardClick = () => {
     const url = `/accommodations/${accommodation._id}/detail?${createSearchParams(
       params
     )}`;
-
-    // ✅ 새 탭에서 상세 페이지 열기
     window.open(url, '_blank');
   };
-  
+
   // ✅ 이미지 URL 변환 로직 추가
   const SERVER_URL = 'http://localhost:5000';
   let imageUrl = accommodation.images?.[0] || '/default-image.jpg';
@@ -45,17 +45,21 @@ const AccommodationCard = ({accommodation, queryOptions = {}}) => {
   console.log('Accommodation Image:', imageUrl); // 디버깅용
 
   return (
-    <div className="card accommodation-card mb-3">
-      <img src={imageUrl} className="card-img-top accommodation-image" alt={accommodation.name} />
+    <div
+      className="card accommodation-card mb-3"
+      onClick={handleCardClick}
+      style={{cursor: 'pointer'}}>
+      <img
+        src={imageUrl}
+        className="card-img-top accommodation-image"
+        alt={accommodation.name}
+      />
       <div className="card-body">
         <h5 className="card-title">{accommodation.name}</h5>
         <p className="card-text">{accommodation.description}</p>
         <p>
           <strong>최저가:</strong> {accommodation.minPrice?.toLocaleString()}원
         </p>
-        <button className="btn btn-primary" onClick={handleDetailClick}>
-          상세 보기
-        </button>
       </div>
     </div>
   );

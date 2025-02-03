@@ -1,8 +1,8 @@
 // src/product/AccommodationList.js
 import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
-import axios from '../../api/axios';
-import AccommodationCard from '../../components/accommodations/AccommodationCard';
+import axios from '../../../api/axios';
+import AccommodationCard from '../../../components/accommodations/AccommodationCard';
 
 const AccommodationList = () => {
   const [accommodations, setAccommodations] = useState([]);

@@ -59,13 +59,13 @@ exports.getCountries = async () => {
 };
 
 // ✅ 특정 국가의 도시 목록 조회
-exports.getCitiesByCountry = async (country) => {
+exports.getCitiesByCountry = async country => {
   try {
     if (!country) {
       throw new Error('국가명을 입력해주세요.');
     }
 
-    const cities = await Location.find({ country }).select('_id name');
+    const cities = await Location.find({country}).select('_id name');
     return cities;
   } catch (error) {
     throw new Error('도시 목록 조회 중 오류 발생: ' + error.message);
