@@ -68,6 +68,16 @@ exports.updateTourTicket = async (
 };
 
 // 투어.티켓 삭제
-exports.deleteTicket = async id => {
-  return await TourTicket.findByIdAndDelete(id);
+exports.deleteMultipleTickets = async ticketIds => {
+  try {
+    const result = await TourTicket.deleteMany({_id: {$in: ticketIds}}); // deleteMany({_id: {$in: ticketIds}}) 쿼리로 여러 개 삭제
+    return result.deletedCount; // 삭제된 개수 반환
+  } catch (error) {
+    console.error('상품 삭제 중 오류 발생:', error);
+    throw new Error('상품 삭제 실패');
+  }
 };
+
+// exports.deleteTicket = async id => {
+//   return await TourTicket.findByIdAndDelete(id);
+// };
