@@ -58,7 +58,7 @@ exports.createTicket = async (req, res) => {
 
 exports.updateTicket = async (req, res) => {
   try {
-    const {title, price, stock, deleteImages} = req.body;
+    const {title, description, price, stock, deleteImages} = req.body;
     const ticketId = req.params.id;
 
     let parsedDeleteImages = [];
@@ -74,6 +74,7 @@ exports.updateTicket = async (req, res) => {
 
     const updatedTicket = await tourTicketService.updateTourTicket(ticketId, {
       title,
+      description,
       price,
       stock,
       deleteImages: parsedDeleteImages,

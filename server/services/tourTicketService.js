@@ -23,7 +23,7 @@ exports.createTicket = async ticketData => {
 
 exports.updateTourTicket = async (
   ticketId,
-  {title, price, stock, deleteImages, newImages}
+  {title, description, price, stock, deleteImages, newImages}
 ) => {
   try {
     let ticket = await TourTicket.findById(ticketId);
@@ -56,6 +56,7 @@ exports.updateTourTicket = async (
 
     // ✅ 상품 정보 업데이트
     ticket.title = title || ticket.title;
+    ticket.description = description || ticket.description;
     ticket.price = price || ticket.price;
     ticket.stock = stock || ticket.stock;
 

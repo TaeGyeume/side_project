@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {
   getTourTicketById,
   updateTourTicket
-} from '../../api/tourTicket/tourTicketService';
+} from '../../../api/tourTicket/tourTicketService';
 import {useParams, useNavigate} from 'react-router-dom';
 
 const TourTicketModify = () => {
@@ -12,6 +12,7 @@ const TourTicketModify = () => {
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [stock, setStock] = useState('');
+  const [description, setDescription] = useState('');
   const [newImages, setNewImages] = useState([]);
   const [deleteImages, setDeleteImages] = useState([]);
 
@@ -21,6 +22,7 @@ const TourTicketModify = () => {
         const data = await getTourTicketById(id);
         setTicket(data);
         setTitle(data.title);
+        setDescription(data.description);
         setPrice(data.price);
         setStock(data.stock);
       } catch (error) {
@@ -49,6 +51,7 @@ const TourTicketModify = () => {
     try {
       const formData = new FormData();
       formData.append('title', title);
+      formData.append('description', description);
       formData.append('price', price);
       formData.append('stock', stock);
       formData.append('deleteImages', JSON.stringify([image])); // 삭제할 이미지 배열 전송
@@ -72,6 +75,7 @@ const TourTicketModify = () => {
 
     const formData = new FormData();
     formData.append('title', title);
+    formData.append('description', description);
     formData.append('price', price);
     formData.append('stock', stock);
 
@@ -97,6 +101,13 @@ const TourTicketModify = () => {
           type="text"
           value={title}
           onChange={e => setTitle(e.target.value)}
+          required
+        />
+
+        <label>상품 설명:</label>
+        <textarea
+          value={description}
+          onChange={e => setDescription(e.target.value)}
           required
         />
 

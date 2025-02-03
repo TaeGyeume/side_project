@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import api from './api/axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { AuthPages, Main, UserPages } from './pages';
+import {BrowserRouter as Router, Route, Routes, Navigate} from 'react-router-dom';
+import {AuthPages, Main, UserPages} from './pages';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import EditProfile from './pages/user/EditProfile';
 import Header from './components/Header';
-import { useAuthStore } from './store/authStore'; // Zustand 스토어
+import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
 import Unauthorized from './pages/Unauthorized'; // 권한 없음 페이지 추가
 // import AdminDashboard from './pages/admin/AdminDashboard'; // 어드민 대시보드 추가
@@ -19,10 +19,10 @@ import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이
 import Reservation from './pages/reservations/Reservation'; // 🎫 예약 페이지 추가
 import ProductPage from './pages/product/ProductPage';
 import AccommodationList from './pages/product/AccommodationList';
-import TourTicketList from './components/tourTicket/TourTicketList';
-import TourTicketForm from './components/tourTicket/TourTicketForm';
-import TourTicketDetail from './components/tourTicket/TourTicketDetail';
-import TourTicketModify from './components/tourTicket/TourTicketModify';
+import TourTicketList from './components/product/tourTicket/TourTicketList';
+import TourTicketForm from './components/product/tourTicket/TourTicketForm';
+import TourTicketDetail from './components/product/tourTicket/TourTicketDetail';
+import TourTicketModify from './components/product/tourTicket/TourTicketModify';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -72,7 +72,10 @@ const App = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/accommodations/search" element={<AccommodationSearch />} />
           <Route path="/accommodations/results" element={<AccommodationResults />} />
-          <Route path="/accommodations/:accommodationId/detail" element={<AccommodationDetail />} />
+          <Route
+            path="/accommodations/:accommodationId/detail"
+            element={<AccommodationDetail />}
+          />
 
           {/* ✈️ 항공편 목록 페이지 추가 */}
           <Route path="/flights" element={<Flights />} />
@@ -86,10 +89,10 @@ const App = () => {
 
           {/* 🔒 어드민 전용 페이지 */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>
-          <Route path="/product" element={<ProductPage />} />
-          <Route path="/product/tourTicket/list" element={<TourTicketList />} />
-          <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
-          <Route path="/product/accommodations/list" element={<AccommodationList />} />
+            <Route path="/product" element={<ProductPage />} />
+            <Route path="/product/tourTicket/list" element={<TourTicketList />} />
+            <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
+            <Route path="/product/accommodations/list" element={<AccommodationList />} />
             {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
             {/* <Route path="/admin/settings" element={<AdminSettings />} /> */}
             <Route path="/product" element={<ProductPage />} />

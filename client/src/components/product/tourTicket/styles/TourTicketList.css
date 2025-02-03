@@ -54,6 +54,10 @@
   font-weight: bold;
 }
 
+.ticket-description{
+  font-size: 17px;
+}
+
 .ticket-price {
   font-size: 16px;
   color: #28a745;
