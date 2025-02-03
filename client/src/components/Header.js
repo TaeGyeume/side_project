@@ -49,6 +49,11 @@ const Header = () => {
               </Link>
             </li>
             <li className="nav-item">
+              <Link className="nav-link" to="/flights">
+                항공
+              </Link>
+            </li>
+            <li className="nav-item">
               <Link className="nav-link" to="/accommodations/search">
                 숙소 검색
               </Link>
