@@ -2,18 +2,24 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import axios from '../../../api/axios';
-import AccommodationCard from '../../../components/accommodations/AccommodationCard';
+import AccommodationCard from '../../../components/product/accommodations/AccommodationCard';
+import SearchBar from '../../../components/product/accommodations/SearchBar';
 
 const AccommodationList = () => {
   const [accommodations, setAccommodations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAccommodations = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get('/accommodations/list');
+        const response = searchTerm
+          ? await axios.get('/accommodations/searchByName', { params: { name: searchTerm } }) // ✅ 검색 API 호출
+          : await axios.get('/accommodations/list'); // ✅ 기본 목록
+
         setAccommodations(response.data);
       } catch (err) {
         setError('숙소 정보를 불러오는 중 오류 발생');
@@ -23,7 +29,7 @@ const AccommodationList = () => {
     };
 
     fetchAccommodations();
-  }, []);
+  }, [searchTerm]);
 
   if (loading) return <div>로딩 중...</div>;
   if (error) return <div>{error}</div>;
@@ -31,6 +37,7 @@ const AccommodationList = () => {
   return (
     <div className="container mt-3">
       <h2>숙소 목록</h2>
+      <SearchBar onSearch={setSearchTerm} />
       <button
         className="btn btn-success"
         onClick={() => navigate('/product/accommodations/new')}>

@@ -1,7 +1,7 @@
 import React from 'react';
 import {useNavigate} from 'react-router-dom';
 import axios from '../../../api/axios';
-import AccommodationForm from '../../../components/accommodations/AccommodationForm';
+import AccommodationForm from '../../../components/product/accommodations/AccommodationForm';
 
 const AccommodationCreate = () => {
   const navigate = useNavigate();
