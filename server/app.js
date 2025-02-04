@@ -48,7 +48,7 @@ app.use('/api/rooms', roomRoutes);
 app.use('/api', routes);
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', socialAuthRoutes);  // 소셜 로그인 라우트 추가
-app.use('/api', flightRoutes); // ✈️ 항공편 관련 API
+app.use("/api/flights", flightRoutes); // ✈️ 항공편 관련 API
 app.use('/api/reservations', reservationRoutes); // 🎫 예약 관련 API
 app.use('/product', productRoutes);
 app.use('/uploads', express.static('uploads'));
