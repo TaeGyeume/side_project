@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {authAPI} from '../../api/auth';
 import {useAuthStore} from '../../store/authStore';
 import {useNavigate} from 'react-router-dom';
+import SocialLoginButtons from '../../components/SocialLoginButtons';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -50,9 +51,7 @@ const Login = () => {
       <div className="row justify-content-center">
         <div className="col-md-6">
           <h2 className="text-center mb-4">로그인</h2>
-
           {error && <div className="alert alert-danger">{error}</div>}
-
           <form onSubmit={handleSubmit} className="p-4 border rounded shadow">
             <div className="mb-3">
               <label className="form-label">아이디</label>
@@ -84,7 +83,6 @@ const Login = () => {
               {loading ? '로그인 중...' : '로그인'}
             </button>
           </form>
-
           <div className="text-center mt-3">
             <a href="/forgot-password" className="text-decoration-none">
               비밀번호를 잊으셨나요?
@@ -94,6 +92,7 @@ const Login = () => {
             <a href="/register" className="text-decoration-none">
               회원가입
             </a>
+            <SocialLoginButtons />
           </div>
         </div>
       </div>

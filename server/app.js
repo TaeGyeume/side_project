@@ -54,17 +54,17 @@ app.use('/product', productRoutes);
 app.use('/uploads', express.static('uploads'));
 
 // 리프레시 토큰 엔드포인트
-app.post('/api/auth/refresh-token', (req, res) => {
-  const newToken = 'new_refresh_token'; // 실제 토큰 생성 로직 필요
+// app.post('/api/auth/refresh-token', (req, res) => {
+//   const newToken = 'new_refresh_token'; // 실제 토큰 생성 로직 필요
 
-  res.cookie('refreshToken', newToken, {
-    ...cookieOptions,
-    httpOnly: true,
-    secure: false // 로컬 환경에서는 false 설정 유지
-  });
+//   res.cookie('refreshToken', newToken, {
+//     ...cookieOptions,
+//     httpOnly: true,
+//     secure: false // 로컬 환경에서는 false 설정 유지
+//   });
 
-  res.status(200).json({ message: '토큰 갱신 성공' });
-});
+//   res.status(200).json({ message: '토큰 갱신 성공' });
+// });
 
 // 에러 핸들러
 app.use((err, req, res, next) => {
