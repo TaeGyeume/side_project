@@ -1,67 +1,45 @@
-import React, {useEffect, useState} from 'react';
-import FlightSearch from '../../components/flights/FlightSearch'; // ✅ 올바른 import 경로 확인
-import {fetchFlights} from '../../api/flight/flights';
+import React, { useEffect, useState } from "react";
+import FlightSearch from "../../components/flights/FlightSearch"; // 🔍 검색 컴포넌트 추가
+import FlightList from "../../components/flights/FlightList";
+import { fetchFlights } from "../../api/flight/flights"; // ✅ API 가져오기
 
 const Flights = () => {
-  const [flights, setFlights] = useState([]);
-  const [filteredFlights, setFilteredFlights] = useState([]);
+  const [flights, setFlights] = useState([]); // 전체 항공편 데이터
+  const [filteredFlights, setFilteredFlights] = useState([]); // 검색된 항공편 데이터
 
   useEffect(() => {
     const getFlights = async () => {
       const data = await fetchFlights();
       setFlights(data);
-      setFilteredFlights(data); // 초기에는 전체 데이터 표시
+      setFilteredFlights(data); // 기본적으로 모든 항공편을 표시
     };
     getFlights();
   }, []);
 
-  // ✅ `handleSearch` 함수 정의 (검색 기능 추가)
-  const handleSearch = ({departure, arrival, date}) => {
+  // ✅ 검색 핸들러: 입력한 출발, 도착, 날짜에 맞는 항공편 필터링
+  const handleSearch = ({ departure, arrival, date }) => {
+    console.log("🔍 검색 요청:", { departure, arrival, date });
+
     const filtered = flights.filter(flight => {
       return (
         (!departure || flight.departure.airport.includes(departure)) &&
         (!arrival || flight.arrival.airport.includes(arrival)) &&
-        (!date || flight.departure.time.startsWith(date))
+        (!date || flight.departure.time.startsWith(date)) // 날짜 비교
       );
     });
+
     setFilteredFlights(filtered);
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div>
+      <h1>항공편 리스트</h1>
+
       {/* 🔍 검색 컴포넌트 추가 */}
       <FlightSearch onSearch={handleSearch} />
-      <h2 className="text-2xl font-bold mb-4">✈️ 항공편 리스트</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        {filteredFlights.length === 0 ? (
-          <p className="text-gray-600">검색 결과가 없습니다.</p>
-        ) : (
-          filteredFlights.map(flight => (
-            <div
-              key={flight.flightNumber}
-              className="border p-4 rounded-lg shadow-md flex items-center space-x-4">
-              <img src={flight.airlineLogo} alt={flight.airline} className="w-12 h-12" />
-              <div>
-                <h3 className="text-lg font-semibold">
-                  {flight.airline} ({flight.flightNumber})
-                </h3>
-                <p className="text-gray-600">
-                  {flight.departure.city} → {flight.arrival.city}
-                </p>
-                <p className="text-gray-500">
-                  🕒 {new Date(flight.departure.time).toLocaleTimeString()} →{' '}
-                  {new Date(flight.arrival.time).toLocaleTimeString()}
-                </p>
-                <p className="text-gray-700">좌석: {flight.seatsAvailable}석</p>
-                <p className="text-lg font-bold text-blue-600">
-                  {flight.price.toLocaleString()}원
-                </p>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      {/* 🛫 검색된 항공편 리스트만 전달 */}
+      <FlightList flights={filteredFlights} />
     </div>
   );
 };

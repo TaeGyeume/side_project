@@ -1,55 +1,46 @@
 const express = require('express');
+const Flight = require('../models/Flight');
+const moment = require('moment-timezone'); // ✅ 추가
 const router = express.Router();
-const {getFlights, getFlightById} = require('../controllers/flightController');
 
-const transformFlightData = (flight) => {
-  const departureTime = new Date(flight.departure.time);
-  const arrivalTime = new Date(flight.arrival.time);
-
-  return {
-      ...flight._doc,
-      airlineLogo: `https://yourcdn.com/logos/${flight.airline.replace(/\s/g, "").toLowerCase()}.png`,
-      flightDuration: calculateDuration(departureTime, arrivalTime),
-      seatClass: "할인석",
-      isDiscounted: Math.random() < 0.5,
-  };
-};
-
-// ✅ 비행 시간 계산 함수
-const calculateDuration = (departureTime, arrivalTime) => {
-  const diffMs = Math.abs(arrivalTime - departureTime);
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-  const hours = Math.floor(diffMinutes / 60);
-  const minutes = diffMinutes % 60;
-  return `${hours}시간 ${minutes}분`;
-};
-
-// ✅ 변환된 데이터를 제공하는 API
-router.get('/flights', async (req, res) => {
+// ✅ 모든 항공편 가져오기 API (GET /api/flights)
+router.get('/', async (req, res) => {
+  // 여기 '/'가 중요!
   try {
-      const flights = await Flight.find();
-      const transformedFlights = flights.map(transformFlightData);
-      res.json(transformedFlights);
+    const flights = await Flight.find(); // 모든 항공편 조회
+    res.json(flights);
   } catch (error) {
-      res.status(500).json({ message: "서버 오류", error: error.message });
+    console.error('❌ 항공편 데이터를 가져오는 데 실패했습니다:', error);
+    res.status(500).json({message: '서버 오류'});
   }
 });
 
+// ✈️ 항공편 검색 API
+router.get('/search', async (req, res) => {
+  const { departure, arrival, date } = req.query;
+  console.log('🌐 서버에서 받은 요청:', { departure, arrival, date });
 
-// // ✅ 모든 항공편 조회 API
-// router.get('/flights', async (req, res) => {
-//   try {
-//       const flights = await Flight.find();
-//       res.json(flights);
-//   } catch (error) {
-//       res.status(500).json({ message: "서버 오류", error: error.message });
-//   }
-// });
+  if (!departure || !arrival || !date) {
+    console.warn('⚠️ 필수 파라미터 누락');
+    return res.status(400).json({ error: '출발지, 도착지, 날짜가 필요합니다.' });
+  }
 
-// ✈️ 모든 항공편 조회
-router.get('/', getFlights);
+  try {
+    // ✅ 사용자가 검색한 날짜의 요일 계산
+    const searchWeekday = moment(date, 'YYYY-MM-DD').format('dddd');
 
-// ✈️ 특정 항공편 조회 (ID 기준)
-router.get('/:id', getFlightById);
+    const flights = await Flight.find({
+      'departure.airport': departure,
+      'arrival.airport': arrival,
+      'operatingDays': searchWeekday // ✅ 해당 요일에 운항하는 항공편만 검색
+    });
+
+    console.log('✅ 검색된 항공편:', flights.length);
+    res.json(flights);
+  } catch (error) {
+    console.error('❌ 검색 오류:', error);
+    res.status(500).json({ error: '검색 중 오류 발생' });
+  }
+});
 
 module.exports = router;

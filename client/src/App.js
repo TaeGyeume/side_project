@@ -16,7 +16,7 @@ import AccommodationSearch from './pages/accommodations/AccommodationSearch';
 import AccommodationResults from './pages/accommodations/AccommodationResults';
 import AccommodationDetail from './pages/accommodations/AccommodationDetail';
 import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이지 추가
-import Reservation from './pages/reservations/Reservation'; // 🎫 예약 페이지 추가
+// import Reservation from './pages/reservations/Reservation'; // 🎫 예약 페이지 추가
 import ProductPage from './pages/product/ProductPage';
 import AccommodationList from './pages/product/accommodations/AccommodationList';
 import AccommodationCreate from './pages/product/accommodations/AccommodationCreate';
@@ -83,7 +83,7 @@ const App = () => {
 
           {/* 🔐 인증된 사용자만 접근 가능 */}
           <Route element={<PrivateRoute />}>
-            <Route path="/reservation/:flightId" element={<Reservation />} />
+            {/* <Route path="/reservation/:flightId" element={<Reservation />} /> */}
             <Route path="/profile" element={<UserPages.Profile />} />
             <Route path="/profile/update" element={<EditProfile />} />
           </Route>
