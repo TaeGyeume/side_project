@@ -83,7 +83,7 @@ const App = () => {
 
           {/* 🔐 인증된 사용자만 접근 가능 */}
           <Route element={<PrivateRoute />}>
-            <Route path="/reservation/:flightId" element={<Reservation />} />
+            {/* <Route path="/reservation/:flightId" element={<Reservation />} /> */}
             <Route path="/profile" element={<UserPages.Profile />} />
             <Route path="/profile/update" element={<EditProfile />} />
           </Route>
