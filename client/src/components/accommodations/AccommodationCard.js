@@ -30,7 +30,7 @@ const AccommodationCard = ({accommodation, queryOptions = {}}) => {
     const url = `/accommodations/${accommodation._id}/detail?${createSearchParams(
       params
     )}`;
-    window.open(url, '_blank');
+    window.open(url, '_blank'); // 새 탭에서 열기
   };
 
   // ✅ 이미지 URL 변환 로직 추가
