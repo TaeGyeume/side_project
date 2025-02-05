@@ -1,25 +1,50 @@
+const fs = require('fs');
+const path = require('path');
 const Room = require('../models/Room');
 const Accommodation = require('../models/Accommodation');
 
-// ✅ 객실 추가 함수
-exports.createRoom = async roomData => {
+// ✅ 객실 추가 함수 (이미지 업로드 지원)
+exports.createRoom = async (roomData, imageFiles) => {
   try {
-    const {accommodation} = roomData;
+    const {accommodation, amenities} = roomData;
 
-    // 숙소가 존재하는지 확인
+    // 숙소 존재 여부 확인
     const existingAccommodation = await Accommodation.findById(accommodation);
     if (!existingAccommodation) {
       throw new Error('숙소를 찾을 수 없습니다.');
     }
 
-    // 새로운 객실 생성 및 저장
-    const newRoom = new Room(roomData);
+    // **🔥 amenities가 문자열이면 배열로 변환**
+    let parsedAmenities = [];
+    if (typeof amenities === 'string') {
+      try {
+        parsedAmenities = JSON.parse(amenities); // 문자열 → 배열 변환
+      } catch (error) {
+        throw new Error('amenities 필드는 JSON 형식의 배열이어야 합니다.');
+      }
+    } else if (Array.isArray(amenities)) {
+      parsedAmenities = amenities; // 이미 배열이면 그대로 사용
+    }
+
+    // 이미지 파일이 있으면 저장
+    let uploadedImages = [];
+    if (imageFiles && imageFiles.length > 0) {
+      uploadedImages = imageFiles.map(file => `/uploads/${file.filename}`);
+    }
+
+    // 객실 생성
+    const newRoom = new Room({
+      ...roomData,
+      amenities: parsedAmenities, // 🔥 변환된 amenities 저장
+      images: uploadedImages
+    });
+
     await newRoom.save();
 
-    // 숙소의 minPrice, maxPrice 업데이트
+    // 숙소의 가격 범위 업데이트
     await exports.updateAccommodationPriceRange(accommodation);
 
-    // 숙소에 객실 추가 (객실 ID를 rooms 배열에 추가)
+    // 숙소에 객실 추가
     await Accommodation.findByIdAndUpdate(accommodation, {
       $push: {rooms: newRoom._id}
     });
@@ -30,8 +55,8 @@ exports.createRoom = async roomData => {
   }
 };
 
-// ✅ 객실 업데이트 함수
-exports.updateRoom = async (roomId, updatedData) => {
+// ✅ 객실 업데이트 함수 (이미지 업로드 지원)
+exports.updateRoom = async (roomId, updatedData, imageFiles) => {
   try {
     // 기존 객실 정보 가져오기
     const existingRoom = await Room.findById(roomId);
@@ -39,11 +64,31 @@ exports.updateRoom = async (roomId, updatedData) => {
       throw new Error('객실을 찾을 수 없습니다.');
     }
 
+    // 🔥 amenities가 문자열이면 배열로 변환
+    let parsedAmenities = [];
+    if (typeof updatedData.amenities === 'string') {
+      try {
+        parsedAmenities = JSON.parse(updatedData.amenities); // 문자열 → 배열 변환
+      } catch (error) {
+        throw new Error('amenities 필드는 JSON 형식의 배열이어야 합니다.');
+      }
+    } else if (Array.isArray(updatedData.amenities)) {
+      parsedAmenities = updatedData.amenities; // 이미 배열이면 그대로 사용
+    }
+
+    // 이미지 파일이 있을 경우 기존 이미지 유지하고 새 이미지 추가
+    let updatedImages = existingRoom.images || [];
+    if (imageFiles && imageFiles.length > 0) {
+      const newImageUrls = imageFiles.map(file => `/uploads/${file.filename}`);
+      updatedImages = [...updatedImages, ...newImageUrls];
+    }
+
     // 객실 업데이트
-    const updatedRoom = await Room.findByIdAndUpdate(roomId, updatedData, {
-      new: true, // 업데이트된 문서 반환
-      runValidators: true // 유효성 검사
-    });
+    const updatedRoom = await Room.findByIdAndUpdate(
+      roomId,
+      {...updatedData, amenities: parsedAmenities, images: updatedImages}, // 🔥 amenities 및 이미지 추가
+      {new: true, runValidators: true}
+    );
 
     // 숙소의 minPrice, maxPrice 업데이트
     if (updatedRoom.pricePerNight !== existingRoom.pricePerNight) {
@@ -100,5 +145,50 @@ exports.updateAccommodationPriceRange = async accommodationId => {
     }
   } catch (error) {
     throw new Error('숙소 가격 업데이트 중 오류 발생: ' + error.message);
+  }
+};
+
+exports.deleteImage = async (roomId, imageUrl) => {
+  try {
+    const baseUrl = 'http://localhost:5000';
+    const relativeImagePath = imageUrl.replace(baseUrl, ''); // 절대 URL → 상대 경로 변환
+    const absoluteFilePath = path.join(
+      __dirname,
+      '../uploads',
+      relativeImagePath.replace('/uploads/', '')
+    ); // ✅ 서버의 uploads 폴더 기준으로 경로 설정
+
+    // 1️⃣ 객실(Room) 찾기
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return {status: 404, message: '객실을 찾을 수 없습니다.'};
+    }
+
+    // 2️⃣ 이미지가 객실에 등록되어 있는지 확인
+    if (!room.images.includes(relativeImagePath)) {
+      return {status: 404, message: '해당 이미지는 객실에 등록되어 있지 않습니다.'};
+    }
+
+    // 3️⃣ DB에서 이미지 제거
+    room.images = room.images.filter(img => img !== relativeImagePath);
+    await room.save();
+
+    // 4️⃣ 서버에서 실제 이미지 파일 삭제
+    if (fs.existsSync(absoluteFilePath)) {
+      fs.unlink(absoluteFilePath, err => {
+        if (err) {
+          console.error('❌ 이미지 파일 삭제 오류:', err);
+        } else {
+          console.log('✅ 이미지 파일 삭제 성공:', absoluteFilePath);
+        }
+      });
+    } else {
+      console.warn('⚠️ 삭제할 이미지 파일이 존재하지 않음:', absoluteFilePath);
+    }
+
+    return {status: 200, message: '이미지가 삭제되었습니다.', images: room.images};
+  } catch (error) {
+    console.error('이미지 삭제 오류:', error);
+    return {status: 500, message: '이미지 삭제 중 오류 발생'};
   }
 };

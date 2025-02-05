@@ -48,4 +48,25 @@ const RoomSchema = new mongoose.Schema({
 // 가격 검색 최적화를 위한 인덱스 추가
 RoomSchema.index({pricePerNight: 1});
 
+// ✅ 객실이 저장 또는 업데이트될 때 `availableCount`가 0이면 `available`을 `false`로 변경
+RoomSchema.pre('save', function (next) {
+  if (this.availableCount <= 0) {
+    this.available = false;
+  } else {
+    this.available = true;
+  }
+  next();
+});
+
+// ✅ `findOneAndUpdate` 시에도 적용되도록 미들웨어 추가
+RoomSchema.pre('findOneAndUpdate', function (next) {
+  const update = this.getUpdate();
+
+  if (update.availableCount !== undefined) {
+    update.available = update.availableCount > 0;
+  }
+
+  next();
+});
+
 module.exports = mongoose.model('Room', RoomSchema);
