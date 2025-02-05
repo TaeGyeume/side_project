@@ -23,7 +23,7 @@ exports.createTicket = async ticketData => {
 
 exports.updateTourTicket = async (
   ticketId,
-  {title, price, stock, deleteImages, newImages}
+  {title, description, price, stock, deleteImages, newImages}
 ) => {
   try {
     let ticket = await TourTicket.findById(ticketId);
@@ -31,7 +31,7 @@ exports.updateTourTicket = async (
       throw new Error('상품을 찾을 수 없습니다.');
     }
 
-    // ✅ 기존 이미지 삭제 처리
+    // 기존 이미지 삭제 처리
     if (deleteImages && Array.isArray(deleteImages)) {
       deleteImages.forEach(imagePath => {
         const fullPath = path.join(
@@ -48,14 +48,15 @@ exports.updateTourTicket = async (
       ticket.images = ticket.images.filter(img => !deleteImages.includes(img));
     }
 
-    // ✅ 새로운 이미지 추가
+    // 새로운 이미지 추가
     if (newImages && newImages.length > 0) {
       const newImagePaths = newImages.map(file => `/uploads/${file.filename}`);
       ticket.images = [...ticket.images, ...newImagePaths]; // 기존 이미지 + 추가된 이미지 유지
     }
 
-    // ✅ 상품 정보 업데이트
+    // 상품 정보 업데이트
     ticket.title = title || ticket.title;
+    ticket.description = description || ticket.description;
     ticket.price = price || ticket.price;
     ticket.stock = stock || ticket.stock;
 
@@ -67,6 +68,12 @@ exports.updateTourTicket = async (
 };
 
 // 투어.티켓 삭제
-exports.deleteTicket = async id => {
-  return await TourTicket.findByIdAndDelete(id);
+exports.deleteMultipleTickets = async ticketIds => {
+  try {
+    const result = await TourTicket.deleteMany({_id: {$in: ticketIds}}); // deleteMany({_id: {$in: ticketIds}}) 쿼리로 여러 개 삭제
+    return result.deletedCount; // 삭제된 개수 반환
+  } catch (error) {
+    console.error('상품 삭제 중 오류 발생:', error);
+    throw new Error('상품 삭제 실패');
+  }
 };

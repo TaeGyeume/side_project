@@ -31,3 +31,4 @@ router.delete('/:accommodationId', accommodationController.deleteAccommodation);
 router.get('/searchByName', accommodationController.searchAccommodationsByName);
 
 module.exports = router;
+ 

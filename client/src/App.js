@@ -22,10 +22,11 @@ import AccommodationList from './pages/product/accommodations/AccommodationList'
 import AccommodationCreate from './pages/product/accommodations/AccommodationCreate';
 import AccommodationModify from './pages/product/accommodations/AccommodationModify';
 import RoomNew from './pages/product/accommodations/RoomNew';
-import TourTicketList from './components/tourTicket/TourTicketList';
-import TourTicketForm from './components/tourTicket/TourTicketForm';
-import TourTicketDetail from './components/tourTicket/TourTicketDetail';
-import TourTicketModify from './components/tourTicket/TourTicketModify';
+import TourTicketList from './components/product/tourTicket/TourTicketList';
+import TourTicketForm from './components/product/tourTicket/TourTicketForm';
+import TourTicketDetail from './components/product/tourTicket/TourTicketDetail';
+import TourTicketModify from './components/product/tourTicket/TourTicketModify';
+import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -36,7 +37,7 @@ const App = () => {
   useEffect(() => {
     const fetchMessage = async () => {
       try {
-        const response = await api.get('/test'); // 서버 연결 테스트
+        const response = await api.get('/'); // 서버 연결 테스트
         setServerMessage(response.data.message);
       } catch (error) {
         console.error('서버 연결 실패:', error.message);
@@ -82,6 +83,8 @@ const App = () => {
 
           {/* ✈️ 항공편 목록 페이지 추가 */}
           <Route path="/flights" element={<Flights />} />
+
+          <Route path="/tourTicket/*" element={<UserTourTicketPage />} />
 
           {/* 🔐 인증된 사용자만 접근 가능 */}
           <Route element={<PrivateRoute />}>

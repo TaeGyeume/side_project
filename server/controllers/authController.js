@@ -26,19 +26,21 @@ exports.login = async (req, res) => {
   try {
     const {accessToken, refreshToken, user} = await authService.loginUser(req.body, res);
 
-    res.cookie('accessToken', accessToken, {
-      ...cookieOptions,
+    // 공통 쿠키 설정 옵션
+    const tokenCookieOptions = {
       httpOnly: true,
-      secure: false, // 로컬 환경에서는 false
-      sameSite: 'Lax' // 또는 "None" (크로스사이트 필요 시)
-    });
+      secure: process.env.NODE_ENV === 'production', // 배포 환경에서는 secure 활성화
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // 크로스 사이트 쿠키 허용
+      path: '/',
+      maxAge: 15 * 60 * 1000 // 액세스 토큰은 15분 유효
+    };
+
+    res.cookie('accessToken', accessToken, tokenCookieOptions);
 
     if (refreshToken) {
       res.cookie('refreshToken', refreshToken, {
-        ...cookieOptions,
-        httpOnly: true,
-        secure: false, // 로컬 환경에서는 false
-        sameSite: 'Lax'
+        ...tokenCookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 리프레시 토큰은 7일 유효
       });
     }
 
