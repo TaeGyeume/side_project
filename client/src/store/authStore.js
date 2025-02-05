@@ -10,9 +10,10 @@ export const useAuthStore = create(
 
       // 유저 프로필 가져오기
       fetchUserProfile: async () => {
+        
         try {
           const user = await authAPI.getUserProfile();
-          // console.log('유저 정보:', user); // 
+          console.log('유저 정보:', user); // ✅ 역할(role) 출력 확인
           set({user, isAuthenticated: true});
           return user;
         } catch (error) {
@@ -51,6 +52,8 @@ export const useAuthStore = create(
 
       // 인증 상태 확인
       checkAuth: async () => {
+
+        
         try {
           await useAuthStore.getState().fetchUserProfile(); // 프로필 요청으로 인증 상태 확인
         } catch (error) {
