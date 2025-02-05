@@ -5,6 +5,9 @@ import Sidebar from '../../components/Sidebar';
 import TourTicketList from '../../components/product/tourTicket/TourTicketList';
 import AccommodationList from '../../pages/product/accommodations/AccommodationList';
 
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faSquarePlus} from '@fortawesome/free-solid-svg-icons';
+
 const ProductPage = () => {
   const navigate = useNavigate();
 
@@ -45,11 +48,11 @@ const ProductPage = () => {
 
         <div id="tourTicket" ref={tourTicketRef} style={sectionStyle}>
           <div style={headerContainerStyle}>
-            <button
+            <FontAwesomeIcon
+              icon={faSquarePlus}
               onClick={() => navigate('/product/tourTicket/list')}
-              style={plusButtonStyle}>
-              +
-            </button>
+              style={plusButtonStyle}
+            />
           </div>
           <TourTicketList />
         </div>
@@ -82,17 +85,17 @@ const plusButtonStyle = {
   fontSize: '20px',
   fontWeight: 'bold',
   cursor: 'pointer',
-  backgroundColor: '#007bff',
-  color: '#fff',
+  // backgroundColor: '#007bff',
+  // color: '#fff',
   border: 'none',
-  borderRadius: '50%',
+  // borderRadius: '50%',
   width: '30px',
   height: '30px',
   textAlign: 'center',
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center',
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+  justifyContent: 'center'
+  // boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
 };
 
 export default ProductPage;

@@ -9,6 +9,7 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
 
   useEffect(() => {
     const handleScroll = () => {
+      // 스크롤 위치가 100px 이상이면 Sidebar가 따라 움직이도록 설정
       setSidebarTop(window.scrollY > 100 ? window.scrollY - 80 : 0);
     };
 
@@ -23,6 +24,7 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
         <Row>
           <Col sm={3}>
             <Nav variant="pills" className="flex-column">
+              {/* 숙소 탭 */}
               <Nav.Item style={{whiteSpace: 'nowrap'}}>
                 <Nav.Link
                   style={
@@ -30,8 +32,11 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
                   }
                   eventKey="accommodations"
                   onClick={() => onSelectCategory('accommodations')}>
+                  🏨 숙소
                 </Nav.Link>
               </Nav.Item>
+
+              {/* 투어.티켓 탭 */}
               <Nav.Item style={{whiteSpace: 'nowrap'}}>
                 <Nav.Link
                   style={
@@ -39,6 +44,7 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
                   }
                   eventKey="tourTicket"
                   onClick={() => onSelectCategory('tourTicket')}>
+                  🎟 투어.티켓
                 </Nav.Link>
               </Nav.Item>
             </Nav>
@@ -49,14 +55,18 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
   );
 };
 
+/* 선택된 탭 스타일 */
 const activeTabStyle = {
+  padding: '13px',
   backgroundColor: '#007bff',
   color: '#fff',
   fontWeight: 'bold',
   borderRadius: '5px'
 };
 
+/* 기본 탭 스타일 */
 const defaultTabStyle = {
+  padding: '13px',
   backgroundColor: 'transparent',
   color: '#000'
 };
