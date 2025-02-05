@@ -3,8 +3,8 @@ const cookieOptions = require('./config/cookieConfig'); // 쿠키 설정 불러�
 const cors = require('cors');
 const routes = require('./routes');
 const connectDB = require('./config/db');
-const passport = require('passport');  // Passport 불러오기
-require('./config/passport');  // Passport 설정 파일 불러오기
+const passport = require('passport'); // Passport 불러오기
+require('./config/passport'); // Passport 설정 파일 불러오기
 require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
@@ -14,7 +14,8 @@ const roomRoutes = require('./routes/roomRoutes');
 const productRoutes = require('./routes/productRoutes');
 const flightRoutes = require('./routes/flightRoutes'); // ✈️ 항공편 라우트 추가
 const reservationRoutes = require('./routes/reservationRoutes'); // 🎫 예약 라우트 추가
-const socialAuthRoutes = require('./routes/socialAuthRoutes');  // 소셜 로그인 라우트 추가
+const socialAuthRoutes = require('./routes/socialAuthRoutes'); // 소셜 로그인 라우트 추가
+const userTourTicketRoutes = require('./routes/tourTicket/userTourTicketRoutes');
 
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -36,9 +37,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(passport.initialize());  // Passport 초기화 추가
+app.use(passport.initialize()); // Passport 초기화 추가
 
 // 라우트 설정
 app.use('/', routes);
@@ -47,11 +48,12 @@ app.use('/api/accommodations', accommodationRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api', routes);
 app.use('/api/auth', authRoutes);
-app.use('/api/auth', socialAuthRoutes);  // 소셜 로그인 라우트 추가
-app.use("/api/flights", flightRoutes); // ✈️ 항공편 관련 API
+app.use('/api/auth', socialAuthRoutes); // 소셜 로그인 라우트 추가
+app.use('/api/flights', flightRoutes); // ✈️ 항공편 관련 API
 app.use('/api/reservations', reservationRoutes); // 🎫 예약 관련 API
 app.use('/product', productRoutes);
 app.use('/uploads', express.static('uploads'));
+app.use('/tourTicket', userTourTicketRoutes);
 
 // 리프레시 토큰 엔드포인트
 // app.post('/api/auth/refresh-token', (req, res) => {

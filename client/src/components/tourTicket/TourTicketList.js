@@ -1,3 +1,5 @@
+// 일반 유저용
+
 import React, {useEffect, useState} from 'react';
 import {getTourTickets} from '../../api/tourTicket/tourTicketService';
 import {useNavigate} from 'react-router-dom';
@@ -13,7 +15,7 @@ const TourTicketList = () => {
         const data = await getTourTickets();
         setTickets(data);
       } catch (error) {
-        console.error('상품 목록을 가져오는 중 오류 발생:', error);
+        console.error('투어 티켓 목록을 가져오는 중 오류 발생:', error);
       }
     };
 
@@ -22,12 +24,7 @@ const TourTicketList = () => {
 
   return (
     <div className="tour-ticket-container">
-      <h1>투어 & 티켓 상품 목록</h1>
-      <button
-        onClick={() => navigate('/product/tourTicket/new')}
-        style={{marginBottom: '20px'}}>
-        상품 등록
-      </button>
+      <h1>투어 & 티켓</h1>
 
       <div className="tour-ticket-grid">
         {tickets.length > 0 ? (
@@ -35,7 +32,7 @@ const TourTicketList = () => {
             <div
               key={ticket._id}
               className="tour-ticket-card"
-              onClick={() => navigate(`/product/tourTicket/${ticket._id}`)}>
+              onClick={() => navigate(`/tourTicket/list/${ticket._id}`)}>
               <img
                 src={`http://localhost:5000${ticket.images[0]}`}
                 alt={ticket.title}
@@ -43,8 +40,8 @@ const TourTicketList = () => {
               />
               <div className="ticket-info">
                 <h3 className="ticket-title">{ticket.title}</h3>
-                <p className="ticket-price">{ticket.price.toLocaleString()} 원</p>
-                <p className="ticket-stock">재고: {ticket.stock} 개</p>
+                <p className="ticket-description">✏️ {ticket.description}</p>
+                <p className="ticket-price">{ticket.price.toLocaleString()}원</p>
               </div>
             </div>
           ))

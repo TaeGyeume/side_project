@@ -58,6 +58,11 @@ const Header = () => {
                 숙소 검색
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/tourTicket/list">
+                투어/티켓
+              </Link>
+            </li>
 
             {isAuthenticated && user ? (
               <>

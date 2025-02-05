@@ -10,9 +10,6 @@ router.get('/', (req, res) => {
   });
 });
 
-// router.use('/air', require('./airRoutes'));
-// router.use('/accommodation', require('./accommodationRoutes'));
-router.use('/tourTicket', require('./tourTicketRoutes'));
-// router.use('/travel-goods', require('./travelGoodsRoutes'));
+router.use('/tourTicket', require('./tourTicket/tourTicketRoutes'));
 
 module.exports = router;

@@ -23,10 +23,11 @@ import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이
 import ProductPage from './pages/product/ProductPage';
 import AccommodationList from './pages/product/accommodations/AccommodationList';
 import AccommodationCreate from './pages/product/accommodations/AccommodationCreate';
-import TourTicketList from './components/tourTicket/TourTicketList';
-import TourTicketForm from './components/tourTicket/TourTicketForm';
-import TourTicketDetail from './components/tourTicket/TourTicketDetail';
-import TourTicketModify from './components/tourTicket/TourTicketModify';
+import TourTicketList from './components/product/tourTicket/TourTicketList';
+import TourTicketForm from './components/product/tourTicket/TourTicketForm';
+import TourTicketDetail from './components/product/tourTicket/TourTicketDetail';
+import TourTicketModify from './components/product/tourTicket/TourTicketModify';
+import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -59,7 +60,7 @@ const InnerApp = ({
   useEffect(() => {
     const fetchMessage = async () => {
       try {
-        const response = await api.get('/test');
+        const response = await api.get('/'); // 서버 연결 테스트
         setServerMessage(response.data.message);
       } catch (error) {
         console.error('서버 연결 실패:', error.message);
@@ -90,52 +91,73 @@ const InnerApp = ({
   }, [location, checkAuth]);
 
   return (
-    <div className="container mt-5">
-      <h1 className="text-center">Our Real Trip</h1>
-      {serverMessage && (
-        <div
-          className={`alert ${
-            serverMessage.includes('실패') ? 'alert-danger' : 'alert-success'
-          }`}
-          role="alert">
-          {serverMessage}
-        </div>
-      )}
-      <Header />
-      <Routes>
-        <Route path="/" element={<Navigate to="/main" />} />
-        <Route path="/main" element={<Main />} />
-        <Route path="/register" element={<AuthPages.Register />} />
-        <Route
-          path="/login"
-          element={isAuthenticated ? <Navigate to="/profile" /> : <AuthPages.Login />}
-        />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/accommodations/search" element={<AccommodationSearch />} />
-        <Route path="/accommodations/results" element={<AccommodationResults />} />
-        <Route
-          path="/accommodations/:accommodationId/detail"
-          element={<AccommodationDetail />}
-        />
-        <Route path="/flights" element={<Flights />} />
-        <Route element={<PrivateRoute />}>
-          <Route path="/profile" element={<UserPages.Profile />} />
-          <Route path="/profile/update" element={<EditProfile />} />
-        </Route>
-        <Route element={<PrivateRoute allowedRoles={['admin']} />}>
-          <Route path="/product" element={<ProductPage />} />
-          <Route path="/product/tourTicket/list" element={<TourTicketList />} />
-          <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
-          <Route path="/product/accommodations/list" element={<AccommodationList />} />
-          <Route path="/product/accommodations/new" element={<AccommodationCreate />} />
-          <Route path="/product/tourTicket/:id" element={<TourTicketDetail />} />
-          <Route path="/product/tourTicket/modify/:id" element={<TourTicketModify />} />
-        </Route>
-        <Route path="/unauthorized" element={<Unauthorized />} />
-        <Route path="*" element={<div>페이지를 찾을 수 없습니다.</div>} />
-      </Routes>
-    </div>
+    <Router>
+      <div className="container mt-5">
+        <h1 className="text-center">Our Real Trip</h1>
+        {serverMessage && (
+          <div
+            className={`alert ${
+              serverMessage.includes('실패') ? 'alert-danger' : 'alert-success'
+            }`}
+            role="alert">
+            {serverMessage}
+          </div>
+        )}
+        <Header />
+        <Routes>
+          {/* 비인증 사용자 접근 가능 */}
+          <Route path="/" element={<Navigate to="/main" />} />
+          <Route path="/main" element={<Main />} />
+          <Route path="/register" element={<AuthPages.Register />} />
+          <Route
+            path="/login"
+            element={isAuthenticated ? <Navigate to="/profile" /> : <AuthPages.Login />}
+          />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/accommodations/search" element={<AccommodationSearch />} />
+          <Route path="/accommodations/results" element={<AccommodationResults />} />
+          <Route
+            path="/accommodations/:accommodationId/detail"
+            element={<AccommodationDetail />}
+          />
+
+          {/* ✈️ 항공편 목록 페이지 추가 */}
+          <Route path="/flights" element={<Flights />} />
+
+          <Route path="/tourTicket/*" element={<UserTourTicketPage />} />
+
+          {/* 🔐 인증된 사용자만 접근 가능 */}
+          <Route element={<PrivateRoute />}>
+            {/* <Route path="/reservation/:flightId" element={<Reservation />} /> */}
+            <Route path="/profile" element={<UserPages.Profile />} />
+            <Route path="/profile/update" element={<EditProfile />} />
+          </Route>
+
+          {/* 🔒 어드민 전용 페이지 */}
+          <Route element={<PrivateRoute allowedRoles={['admin']} />}>
+            <Route path="/product" element={<ProductPage />} />
+            <Route path="/product/tourTicket/list" element={<TourTicketList />} />
+            <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
+            <Route path="/product/accommodations/list" element={<AccommodationList />} />
+            <Route path="/product/accommodations/new" element={<AccommodationCreate />} />
+            {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
+            {/* <Route path="/admin/settings" element={<AdminSettings />} /> */}
+            <Route path="/product" element={<ProductPage />} />
+            <Route path="/product/tourTicket/list" element={<TourTicketList />} />
+            <Route path="/product/tourTicket/:id" element={<TourTicketDetail />} />
+            <Route path="/product/tourTicket/modify/:id" element={<TourTicketModify />} />
+            <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
+          </Route>
+
+          {/* ❌ 권한 없음 페이지 */}
+          <Route path="/unauthorized" element={<Unauthorized />} />
+
+          {/* 404 처리 */}
+          <Route path="*" element={<div>페이지를 찾을 수 없습니다.</div>} />
+        </Routes>
+      </div>
+    </Router>
   );
 };
 

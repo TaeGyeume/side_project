@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {getTourTicketById} from '../../api/tourTicket/tourTicketService';
+import {getTourTicketById} from '../../../api/tourTicket/tourTicketService';
 import {useParams, useNavigate} from 'react-router-dom';
-import './styles/TourTicketDetail.css'; // 일반 유저용 스타일
+import './styles/TourTicketDetail.css';
 
 const TourTicketDetail = () => {
   const {id} = useParams();
@@ -24,6 +24,12 @@ const TourTicketDetail = () => {
 
   useEffect(() => {
     if (!ticket || ticket.images.length <= 1) return; // 이미지가 하나면 슬라이드 X
+
+    // const interval = setInterval(() => {
+    //   setCurrentIndex(prevIndex => (prevIndex + 1) % ticket.images.length);
+    // }, 2000);
+
+    // return () => clearInterval(interval);
   }, [ticket]);
 
   if (!ticket) {
@@ -79,8 +85,12 @@ const TourTicketDetail = () => {
 
       <p>설명: {ticket.description}</p>
       <p>가격: {ticket.price.toLocaleString()}원</p>
+      <p>재고: {ticket.stock}개</p>
 
-      <button onClick={() => navigate('/tourTicket/list')}>상품 목록</button>
+      <button onClick={() => navigate(`/product/tourTicket/modify/${id}`)}>
+        수정하기
+      </button>
+      <button onClick={() => navigate('/product/tourTicket/list')}>상품 목록</button>
     </div>
   );
 };

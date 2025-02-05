@@ -2,7 +2,7 @@
 
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {createTourTicket} from '../../api/tourTicket/tourTicketService';
+import {createTourTicket} from '../../../api/tourTicket/tourTicketService';
 
 const TourTicketForm = () => {
   const navigate = useNavigate();
