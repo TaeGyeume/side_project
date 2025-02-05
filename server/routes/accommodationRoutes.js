@@ -24,3 +24,4 @@ router.get('/list', accommodationController.getAllAccommodations);
 router.get('/searchByName', accommodationController.searchAccommodationsByName);
 
 module.exports = router;
+ 
