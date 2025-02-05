@@ -1,13 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import api from './api/axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate,
-  useLocation
-} from 'react-router-dom';
+import {BrowserRouter as Router, Route, Routes, Navigate} from 'react-router-dom';
 import {AuthPages, Main, UserPages} from './pages';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
@@ -16,10 +10,13 @@ import Header from './components/Header';
 import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
 import Unauthorized from './pages/Unauthorized'; // 권한 없음 페이지 추가
+// import AdminDashboard from './pages/admin/AdminDashboard'; // 어드민 대시보드 추가
+// import AdminSettings from './pages/admin/AdminSettings'; // 어드민 설정 추가
 import AccommodationSearch from './pages/accommodations/AccommodationSearch';
 import AccommodationResults from './pages/accommodations/AccommodationResults';
 import AccommodationDetail from './pages/accommodations/AccommodationDetail';
 import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이지 추가
+// import Reservation from './pages/reservations/Reservation'; // 🎫 예약 페이지 추가
 import ProductPage from './pages/product/ProductPage';
 import AccommodationList from './pages/product/accommodations/AccommodationList';
 import AccommodationCreate from './pages/product/accommodations/AccommodationCreate';
@@ -33,30 +30,8 @@ const App = () => {
   const [serverMessage, setServerMessage] = useState('');
   const checkAuth = useAuthStore(state => state.checkAuth);
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  const {fetchUserProfile} = useAuthStore();
 
-  return (
-    <Router>
-      <InnerApp
-        serverMessage={serverMessage}
-        setServerMessage={setServerMessage}
-        checkAuth={checkAuth}
-        isAuthenticated={isAuthenticated}
-        fetchUserProfile={fetchUserProfile}
-      />
-    </Router>
-  );
-};
-
-const InnerApp = ({
-  serverMessage,
-  setServerMessage,
-  checkAuth,
-  isAuthenticated,
-  fetchUserProfile
-}) => {
-  const location = useLocation();
-
+  // 서버 메시지 및 인증 상태 확인
   useEffect(() => {
     const fetchMessage = async () => {
       try {
@@ -69,26 +44,8 @@ const InnerApp = ({
     };
 
     fetchMessage();
-    checkAuth();
+    checkAuth(); // 새로고침 시 인증 상태 확인 및 토큰 갱신
   }, [checkAuth]);
-
-  useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const token = queryParams.get('token');
-
-    if (token) {
-      console.log('Access Token 수신됨:', token);
-
-      // HttpOnly 제거 (브라우저에서 설정 불가)
-      document.cookie = `accessToken=${token}; path=/; SameSite=Lax`;
-
-      // 히스토리 상태 변경 후 바로 인증 확인
-      window.history.replaceState({}, document.title, '/main');
-
-      // 페이스북 로그인 후 바로 인증 확인
-      checkAuth();
-    }
-  }, [location, checkAuth]);
 
   return (
     <Router>
