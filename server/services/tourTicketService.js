@@ -23,7 +23,7 @@ exports.createTicket = async ticketData => {
 
 exports.updateTourTicket = async (
   ticketId,
-  {title, price, stock, deleteImages, newImages}
+  {title, description, price, stock, deleteImages, newImages}
 ) => {
   try {
     let ticket = await TourTicket.findById(ticketId);
@@ -56,6 +56,7 @@ exports.updateTourTicket = async (
 
     // ✅ 상품 정보 업데이트
     ticket.title = title || ticket.title;
+    ticket.description = description || ticket.description;
     ticket.price = price || ticket.price;
     ticket.stock = stock || ticket.stock;
 
@@ -67,6 +68,16 @@ exports.updateTourTicket = async (
 };
 
 // 투어.티켓 삭제
-exports.deleteTicket = async id => {
-  return await TourTicket.findByIdAndDelete(id);
+exports.deleteMultipleTickets = async ticketIds => {
+  try {
+    const result = await TourTicket.deleteMany({_id: {$in: ticketIds}}); // deleteMany({_id: {$in: ticketIds}}) 쿼리로 여러 개 삭제
+    return result.deletedCount; // 삭제된 개수 반환
+  } catch (error) {
+    console.error('상품 삭제 중 오류 발생:', error);
+    throw new Error('상품 삭제 실패');
+  }
 };
+
+// exports.deleteTicket = async id => {
+//   return await TourTicket.findByIdAndDelete(id);
+// };

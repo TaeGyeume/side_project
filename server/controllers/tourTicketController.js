@@ -58,7 +58,7 @@ exports.createTicket = async (req, res) => {
 
 exports.updateTicket = async (req, res) => {
   try {
-    const {title, price, stock, deleteImages} = req.body;
+    const {title, description, price, stock, deleteImages} = req.body;
     const ticketId = req.params.id;
 
     let parsedDeleteImages = [];
@@ -74,6 +74,7 @@ exports.updateTicket = async (req, res) => {
 
     const updatedTicket = await tourTicketService.updateTourTicket(ticketId, {
       title,
+      description,
       price,
       stock,
       deleteImages: parsedDeleteImages,
@@ -88,21 +89,42 @@ exports.updateTicket = async (req, res) => {
 };
 
 // 투어.티켓 삭제
-exports.deleteTicket = async (req, res) => {
-  const {id} = req.params;
+exports.deleteMultipleTickets = async (req, res) => {
+  const {ticketIds} = req.body;
+
+  if (!ticketIds || !Array.isArray(ticketIds) || ticketIds.length === 0) {
+    return res.status(400).json({message: '삭제할 상품 ID가 올바르지 않습니다.'});
+  }
 
   try {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({message: '유효하지 않은 ID 형식입니다.'});
+    const deletedCount = await tourTicketService.deleteMultipleTickets(ticketIds);
+
+    if (deletedCount === 0) {
+      return res.status(404).json({message: '삭제할 상품을 찾을 수 없습니다.'});
     }
 
-    const deletedTicket = await tourTicketService.deleteTicket(id);
-    if (deletedTicket) {
-      res.status(204).send();
-    } else {
-      res.status(404).json({message: '상품을 찾을 수 없습니다.'});
-    }
+    res.status(200).json({message: `${deletedCount}개의 상품이 삭제되었습니다.`});
   } catch (error) {
-    res.status(500).json({message: '서버 오류', error});
+    console.error('상품 삭제 오류:', error);
+    res.status(500).json({message: '서버 오류가 발생했습니다.'});
   }
 };
+
+// exports.deleteTicket = async (req, res) => {
+//   const {id} = req.params;
+
+//   try {
+//     if (!mongoose.Types.ObjectId.isValid(id)) {
+//       return res.status(400).json({message: '유효하지 않은 ID 형식입니다.'});
+//     }
+
+//     const deletedTicket = await tourTicketService.deleteTicket(id);
+//     if (deletedTicket) {
+//       res.status(204).send();
+//     } else {
+//       res.status(404).json({message: '상품을 찾을 수 없습니다.'});
+//     }
+//   } catch (error) {
+//     res.status(500).json({message: '서버 오류', error});
+//   }
+// };
