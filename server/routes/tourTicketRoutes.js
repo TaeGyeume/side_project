@@ -22,7 +22,7 @@ router.post('/new', upload, createTicket);
 router.put('/modify/:id', upload, updateTicket);
 
 // [관리자만 접근] 투어.티켓 삭제
-router.delete('/remove/:id', deleteTicket); // 단일 삭제
+// router.delete('/remove/:id', deleteTicket); // 단일 삭제
 router.post('/remove', deleteMultipleTickets);
 
 router.get('/', (req, res) => {

@@ -20,10 +20,10 @@ import Reservation from './pages/reservations/Reservation'; // 🎫 예약 페�
 import ProductPage from './pages/product/ProductPage';
 import AccommodationList from './pages/product/accommodations/AccommodationList';
 import AccommodationCreate from './pages/product/accommodations/AccommodationCreate';
-import TourTicketList from './components/tourTicket/TourTicketList';
-import TourTicketForm from './components/tourTicket/TourTicketForm';
-import TourTicketDetail from './components/tourTicket/TourTicketDetail';
-import TourTicketModify from './components/tourTicket/TourTicketModify';
+import TourTicketList from './components/product/tourTicket/TourTicketList';
+import TourTicketForm from './components/product/tourTicket/TourTicketForm';
+import TourTicketDetail from './components/product/tourTicket/TourTicketDetail';
+import TourTicketModify from './components/product/tourTicket/TourTicketModify';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
