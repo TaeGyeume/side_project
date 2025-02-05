@@ -13,7 +13,7 @@ export const useAuthStore = create(
         
         try {
           const user = await authAPI.getUserProfile();
-          console.log('유저 정보:', user); // ✅ 역할(role) 출력 확인
+          // console.log('유저 정보:', user); // ✅ 역할(role) 출력 확인
           set({user, isAuthenticated: true});
           return user;
         } catch (error) {
