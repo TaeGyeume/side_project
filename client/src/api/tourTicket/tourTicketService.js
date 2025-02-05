@@ -14,7 +14,7 @@ export const getTourTickets = async () => {
 
 export const getTourTicketById = async id => {
   try {
-    const response = await axios.get(`${API_URL}/${id}`);
+    const response = await axios.get(`${API_URL}/list/${id}`);
     return response.data;
   } catch (error) {
     console.error('상품 정보를 가져오는 중 오류 발생:', error);

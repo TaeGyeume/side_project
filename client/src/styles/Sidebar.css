@@ -1,0 +1,5 @@
+.nav-pills {
+  display: flex;
+  flex-direction: row; /* 가로 정렬 */
+  justify-content: space-around;
+}
