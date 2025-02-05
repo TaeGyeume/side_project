@@ -1,5 +1,3 @@
-// Product 메인 페이지
-
 import React, {useRef, useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 
@@ -10,7 +8,7 @@ import AccommodationList from '../../pages/product/accommodations/AccommodationL
 const ProductPage = () => {
   const navigate = useNavigate();
 
-  const [activeSection, setActiveSection] = useState('accommodations');
+  const [activeSection, setActiveSection] = useState(null);
 
   const accommodationsRef = useRef(null);
   const tourTicketRef = useRef(null);
@@ -22,28 +20,18 @@ const ProductPage = () => {
     };
 
     setActiveSection(section);
-
     sectionRefs[section]?.current?.scrollIntoView({behavior: 'smooth'});
   };
 
   useEffect(() => {
-    const observerOptions = {root: null, rootMargin: '0px', threshold: 0.3};
-
-    const observerCallback = entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          setActiveSection(entry.target.id);
-        }
-      });
+    const handleScroll = () => {
+      if (window.scrollY === 0) {
+        setActiveSection(null);
+      }
     };
 
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
-
-    [accommodationsRef, tourTicketRef].forEach(ref => {
-      if (ref.current) observer.observe(ref.current);
-    });
-
-    return () => observer.disconnect();
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
@@ -52,13 +40,11 @@ const ProductPage = () => {
 
       <div style={{padding: '20px', flex: 1}}>
         <div id="accommodations" ref={accommodationsRef} style={sectionStyle}>
-          <h2>🏨 숙소 상품</h2>
           <AccommodationList />
         </div>
 
         <div id="tourTicket" ref={tourTicketRef} style={sectionStyle}>
           <div style={headerContainerStyle}>
-            <h2>🎟 투어 & 티켓 상품</h2>
             <button
               onClick={() => navigate('/product/tourTicket/list')}
               style={plusButtonStyle}>
@@ -72,7 +58,6 @@ const ProductPage = () => {
   );
 };
 
-/* 상품 섹션 스타일 */
 const sectionStyle = {
   border: '1px solid #ddd',
   padding: '20px',
@@ -83,7 +68,6 @@ const sectionStyle = {
   backgroundColor: '#f9f9f9'
 };
 
-/* 제목과 버튼 스타일 */
 const headerContainerStyle = {
   display: 'flex',
   justifyContent: 'space-between',
@@ -91,7 +75,6 @@ const headerContainerStyle = {
   position: 'relative'
 };
 
-/* + 버튼 스타일 */
 const plusButtonStyle = {
   position: 'absolute',
   top: '10px',

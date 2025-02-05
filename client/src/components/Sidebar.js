@@ -1,5 +1,3 @@
-// 상품 카테고리 선택 사이드바
-
 import React, {useState, useEffect} from 'react';
 import Nav from 'react-bootstrap/Nav';
 import Col from 'react-bootstrap/Col';
@@ -11,7 +9,6 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
 
   useEffect(() => {
     const handleScroll = () => {
-      // 현재 스크롤 위치에 따라 Sidebar 위치 조정
       setSidebarTop(window.scrollY > 100 ? window.scrollY - 80 : 0);
     };
 
@@ -22,24 +19,26 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
   return (
     <div
       style={{position: 'absolute', top: `${sidebarTop}px`, transition: 'top 0.3s ease'}}>
-      <Tab.Container id="left-tabs-example" activeKey={activeSection}>
+      <Tab.Container id="left-tabs-example" activeKey={activeSection || null}>
         <Row>
           <Col sm={3}>
             <Nav variant="pills" className="flex-column">
-              <Nav.Item>
+              <Nav.Item style={{whiteSpace: 'nowrap'}}>
                 <Nav.Link
-                  style={{whiteSpace: 'nowrap', textAlign: 'center'}}
+                  style={
+                    activeSection === 'accommodations' ? activeTabStyle : defaultTabStyle
+                  }
                   eventKey="accommodations"
                   onClick={() => onSelectCategory('accommodations')}>
-                  🏨 숙소
                 </Nav.Link>
               </Nav.Item>
-              <Nav.Item>
+              <Nav.Item style={{whiteSpace: 'nowrap'}}>
                 <Nav.Link
-                  style={{whiteSpace: 'nowrap', textAlign: 'center'}}
+                  style={
+                    activeSection === 'tourTicket' ? activeTabStyle : defaultTabStyle
+                  }
                   eventKey="tourTicket"
                   onClick={() => onSelectCategory('tourTicket')}>
-                  🎟 투어.티켓
                 </Nav.Link>
               </Nav.Item>
             </Nav>
@@ -48,6 +47,18 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
       </Tab.Container>
     </div>
   );
+};
+
+const activeTabStyle = {
+  backgroundColor: '#007bff',
+  color: '#fff',
+  fontWeight: 'bold',
+  borderRadius: '5px'
+};
+
+const defaultTabStyle = {
+  backgroundColor: 'transparent',
+  color: '#000'
 };
 
 export default Sidebar;
