@@ -121,8 +121,29 @@ const fetchAllFlights = async () => {
               // ✅ 운항 요일 저장
               const operatingDays = getOperatingDays(flight);
 
+              // ✅ 가격 조정 (3만 원 이하, 3만 원 이상 10만 원 미만, 10만 원 이상)
+              let price;
+              const random = Math.random();
+              if (random < 0.2) {
+                price = Math.floor(Math.random() * (30000 - 10000) + 10000); // ✅ 특가석 (10,000 ~ 30,000)
+              } else if (random < 0.8) {
+                price = Math.floor(Math.random() * (100000 - 30000) + 30000); // ✅ 일반석 (30,000 ~ 100,000)
+              } else {
+                price = Math.floor(Math.random() * (200000 - 100000) + 100000); // ✅ 비즈니스석 (100,000 ~ 200,000)
+              }
+
+              // ✅ 좌석 등급 설정
+              let seatClass;
+              if (price < 30000) {
+                seatClass = '특가석';
+              } else if (price < 100000) {
+                seatClass = '일반석';
+              } else {
+                seatClass = '비즈니스석';
+              }
+
               await Flight.updateOne(
-                {flightNumber, 'departure.time': departureTime},
+                { flightNumber, 'departure.time': departureTime },
                 {
                   airline,
                   flightNumber,
@@ -136,17 +157,18 @@ const fetchAllFlights = async () => {
                     city: AIRPORT_NAMES[arrCode],
                     time: arrivalTime
                   },
-                  operatingDays, // ✅ 운항 요일 추가
-                  price: Math.floor(Math.random() * (200000 - 50000) + 50000),
-                  seatsAvailable: Math.floor(Math.random() * 10) + 1
+                  operatingDays,
+                  price,
+                  seatsAvailable: Math.floor(Math.random() * 10) + 1, // ✅ 좌석 정보 필드 추가
+                  seatClass // ✅ 좌석 등급 필드 추가
                 },
-                {upsert: true}
+                { upsert: true }
               );
 
               console.log(
                 `✅ 저장 완료: ${flightNumber} (${airline}), 운항 요일: ${operatingDays.join(
                   ', '
-                )}`
+                )}, 가격: ${price.toLocaleString()}원, 좌석 등급: ${seatClass}`
               );
             }
           } catch (error) {

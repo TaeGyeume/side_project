@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../../styles/FlightSearch.css';
+import './styles/FlightSearch.css';
 import { searchFlights } from '../../api/flight/flights'; // ✅ API import
 
 // ✅ 공항 한글 → 코드 변환
