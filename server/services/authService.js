@@ -48,6 +48,7 @@ exports.registerUser = async ({userid, username, email, phone, password, address
 };
 
 //  로그인 서비스
+// 로그인 서비스 (액세스 토큰 및 리프레시 토큰 쿠키 저장)
 exports.loginUser = async ({userid, password}, res) => {
   console.log('로그인 요청:', userid);
 
@@ -60,20 +61,31 @@ exports.loginUser = async ({userid, password}, res) => {
   const accessToken = jwt.sign({id: user._id}, process.env.JWT_SECRET, {
     expiresIn: '15m'
   });
+
   const refreshToken = jwt.sign({id: user._id}, process.env.REFRESH_TOKEN_SECRET, {
     expiresIn: '7d'
   });
 
-  //  기존 리프레시 토큰 삭제 후 새 토큰 저장
+  // 기존 리프레시 토큰 삭제 후 새 토큰 저장
   await RefreshToken.deleteMany({userId: user._id});
 
   const refreshTokenDoc = new RefreshToken({
     userId: user._id,
     token: refreshToken,
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7일 후 만료
   });
   await refreshTokenDoc.save();
 
+  // 액세스 토큰 쿠키 저장
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'None' : 'Lax',
+    path: '/',
+    maxAge: 15 * 60 * 1000 // 15분
+  });
+
+  // 리프레시 토큰 쿠키 저장
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: isProduction,
@@ -137,8 +149,8 @@ exports.changePassword = async (userId, {currentPassword, newPassword}) => {
 };
 
 // 비밀번호 찾기 서비스 (비밀번호 재설정 링크 전송)
-exports.forgotPassword = async (email) => {
-  const user = await User.findOne({ email });
+exports.forgotPassword = async email => {
+  const user = await User.findOne({email});
   if (!user) throw new Error('이메일을 찾을 수 없습니다.');
 
   const resetToken = crypto.randomBytes(32).toString('hex');
@@ -150,13 +162,12 @@ exports.forgotPassword = async (email) => {
   await user.save();
   await sendResetPasswordEmail(email, resetToken);
 
-  return { message: '비밀번호 재설정 이메일이 발송되었습니다.' };
+  return {message: '비밀번호 재설정 이메일이 발송되었습니다.'};
 };
 
-
 // 비밀번호 재설정 서비스
 // 비밀번호 재설정 서비스
-exports.resetPassword = async ({ userId, token, currentPassword, newPassword }) => {
+exports.resetPassword = async ({userId, token, currentPassword, newPassword}) => {
   let user = null;
 
   // 🔐 로그인된 사용자의 비밀번호 변경 (현재 비밀번호 확인)
@@ -171,7 +182,7 @@ exports.resetPassword = async ({ userId, token, currentPassword, newPassword }) 
   // 📧 비밀번호 재설정 (비밀번호 찾기 후 이메일 링크로 받은 토큰 기반)
   if (token) {
     user = await User.findOne({
-      passwordResetExpires: { $gt: Date.now() }
+      passwordResetExpires: {$gt: Date.now()}
     });
 
     if (!user) {
@@ -193,7 +204,7 @@ exports.resetPassword = async ({ userId, token, currentPassword, newPassword }) 
   user.passwordResetExpires = undefined;
   await user.save();
 
-  return { message: '비밀번호가 성공적으로 변경되었습니다.' };
+  return {message: '비밀번호가 성공적으로 변경되었습니다.'};
 };
 
 // 로그아웃 서비스 (쿠키 삭제)
@@ -218,6 +229,7 @@ exports.logoutUser = async (res, userId) => {
 };
 
 //  리프레시 토큰 갱신 서비스 (DB에서 검증 후 재발급)
+// 리프레시 토큰 갱신 서비스 (액세스 토큰 및 리프레시 토큰 재발급)
 exports.refreshAccessToken = async (refreshToken, res) => {
   try {
     if (!refreshToken) throw new Error('리프레시 토큰이 없습니다.');
@@ -228,36 +240,44 @@ exports.refreshAccessToken = async (refreshToken, res) => {
       token: refreshToken
     });
 
-    //  DB에 저장된 리프레시 토큰과 비교
     if (!storedToken) {
       throw new Error('유효하지 않은 리프레시 토큰입니다.');
     }
 
-    //  새 액세스 토큰 및 리프레시 토큰 발급
     const newAccessToken = jwt.sign({id: decoded.id}, process.env.JWT_SECRET, {
       expiresIn: '15m'
     });
+
     const newRefreshToken = jwt.sign({id: decoded.id}, process.env.REFRESH_TOKEN_SECRET, {
       expiresIn: '7d'
     });
 
-    //  기존 리프레시 토큰 삭제 후 새로운 토큰 저장
+    // 기존 리프레시 토큰 삭제 후 새로운 토큰 저장
     await RefreshToken.deleteMany({userId: decoded.id});
 
     const newRefreshTokenDoc = new RefreshToken({
       userId: decoded.id,
       token: newRefreshToken,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7일
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     });
     await newRefreshTokenDoc.save();
 
-    //  새로운 리프레시 토큰을 쿠키에 저장
+    // 새로운 리프레시 토큰 쿠키 저장
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'None' : 'Lax',
       path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    // 새로운 액세스 토큰 쿠키 저장
+    res.cookie('accessToken', newAccessToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'None' : 'Lax',
+      path: '/',
+      maxAge: 15 * 60 * 1000
     });
 
     return newAccessToken;
