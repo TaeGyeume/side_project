@@ -1,13 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import api from './api/axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
-import { AuthPages, Main, UserPages } from './pages';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+  useLocation
+} from 'react-router-dom';
+import {AuthPages, Main, UserPages} from './pages';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import EditProfile from './pages/user/EditProfile';
 import Header from './components/Header';
-import { useAuthStore } from './store/authStore'; // Zustand 스토어
+import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
 import Unauthorized from './pages/Unauthorized'; // 권한 없음 페이지 추가
 import AccommodationSearch from './pages/accommodations/AccommodationSearch';
@@ -26,7 +32,7 @@ const App = () => {
   const [serverMessage, setServerMessage] = useState('');
   const checkAuth = useAuthStore(state => state.checkAuth);
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  const { fetchUserProfile } = useAuthStore();
+  const {fetchUserProfile} = useAuthStore();
 
   return (
     <Router>
@@ -41,13 +47,19 @@ const App = () => {
   );
 };
 
-const InnerApp = ({ serverMessage, setServerMessage, checkAuth, isAuthenticated, fetchUserProfile }) => {
+const InnerApp = ({
+  serverMessage,
+  setServerMessage,
+  checkAuth,
+  isAuthenticated,
+  fetchUserProfile
+}) => {
   const location = useLocation();
 
   useEffect(() => {
     const fetchMessage = async () => {
       try {
-        const response = await api.get('/test'); 
+        const response = await api.get('/test');
         setServerMessage(response.data.message);
       } catch (error) {
         console.error('서버 연결 실패:', error.message);
@@ -65,11 +77,17 @@ const InnerApp = ({ serverMessage, setServerMessage, checkAuth, isAuthenticated,
 
     if (token) {
       console.log('Access Token 수신됨:', token);
-      document.cookie = `accessToken=${token}; path=/; HttpOnly`;
+
+      // HttpOnly 제거 (브라우저에서 설정 불가)
+      document.cookie = `accessToken=${token}; path=/; SameSite=Lax`;
+
+      // 히스토리 상태 변경 후 바로 인증 확인
       window.history.replaceState({}, document.title, '/main');
-      fetchUserProfile();
+
+      // 페이스북 로그인 후 바로 인증 확인
+      checkAuth();
     }
-  }, [location, fetchUserProfile]);
+  }, [location, checkAuth]);
 
   return (
     <div className="container mt-5">
@@ -79,8 +97,7 @@ const InnerApp = ({ serverMessage, setServerMessage, checkAuth, isAuthenticated,
           className={`alert ${
             serverMessage.includes('실패') ? 'alert-danger' : 'alert-success'
           }`}
-          role="alert"
-        >
+          role="alert">
           {serverMessage}
         </div>
       )}
@@ -97,7 +114,10 @@ const InnerApp = ({ serverMessage, setServerMessage, checkAuth, isAuthenticated,
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/accommodations/search" element={<AccommodationSearch />} />
         <Route path="/accommodations/results" element={<AccommodationResults />} />
-        <Route path="/accommodations/:accommodationId/detail" element={<AccommodationDetail />} />
+        <Route
+          path="/accommodations/:accommodationId/detail"
+          element={<AccommodationDetail />}
+        />
         <Route path="/flights" element={<Flights />} />
         <Route element={<PrivateRoute />}>
           <Route path="/profile" element={<UserPages.Profile />} />
@@ -118,6 +138,5 @@ const InnerApp = ({ serverMessage, setServerMessage, checkAuth, isAuthenticated,
     </div>
   );
 };
-
 
 export default App;
