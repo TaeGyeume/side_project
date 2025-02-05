@@ -2,11 +2,23 @@
 import React from 'react';
 
 const RoomCard = ({room}) => {
+  const SERVER_URL = 'http://localhost:5000';
+
+  // ✅ 이미지가 없는 경우 기본 이미지 설정
+  let imageUrl = room.images?.[0] || '/default-image.jpg';
+
+  // ✅ 이미지가 상대 경로(`/uploads/...`)일 경우, 서버 주소 추가
+  if (imageUrl.startsWith('/uploads/')) {
+    imageUrl = `${SERVER_URL}${imageUrl}`;
+  }
+
+  console.log('Room Image:', imageUrl); // 디버깅용
+
   return (
     <div className="card mb-3">
       {room.images?.length > 0 && (
         <img
-          src={room.images[0]}
+          src={imageUrl}
           className="card-img-top"
           alt={room.name}
           style={{maxWidth: '300px'}}

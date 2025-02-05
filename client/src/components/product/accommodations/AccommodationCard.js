@@ -33,6 +33,12 @@ const AccommodationCard = ({accommodation, queryOptions = {}}) => {
     window.open(url, '_blank');
   };
 
+  // ✅ 수정 페이지로 이동
+  const handleModifyClick = e => {
+    e.stopPropagation(); // 카드 클릭 이벤트 방지
+    navigate(`/product/accommodations/modify/${accommodation._id}`);
+  };
+
   // ✅ 이미지 URL 변환 로직 추가
   const SERVER_URL = 'http://localhost:5000';
   let imageUrl = accommodation.images?.[0] || '/default-image.jpg';
@@ -61,6 +67,9 @@ const AccommodationCard = ({accommodation, queryOptions = {}}) => {
           <strong>최저가:</strong> {accommodation.minPrice?.toLocaleString()}원
         </p>
       </div>
+      <button className="btn btn-warning mt-2" onClick={handleModifyClick}>
+        ✏️ 수정
+      </button>
     </div>
   );
 };
