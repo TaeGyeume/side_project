@@ -88,19 +88,18 @@ exports.getAccommodationsBySearch = async (req, res) => {
 exports.getAvailableRoomsByAccommodation = async (req, res) => {
   try {
     const {accommodationId} = req.params;
-    const {startDate, endDate, adults, minPrice, maxPrice} = req.query;
+    let {startDate, endDate, adults, minPrice, maxPrice} = req.query;
 
-    if (!startDate || !endDate || !adults) {
-      return res.status(400).json({
-        message: '검색 조건(startDate, endDate, adults)은 필수입니다.'
-      });
-    }
+    // 👉 `startDate`, `endDate`, `adults` 값이 없으면 undefined로 처리 (서비스에서 모든 객실 반환하도록)
+    startDate = startDate ? startDate : undefined;
+    endDate = endDate ? endDate : undefined;
+    adults = adults ? parseInt(adults) : undefined;
 
     const result = await accommodationService.getAvailableRoomsByAccommodation({
       accommodationId,
       startDate,
       endDate,
-      adults: parseInt(adults),
+      adults,
       minPrice: parseInt(minPrice) || 0,
       maxPrice: parseInt(maxPrice) || 500000
     });
@@ -116,10 +115,12 @@ exports.updateAccommodation = async (req, res) => {
   try {
     const {accommodationId} = req.params;
     const updateData = req.body;
+    const imageFiles = req.files; // multer가 처리한 업로드된 파일들
 
     const updatedAccommodation = await accommodationService.updateAccommodation(
       accommodationId,
-      updateData
+      updateData,
+      imageFiles
     );
 
     res.status(200).json({
@@ -169,4 +170,31 @@ exports.searchAccommodationsByName = async (req, res) => {
   } catch (error) {
     res.status(500).json({message: '숙소 이름 검색 중 오류 발생', error: error.message});
   }
+};
+
+exports.getAccommodationById = async (req, res) => {
+  try {
+    const {accommodationId} = req.params;
+    console.log('숙소 ID 조회 요청:', accommodationId);
+
+    const accommodation = await accommodationService.getAccommodationById(
+      accommodationId
+    );
+
+    res.status(200).json(accommodation);
+  } catch (error) {
+    console.error('❌ 숙소 조회 오류:', error.message);
+    res.status(404).json({message: error.message});
+  }
+};
+
+exports.deleteAccommodationImage = async (req, res) => {
+  const {accommodationId} = req.params;
+  const {imageUrl} = req.body;
+
+  const result = await accommodationService.deleteImage(accommodationId, imageUrl);
+
+  return res
+    .status(result.status)
+    .json({message: result.message, images: result.images || []});
 };

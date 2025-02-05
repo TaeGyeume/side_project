@@ -1,4 +1,6 @@
 // const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
 const Accommodation = require('../models/Accommodation');
 const Booking = require('../models/Booking');
 const Room = require('../models/Room');
@@ -196,22 +198,32 @@ exports.getAvailableRoomsByAccommodation = async ({
   maxPrice = 500000 // 기본값: 50만 원 이상
 }) => {
   try {
-    const checkInDate = new Date(startDate);
-    const checkOutDate = new Date(endDate);
-
     // 1️⃣ **해당 숙소(Accommodation) 존재 여부 확인**
     const accommodation = await Accommodation.findById(accommodationId);
     if (!accommodation) {
       throw new Error('해당 숙소를 찾을 수 없습니다.');
     }
 
-    // 2️⃣ **예약된 방 조회**
+    // 2️⃣ **검색 조건이 없을 경우 모든 객실 반환**
+    if (!startDate || !endDate || !adults) {
+      console.log('📌 검색 조건이 없으므로 모든 객실 반환');
+      const allRooms = await Room.find({accommodation: accommodationId}).select(
+        'name pricePerNight images maxGuests amenities'
+      );
+      return {accommodation, availableRooms: allRooms};
+    }
+
+    // ✅ 기존 검색 로직 유지
+    const checkInDate = new Date(startDate);
+    const checkOutDate = new Date(endDate);
+
+    // 3️⃣ **예약된 방 조회**
     const bookedRooms = await Booking.find({
       accommodation: accommodationId,
       $or: [{startDate: {$lt: checkOutDate}, endDate: {$gt: checkInDate}}]
     }).distinct('roomId');
 
-    // 3️⃣ **검색 조건에 맞는 객실 조회**
+    // 4️⃣ **검색 조건에 맞는 객실 조회**
     const priceFilter =
       maxPrice >= 500000 ? {$gte: minPrice} : {$gte: minPrice, $lte: maxPrice};
 
@@ -229,8 +241,8 @@ exports.getAvailableRoomsByAccommodation = async ({
   }
 };
 
-// ✅ 숙소 업데이트 함수 (가격 업데이트 제거)
-exports.updateAccommodation = async (accommodationId, updateData) => {
+// ✅ 숙소 업데이트 함수
+exports.updateAccommodation = async (accommodationId, updateData, imageFiles) => {
   try {
     // 1️⃣ 숙소 존재 여부 확인
     const existingAccommodation = await Accommodation.findById(accommodationId);
@@ -238,11 +250,36 @@ exports.updateAccommodation = async (accommodationId, updateData) => {
       throw new Error('숙소를 찾을 수 없습니다.');
     }
 
-    // 3️⃣ 숙소 업데이트 실행
+    // 2️⃣ 기존 이미지 유지 (삭제되지 않은 이미지만 유지)
+    let updatedImages = existingAccommodation.images;
+
+    if (updateData.existingImages) {
+      updatedImages = JSON.parse(updateData.existingImages);
+    }
+
+    // 3️⃣ 새 이미지가 업로드되었을 경우 기존 이미지 리스트에 추가
+    if (imageFiles && imageFiles.length > 0) {
+      const newImageUrls = imageFiles.map(file => `/uploads/${file.filename}`);
+      updatedImages = [...updatedImages, ...newImageUrls];
+    }
+
+    // 4️⃣ 좌표 데이터 변환 (JSON 문자열 -> 객체)
+    if (updateData.coordinates) {
+      updateData.coordinates = JSON.parse(updateData.coordinates);
+    }
+
+    if (typeof updateData.amenities === 'string') {
+      updateData.amenities = JSON.parse(updateData.amenities);
+    }
+
+    // 5️⃣ 업데이트 데이터에 반영
+    updateData.images = updatedImages;
+
+    // 6️⃣ 숙소 업데이트 실행
     const updatedAccommodation = await Accommodation.findByIdAndUpdate(
       accommodationId,
       updateData,
-      {new: true} // 업데이트 후 변경된 데이터 반환
+      {new: true}
     );
 
     return updatedAccommodation;
@@ -313,5 +350,67 @@ exports.getAccommodationsByName = async name => {
   } catch (error) {
     console.error('❌ 숙소 이름 검색 중 오류 발생:', error);
     throw new Error('숙소 이름 검색 중 오류 발생: ' + error.message);
+  }
+};
+
+exports.getAccommodationById = async accommodationId => {
+  if (!accommodationId.match(/^[0-9a-fA-F]{24}$/)) {
+    throw new Error('잘못된 숙소 ID 형식입니다.');
+  }
+
+  const accommodation = await Accommodation.findById(accommodationId);
+  if (!accommodation) {
+    throw new Error('숙소를 찾을 수 없습니다.');
+  }
+
+  return accommodation;
+};
+
+exports.deleteImage = async (accommodationId, imageUrl) => {
+  try {
+    const baseUrl = 'http://localhost:5000';
+    const relativeImagePath = imageUrl.replace(baseUrl, ''); // 절대 URL → 상대 경로 변환
+    const absoluteFilePath = path.join(
+      __dirname,
+      '../uploads',
+      relativeImagePath.replace('/uploads/', '')
+    ); // ✅ `server/uploads`에 맞춰 경로 수정
+
+    // 1️⃣ 숙소 찾기
+    const accommodation = await Accommodation.findById(accommodationId);
+    if (!accommodation) {
+      return {status: 404, message: '숙소를 찾을 수 없습니다.'};
+    }
+
+    // 2️⃣ 이미지 존재 여부 확인
+    if (!accommodation.images.includes(relativeImagePath)) {
+      return {status: 404, message: '해당 이미지는 숙소에 등록되어 있지 않습니다.'};
+    }
+
+    // 3️⃣ DB에서 이미지 제거
+    accommodation.images = accommodation.images.filter(img => img !== relativeImagePath);
+    await accommodation.save();
+
+    // 4️⃣ 서버에서 실제 이미지 파일 삭제
+    if (fs.existsSync(absoluteFilePath)) {
+      fs.unlink(absoluteFilePath, err => {
+        if (err) {
+          console.error('❌ 이미지 파일 삭제 오류:', err);
+        } else {
+          console.log('✅ 이미지 파일 삭제 성공:', absoluteFilePath);
+        }
+      });
+    } else {
+      console.warn('⚠️ 삭제할 이미지 파일이 존재하지 않음:', absoluteFilePath);
+    }
+
+    return {
+      status: 200,
+      message: '이미지가 삭제되었습니다.',
+      images: accommodation.images
+    };
+  } catch (error) {
+    console.error('이미지 삭제 오류:', error);
+    return {status: 500, message: '이미지 삭제 중 오류 발생'};
   }
 };
