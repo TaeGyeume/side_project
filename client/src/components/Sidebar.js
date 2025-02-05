@@ -3,27 +3,55 @@
 import React from 'react';
 import {useNavigate} from 'react-router-dom';
 
-const Sidebar = () => {
-  const navigate = useNavigate();
+import Col from 'react-bootstrap/Col';
+import Nav from 'react-bootstrap/Nav';
+import Row from 'react-bootstrap/Row';
+import Tab from 'react-bootstrap/Tab';
 
+import '../styles/Sidebar.css';
+
+const Sidebar = ({onSelectCategory}) => {
   return (
-    <div style={{width: '200px', padding: '20px', borderRight: '1px solid #ddd'}}>
-      <h3>상품 카테고리</h3>
-      <ul style={{listStyle: 'none', padding: 0}}>
-        <li>
-          <button onClick={() => navigate('/product/air')}>항공</button>
-        </li>
-        <li>
-          <button onClick={() => navigate('/product/accommodations/list')}>숙소</button>
-        </li>
-        <li>
-          <button onClick={() => navigate('/product/tourTicket/list')}>투어.티켓</button>
-        </li>
-        <li>
-          <button onClick={() => navigate('/product/travel-goods')}>여행용품</button>
-        </li>
-      </ul>
-    </div>
+    <Tab.Container id="left-tabs-example" defaultActiveKey="air">
+      <Row>
+        <Col sm={3}>
+          <Nav variant="pills" className="flex-column">
+            <Nav.Item>
+              <Nav.Link
+                style={{whiteSpace: 'nowrap', textAlign: 'center'}}
+                eventKey="air"
+                onClick={() => onSelectCategory('air')}>
+                ✈ 항공
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link
+                style={{whiteSpace: 'nowrap', textAlign: 'center'}}
+                eventKey="accommodations"
+                onClick={() => onSelectCategory('accommodations')}>
+                🏨 숙소
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link
+                style={{whiteSpace: 'nowrap', textAlign: 'center'}}
+                eventKey="tourTicket"
+                onClick={() => onSelectCategory('tourTicket')}>
+                🎟 투어.티켓
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link
+                style={{whiteSpace: 'nowrap', textAlign: 'center'}}
+                eventKey="travelGoods"
+                onClick={() => onSelectCategory('travelGoods')}>
+                🛍 여행용품
+              </Nav.Link>
+            </Nav.Item>
+          </Nav>
+        </Col>
+      </Row>
+    </Tab.Container>
   );
 };
 

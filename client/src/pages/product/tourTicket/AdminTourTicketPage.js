@@ -5,7 +5,7 @@ import TourTicketDetail from '../../components/product/tourTicket/TourTicketDeta
 import TourTicketModify from '../../../components/product/tourTicket/TourTicketModify';
 import TourTicketForm from '../../../components/product/tourTicket/TourTicketForm';
 
-const UserTourTicketPage = () => {
+const AdminTourTicketPage = () => {
   return (
     <Routes>
       <Route path="/product/list" element={<TourTicketList />} />
@@ -16,4 +16,4 @@ const UserTourTicketPage = () => {
   );
 };
 
-export default UserTourTicketPage;
+export default AdminTourTicketPage;

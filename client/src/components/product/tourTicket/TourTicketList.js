@@ -3,7 +3,7 @@ import {
   getTourTickets,
   deleteMultipleTourTickets
 } from '../../../api/tourTicket/tourTicketService';
-import {useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import '../tourTicket/styles/TourTicketList.css';
 
 const TourTicketList = () => {
@@ -12,6 +12,7 @@ const TourTicketList = () => {
   const [selectedTickets, setSelectedTickets] = useState(new Set()); // 선택된 티켓 ID
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -74,25 +75,28 @@ const TourTicketList = () => {
 
   return (
     <div className="tour-ticket-container">
-      <h1>투어 & 티켓 상품 목록</h1>
+      <h2>🎟 투어 & 티켓 상품</h2>
 
-      <div className="button-group">
-        <button onClick={() => navigate('/product/tourTicket/new')}>상품 등록</button>
-        {!isDeleteMode ? (
-          <button onClick={toggleDeleteMode} className="delete-mode-btn">
-            삭제 모드
-          </button>
-        ) : (
-          <>
-            <button onClick={handleDelete} className="confirm-delete-btn">
-              삭제하기
+      {/* /product/tourTicket에서는 버튼을 숨김 */}
+      {location.pathname !== '/product' && (
+        <div className="button-group">
+          <button onClick={() => navigate('/product/tourTicket/new')}>상품 등록</button>
+          {!isDeleteMode ? (
+            <button onClick={toggleDeleteMode} className="delete-mode-btn">
+              삭제 모드
             </button>
-            <button onClick={toggleDeleteMode} className="cancel-delete-btn">
-              삭제 취소
-            </button>
-          </>
-        )}
-      </div>
+          ) : (
+            <>
+              <button onClick={handleDelete} className="confirm-delete-btn">
+                삭제하기
+              </button>
+              <button onClick={toggleDeleteMode} className="cancel-delete-btn">
+                삭제 취소
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="tour-ticket-grid">
         {tickets.length > 0 ? (

@@ -1,18 +1,93 @@
 // Product 메인 페이지
 
-import React from 'react';
+import React, {useRef} from 'react';
+import {useNavigate} from 'react-router-dom';
+
 import Sidebar from '../../components/Sidebar';
+import TourTicketList from '../../components/product/tourTicket/TourTicketList';
+import AccommodationList from '../../pages/product/accommodations/AccommodationList';
 
 const ProductPage = () => {
+  const navigate = useNavigate();
+
+  const accommodationsRef = useRef(null);
+  const tourTicketRef = useRef(null);
+
+  const scrollToSection = section => {
+    switch (section) {
+      case 'accommodations':
+        accommodationsRef.current?.scrollIntoView({behavior: 'smooth'});
+        break;
+      case 'tourTicket':
+        tourTicketRef.current?.scrollIntoView({behavior: 'smooth'});
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <div style={{display: 'flex'}}>
-      <Sidebar />
+      <Sidebar onSelectCategory={scrollToSection} />
+
       <div style={{padding: '20px', flex: 1}}>
-        <h1>상품 페이지</h1>
-        <p>좌측에서 원하는 카테고리를 선택하세요.</p>
+        {/* 각 관리자용 상품 관리 컴포넌트 표시 */}
+        <div
+          id="accommodations-section"
+          ref={accommodationsRef}
+          style={{border: '1px solid #ddd', padding: '15px', marginBottom: '20px'}}>
+          <h2>🏨 숙소 상품</h2>
+          <AccommodationList />
+        </div>
+        <div id="tourTicket-section" ref={tourTicketRef} style={sectionStyle}>
+          <div style={headerContainerStyle}></div>
+          {/* <h2>🎟 투어 & 티켓 상품</h2> */}
+          <button
+            onClick={() => navigate('/product/tourTicket/list')}
+            style={plusButtonStyle}>
+            +
+          </button>
+          <TourTicketList/>
+        </div>
       </div>
     </div>
   );
+};
+
+const sectionStyle = {
+  border: '1px solid #ddd',
+  padding: '20px',
+  marginBottom: '20px',
+  position: 'relative', // 내부 요소 정렬을 위해 relative 적용
+  borderRadius: '8px',
+  backgroundColor: '#f9f9f9'
+};
+
+const headerContainerStyle = {
+  display: 'flex',
+  justifyContent: 'space-between', // 제목과 버튼을 양쪽으로 정렬
+  alignItems: 'center',
+  position: 'relative' // + 버튼이 제목과 함께 배치되도록 함
+};
+
+const plusButtonStyle = {
+  position: 'absolute',
+  top: '10px',
+  right: '10px', // 상품 박스 내부에서 우측 상단으로 배치
+  fontSize: '20px',
+  fontWeight: 'bold',
+  cursor: 'pointer',
+  backgroundColor: '#007bff',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '50%',
+  width: '30px',
+  height: '30px',
+  textAlign: 'center',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' // 그림자 효과 추가
 };
 
 export default ProductPage;
