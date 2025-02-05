@@ -31,7 +31,7 @@ exports.updateTourTicket = async (
       throw new Error('상품을 찾을 수 없습니다.');
     }
 
-    // ✅ 기존 이미지 삭제 처리
+    // 기존 이미지 삭제 처리
     if (deleteImages && Array.isArray(deleteImages)) {
       deleteImages.forEach(imagePath => {
         const fullPath = path.join(
@@ -48,13 +48,13 @@ exports.updateTourTicket = async (
       ticket.images = ticket.images.filter(img => !deleteImages.includes(img));
     }
 
-    // ✅ 새로운 이미지 추가
+    // 새로운 이미지 추가
     if (newImages && newImages.length > 0) {
       const newImagePaths = newImages.map(file => `/uploads/${file.filename}`);
       ticket.images = [...ticket.images, ...newImagePaths]; // 기존 이미지 + 추가된 이미지 유지
     }
 
-    // ✅ 상품 정보 업데이트
+    // 상품 정보 업데이트
     ticket.title = title || ticket.title;
     ticket.description = description || ticket.description;
     ticket.price = price || ticket.price;
@@ -77,7 +77,3 @@ exports.deleteMultipleTickets = async ticketIds => {
     throw new Error('상품 삭제 실패');
   }
 };
-
-// exports.deleteTicket = async id => {
-//   return await TourTicket.findByIdAndDelete(id);
-// };
