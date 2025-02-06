@@ -10,13 +10,7 @@ export const useAuthStore = create(
 
       // 유저 프로필 가져오기
       fetchUserProfile: async () => {
-        const accessToken = document.cookie.includes('accessToken');
-        if (!accessToken) {
-          // 로그인하지 않은 상태에서는 요청하지 않음
-          console.log('로그인 상태가 아님: 프로필 요청 안함');
-          return;
-        }
-
+      
         try {
           const user = await authAPI.getUserProfile();
           set({user, isAuthenticated: true});
@@ -55,12 +49,6 @@ export const useAuthStore = create(
 
         // 인증 상태 확인
         checkAuth: async () => {
-          const accessToken = document.cookie.includes('accessToken');
-          if (!accessToken) {
-            console.log('로그인 상태가 아님: 인증 요청 안함');
-            return;
-          }
-  
           try {
             await useAuthStore.getState().fetchUserProfile();
           } catch (error) {
