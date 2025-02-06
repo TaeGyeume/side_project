@@ -12,13 +12,13 @@ const FacebookLoginCallback = () => {
 
     const handleFacebookLoginSuccess = async () => {
       try {
-        console.log('✅ 페이스북 로그인 성공, isAuthenticated 설정 중');
+        // console.log('✅ 페이스북 로그인 성공, isAuthenticated 설정 중');
         setAuthState({ isAuthenticated: true });  // 로그인 상태 설정
         await checkAuth();  // 프로필 요청
-        console.log('✅ 프로필 요청 성공, 메인 페이지로 이동');
+        // console.log('✅ 프로필 요청 성공, 메인 페이지로 이동');
         navigate('/main');
       } catch (error) {
-        console.error('❌ 페이스북 로그인 후 인증 실패:', error);
+        // console.error('❌ 페이스북 로그인 후 인증 실패:', error);
         navigate('/login');
       }
     };
