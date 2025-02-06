@@ -24,7 +24,7 @@ const TourTicketList = () => {
 
   return (
     <div className="tour-ticket-container">
-      <h1>투어 & 티켓</h1>
+      {/* <h1>투어 & 티켓</h1> */}
 
       <div className="tour-ticket-grid">
         {tickets.length > 0 ? (

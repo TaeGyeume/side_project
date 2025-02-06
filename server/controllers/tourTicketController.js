@@ -109,22 +109,3 @@ exports.deleteMultipleTickets = async (req, res) => {
     res.status(500).json({message: '서버 오류가 발생했습니다.'});
   }
 };
-
-// exports.deleteTicket = async (req, res) => {
-//   const {id} = req.params;
-
-//   try {
-//     if (!mongoose.Types.ObjectId.isValid(id)) {
-//       return res.status(400).json({message: '유효하지 않은 ID 형식입니다.'});
-//     }
-
-//     const deletedTicket = await tourTicketService.deleteTicket(id);
-//     if (deletedTicket) {
-//       res.status(204).send();
-//     } else {
-//       res.status(404).json({message: '상품을 찾을 수 없습니다.'});
-//     }
-//   } catch (error) {
-//     res.status(500).json({message: '서버 오류', error});
-//   }
-// };
