@@ -1,13 +1,13 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import api from './api/axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {BrowserRouter as Router, Route, Routes, Navigate} from 'react-router-dom';
-import {AuthPages, Main, UserPages} from './pages';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { AuthPages, Main, UserPages } from './pages';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import EditProfile from './pages/user/EditProfile';
 import Header from './components/Header';
-import {useAuthStore} from './store/authStore'; // Zustand 스토어
+import { useAuthStore } from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
 import Unauthorized from './pages/Unauthorized'; // 권한 없음 페이지 추가
 // import AdminDashboard from './pages/admin/AdminDashboard'; // 어드민 대시보드 추가
@@ -25,6 +25,7 @@ import TourTicketForm from './components/product/tourTicket/TourTicketForm';
 import TourTicketDetail from './components/product/tourTicket/TourTicketDetail';
 import TourTicketModify from './components/product/tourTicket/TourTicketModify';
 import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
+import FacebookLoginCallback from './components/SocialLogin/FacebookLoginCallback';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -53,9 +54,8 @@ const App = () => {
         <h1 className="text-center">Our Real Trip</h1>
         {serverMessage && (
           <div
-            className={`alert ${
-              serverMessage.includes('실패') ? 'alert-danger' : 'alert-success'
-            }`}
+            className={`alert ${serverMessage.includes('실패') ? 'alert-danger' : 'alert-success'
+              }`}
             role="alert">
             {serverMessage}
           </div>
@@ -70,6 +70,7 @@ const App = () => {
             path="/login"
             element={isAuthenticated ? <Navigate to="/profile" /> : <AuthPages.Login />}
           />
+          <Route path="/facebook/callback" element={<FacebookLoginCallback />} />  {/* 콜백 경로 추가 */}
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/accommodations/search" element={<AccommodationSearch />} />

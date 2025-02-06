@@ -25,14 +25,13 @@ const generateTokens = user => {
 router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
 
 // 페이스북 콜백 처리
-// 페이스북 콜백 처리
 router.get('/facebook/callback', passport.authenticate('facebook', { session: false }), (req, res) => {
   const tokens = generateTokens(req.user);
 
   // 액세스 토큰을 httpOnly 쿠키로 저장
   res.cookie('accessToken', tokens.accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', 
+    secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
     path: '/',
     maxAge: 15 * 60 * 1000  // 15분
@@ -48,7 +47,7 @@ router.get('/facebook/callback', passport.authenticate('facebook', { session: fa
   });
 
   // 클라이언트로 리디렉션 (쿼리 파라미터 제거)
-  res.redirect(`${process.env.CLIENT_URL}/main`);
+  res.redirect(`${process.env.CLIENT_URL}/facebook/callback`);
 });
 
 

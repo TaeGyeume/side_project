@@ -12,13 +12,21 @@ export const useAuthStore = create(
       fetchUserProfile: async () => {
         try {
           const user = await authAPI.getUserProfile();
+          // console.log('✅ 프로필 불러오기 성공:', user);
           set({ user, isAuthenticated: true });
           return user;
         } catch (error) {
+          console.error('❌ 프로필 불러오기 실패:', error);
           set({ user: null, isAuthenticated: false });
           throw error;
         }
       },
+
+      // 상태 직접 업데이트 함수 추가
+      setAuthState: (authState) => {
+        set(authState);
+      },
+
 
       // 로그인 처리
       login: async (userData) => {
@@ -45,7 +53,10 @@ export const useAuthStore = create(
 
       // 인증 상태 확인
       checkAuth: async () => {
-        if (!get().isAuthenticated) return; // 로그인 상태가 아니라면 프로필 
+        if (!get().isAuthenticated) {
+          // console.log('❌ 로그인 상태가 아님, 프로필 요청 중단');
+          return;  // 로그인 상태가 아닐 때는 프로필 요청 중단
+        }
         try {
           await get().fetchUserProfile();
         } catch (error) {
@@ -54,6 +65,7 @@ export const useAuthStore = create(
               await authAPI.refreshToken();
               await get().fetchUserProfile();
             } catch (refreshError) {
+              console.error('❌ 토큰 갱신 실패:', refreshError);
               set({ user: null, isAuthenticated: false });
               throw refreshError;
             }
@@ -63,9 +75,9 @@ export const useAuthStore = create(
     }),
     {
       name: 'auth-store',
-      partialize: (state) => ({ 
+      partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
-        user: state.user 
+        user: state.user
       })
     }
   )
