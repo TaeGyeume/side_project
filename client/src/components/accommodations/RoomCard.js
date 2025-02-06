@@ -1,7 +1,9 @@
 // src/components/accommodations/RoomCard.js
 import React from 'react';
+import {useNavigate} from 'react-router-dom';
 
 const RoomCard = ({room}) => {
+  const navigate = useNavigate();
   const SERVER_URL = 'http://localhost:5000';
 
   // ✅ 이미지가 없는 경우 기본 이미지 설정
@@ -37,6 +39,12 @@ const RoomCard = ({room}) => {
             <strong>편의시설:</strong> {room.amenities.join(', ')}
           </p>
         )}
+        <button
+          type="button"
+          className="btn btn-warning mt-2"
+          onClick={() => navigate(`/product/room/modify/${room._id}`)}>
+          ✏️ 객실 수정
+        </button>
       </div>
     </div>
   );

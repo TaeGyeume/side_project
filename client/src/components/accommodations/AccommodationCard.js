@@ -1,6 +1,6 @@
 // src/components/accommodations/AccommodationCard.js
 import React from 'react';
-import {createSearchParams, useNavigate} from 'react-router-dom';
+import {createSearchParams} from 'react-router-dom';
 import './styles/AccommodationCard.css';
 
 // ✅ 기본 날짜 설정 함수 (오늘 + n일)
@@ -11,8 +11,6 @@ const getFormattedDate = (daysToAdd = 0) => {
 };
 
 const AccommodationCard = ({accommodation, queryOptions = {}}) => {
-  const navigate = useNavigate(); // ✅ 페이지 이동을 위한 `useNavigate` 사용
-
   // ✅ 기본 필터값 설정 (queryOptions가 없을 경우 적용)
   const params = {
     city: queryOptions.city || '서울',
