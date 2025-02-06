@@ -27,6 +27,7 @@ exports.updateTourTicket = async (
 ) => {
   try {
     let ticket = await TourTicket.findById(ticketId);
+
     if (!ticket) {
       throw new Error('상품을 찾을 수 없습니다.');
     }
@@ -39,8 +40,13 @@ exports.updateTourTicket = async (
           '..',
           imagePath.replace('/uploads/', 'uploads/')
         );
+
         if (fs.existsSync(fullPath)) {
-          fs.unlinkSync(fullPath); // 파일 삭제
+          try {
+            fs.unlinkSync(fullPath);
+          } catch (error) {
+            console.error(`이미지 삭제 실패 (${fullPath}):`, error);
+          }
         }
       });
 
@@ -70,7 +76,32 @@ exports.updateTourTicket = async (
 // 투어.티켓 삭제
 exports.deleteMultipleTickets = async ticketIds => {
   try {
+    const tickets = await TourTicket.find({_id: {$in: ticketIds}});
+
+    if (!tickets || tickets.length === 0) {
+      throw new Error('삭제할 상품을 찾을 수 없습니다.');
+    }
+
+    tickets.forEach(ticket => {
+      ticket.images.forEach(imagePath => {
+        const fullPath = path.join(
+          __dirname,
+          '..',
+          imagePath.replace('/uploads/', 'uploads/')
+        );
+
+        if (fs.existsSync(fullPath)) {
+          try {
+            fs.unlinkSync(fullPath);
+          } catch (error) {
+            console.error(`이미지 삭제 실패 (${fullPath}):`, error);
+          }
+        }
+      });
+    });
+
     const result = await TourTicket.deleteMany({_id: {$in: ticketIds}}); // deleteMany({_id: {$in: ticketIds}}) 쿼리로 여러 개 삭제
+
     return result.deletedCount; // 삭제된 개수 반환
   } catch (error) {
     console.error('상품 삭제 중 오류 발생:', error);
