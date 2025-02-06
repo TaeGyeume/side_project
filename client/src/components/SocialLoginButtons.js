@@ -17,7 +17,7 @@ const SocialLoginButtons = () => {
       <button onClick={handleFacebookLogin} className="btn btn-primary" style={{ marginBottom: '10px' }}>
         Facebook으로 로그인
       </button>
-
+      <br />
       {/* 네이버 로그인 버튼 */}
       <button onClick={handleNaverLogin} className="btn btn-success">
         Naver로 로그인
