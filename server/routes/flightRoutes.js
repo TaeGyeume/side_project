@@ -16,30 +16,59 @@ router.get('/', async (req, res) => {
 });
 
 // ✈️ 항공편 검색 API
+// ✈️ 항공편 검색 API
 router.get('/search', async (req, res) => {
-  const { departure, arrival, date } = req.query;
-  console.log('🌐 서버에서 받은 요청:', { departure, arrival, date });
-
-  if (!departure || !arrival || !date) {
-    console.warn('⚠️ 필수 파라미터 누락');
-    return res.status(400).json({ error: '출발지, 도착지, 날짜가 필요합니다.' });
-  }
-
   try {
-    // ✅ 사용자가 검색한 날짜의 요일 계산
-    const searchWeekday = moment(date, 'YYYY-MM-DD').format('dddd');
+    const {departure, arrival, date} = req.query;
 
+    if (!departure || !arrival || !date) {
+      return res.status(400).json({error: '출발지, 도착지, 날짜를 입력해주세요.'});
+    }
+
+    // ✅ 사용자가 입력한 날짜 → 요일 변환
+    const selectedWeekday = moment(date).locale('ko').format('dddd');
+    const searchDate = moment(date).startOf('day');
+
+    console.log(
+      `🔍 검색 조건 - 출발: ${departure}, 도착: ${arrival}, 날짜: ${date}(${selectedWeekday})`
+    );
+
+    // ✅ MongoDB에서 검색 (출발지, 도착지, 운항 요일 필터링)
     const flights = await Flight.find({
       'departure.airport': departure,
       'arrival.airport': arrival,
-      'operatingDays': searchWeekday // ✅ 해당 요일에 운항하는 항공편만 검색
+      operatingDays: selectedWeekday
     });
 
-    console.log('✅ 검색된 항공편:', flights.length);
-    res.json(flights);
+    // ✅ 운항 요일과 출발-도착 날짜를 **따로** 필터링
+    const filteredFlights = flights.filter(flight => {
+      const departureDate = moment(flight.departure.time).startOf('day'); // 출발 날짜
+      const arrivalDate = moment(flight.arrival.time).startOf('day'); // 도착 날짜
+
+      // 🚀 1️⃣ 운항 요일 필터링 (검색 날짜의 요일이 `operatingDays`에 포함되어야 함)
+      const matchesWeekday = flight.operatingDays.includes(selectedWeekday);
+
+      // 🚀 2️⃣ 출발-도착 날짜 필터링 (검색 날짜가 출발-도착 기간 내에 있어야 함)
+      const withinDateRange =
+        searchDate.isSameOrAfter(departureDate) && searchDate.isSameOrBefore(arrivalDate);
+
+      return matchesWeekday && withinDateRange; // ✅ 두 조건을 따로 검사한 후 결과 반환
+    });
+
+    console.log(`🔍 필터링된 결과:`, filteredFlights);
+
+    if (filteredFlights.length === 0) {
+      return res
+        .status(404)
+        .json({
+          message: `🚫 선택한 날짜(${date})(${selectedWeekday})에 운항하는 항공편이 없습니다.`
+        });
+    }
+
+    res.json(filteredFlights);
   } catch (error) {
-    console.error('❌ 검색 오류:', error);
-    res.status(500).json({ error: '검색 중 오류 발생' });
+    console.error('🚨 항공편 검색 오류:', error);
+    res.status(500).json({error: '서버 오류 발생'});
   }
 });
 

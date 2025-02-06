@@ -143,7 +143,7 @@ const fetchAllFlights = async () => {
               }
 
               await Flight.updateOne(
-                { flightNumber, 'departure.time': departureTime },
+                {flightNumber, 'departure.time': departureTime},
                 {
                   airline,
                   flightNumber,
@@ -162,7 +162,7 @@ const fetchAllFlights = async () => {
                   seatsAvailable: Math.floor(Math.random() * 10) + 1, // ✅ 좌석 정보 필드 추가
                   seatClass // ✅ 좌석 등급 필드 추가
                 },
-                { upsert: true }
+                {upsert: true}
               );
 
               console.log(
