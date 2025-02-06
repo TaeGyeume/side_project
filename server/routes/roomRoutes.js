@@ -10,6 +10,8 @@ router.patch('/:roomId', upload, roomController.updateRoom);
 // 객실 삭제 (DELETE /api/rooms/:roomId)
 router.delete('/:roomId', roomController.deleteRoom);
 // ✅ 객실 이미지 삭제 API (DELETE)
-router.delete('/:roomId/images', roomController.deleteRoomImage);
+router.post('/:roomId/images/delete', roomController.deleteRoomImage);
+// ✅ 특정 객실 조회 (GET /api/rooms/:roomId)
+router.get('/:roomId', roomController.getRoomById);
 
 module.exports = router;

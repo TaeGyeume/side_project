@@ -22,6 +22,7 @@ import AccommodationList from './pages/product/accommodations/AccommodationList'
 import AccommodationCreate from './pages/product/accommodations/AccommodationCreate';
 import AccommodationModify from './pages/product/accommodations/AccommodationModify';
 import RoomNew from './pages/product/accommodations/RoomNew';
+import RoomModify from './pages/product/accommodations/RoomModify';
 import TourTicketList from './components/product/tourTicket/TourTicketList';
 import TourTicketForm from './components/product/tourTicket/TourTicketForm';
 import TourTicketDetail from './components/product/tourTicket/TourTicketDetail';
@@ -105,6 +106,7 @@ const App = () => {
               element={<AccommodationModify />}
             />
             <Route path="/product/room/new" element={<RoomNew />} />
+            <Route path="/product/room/modify/:roomId" element={<RoomModify />} />
             {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
             {/* <Route path="/admin/settings" element={<AdminSettings />} /> */}
             <Route path="/product" element={<ProductPage />} />
