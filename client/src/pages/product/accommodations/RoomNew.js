@@ -76,7 +76,7 @@ const RoomNew = () => {
       });
 
       alert('새 객실이 추가되었습니다.');
-      navigate('/product/rooms');
+      navigate(`/product/accommodations/modify/${accommodationId}`);
     } catch (err) {
       console.error('❌ 객실 생성 오류:', err);
       alert('객실 생성에 실패했습니다.');
@@ -141,6 +141,18 @@ const RoomNew = () => {
             className="form-control"
             name="maxGuests"
             value={formData.maxGuests}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">방 개수</label>
+          <input
+            type="number"
+            className="form-control"
+            name="availableCount"
+            value={formData.availableCount}
             onChange={handleChange}
             required
           />
