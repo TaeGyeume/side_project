@@ -165,7 +165,6 @@ exports.forgotPassword = async email => {
 };
 
 // 비밀번호 재설정 서비스
-// 비밀번호 재설정 서비스
 exports.resetPassword = async ({ userId, token, currentPassword, newPassword }) => {
   let user = null;
 

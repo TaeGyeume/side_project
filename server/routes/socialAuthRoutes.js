@@ -85,5 +85,35 @@ router.get('/naver/callback', passport.authenticate('naver', { session: false })
   res.redirect(`${process.env.CLIENT_URL}/naver/callback`);
 });
 
+// =======================
+// 카카오 로그인 라우터
+// =======================
+
+// 카카오 로그인 시작
+router.get('/kakao', passport.authenticate('kakao'));
+
+// 카카오 콜백 처리
+router.get('/kakao/callback', passport.authenticate('kakao', { session: false }), (req, res) => {
+  const tokens = generateTokens(req.user);
+
+  res.cookie('accessToken', tokens.accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+    path: '/',
+    maxAge: 15 * 60 * 1000
+  });
+
+  res.cookie('refreshToken', tokens.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  });
+
+  res.redirect(`${process.env.CLIENT_URL}/kakao/callback`);
+});
+
 
 module.exports = router;

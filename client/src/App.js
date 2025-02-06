@@ -8,6 +8,8 @@ import ResetPassword from './pages/auth/ResetPassword';
 import EditProfile from './pages/user/EditProfile';
 import Header from './components/Header';
 import NaverLoginCallback from './components/SocialLogin/NaverLoginCallback';  
+import FacebookLoginCallback from './components/SocialLogin/FacebookLoginCallback';
+import KakaoLoginCallback from './components/SocialLogin/KakaoLoginCallback';
 import { useAuthStore } from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
 import Unauthorized from './pages/Unauthorized'; // 권한 없음 페이지 추가
@@ -26,7 +28,7 @@ import TourTicketForm from './components/product/tourTicket/TourTicketForm';
 import TourTicketDetail from './components/product/tourTicket/TourTicketDetail';
 import TourTicketModify from './components/product/tourTicket/TourTicketModify';
 import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
-import FacebookLoginCallback from './components/SocialLogin/FacebookLoginCallback';
+
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -71,6 +73,7 @@ const App = () => {
             path="/login"
             element={isAuthenticated ? <Navigate to="/profile" /> : <AuthPages.Login />}
           />
+          <Route path="/kakao/callback" element={<KakaoLoginCallback />} />
           <Route path="/naver/callback" element={<NaverLoginCallback />} /> 
           <Route path="/facebook/callback" element={<FacebookLoginCallback />} />  
           <Route path="/reset-password" element={<ResetPassword />} />
