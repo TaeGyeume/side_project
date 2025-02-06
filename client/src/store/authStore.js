@@ -10,7 +10,6 @@ export const useAuthStore = create(
 
       // 유저 프로필 가져오기
       fetchUserProfile: async () => {
-      
         try {
           const user = await authAPI.getUserProfile();
           set({user, isAuthenticated: true});
@@ -47,24 +46,23 @@ export const useAuthStore = create(
         }
       },
 
-        // 인증 상태 확인
-        checkAuth: async () => {
-          try {
-            await useAuthStore.getState().fetchUserProfile();
-          } catch (error) {
-            if (error.response?.status === 401) {
-              try {
-                await authAPI.refreshToken();
-                await useAuthStore.getState().fetchUserProfile();
-              } catch (refreshError) {
-                console.error('자동 로그인 실패:', refreshError);
-                set({ user: null, isAuthenticated: false });
-              }
+      // 인증 상태 확인
+      checkAuth: async () => {
+        try {
+          await useAuthStore.getState().fetchUserProfile();
+        } catch (error) {
+          if (error.response?.status === 401) {
+            try {
+              await authAPI.refreshToken();
+              await useAuthStore.getState().fetchUserProfile();
+            } catch (refreshError) {
+              console.error('자동 로그인 실패:', refreshError);
+              set({user: null, isAuthenticated: false});
             }
           }
         }
-      }),
-      { name: 'auth-store' }
-    )
-  );
-  
+      }
+    }),
+    {name: 'auth-store'}
+  )
+);
