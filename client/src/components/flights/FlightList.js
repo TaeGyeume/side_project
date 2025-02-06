@@ -37,7 +37,7 @@ const FlightList = () => {
         {flights.length === 0 ? (
           <p className="text-gray-600">항공편 데이터가 없습니다.</p>
         ) : (
-          flights.map((flight) => {
+          flights.map(flight => {
             const logoFile = AIRLINE_LOGOS[flight?.airline] || 'default.png'; // ✅ 기본 로고 처리
             const airlineKorean = AIRLINE_NAMES[flight?.airline] || flight?.airline; // ✅ 한글명 매핑
             return (
@@ -49,7 +49,7 @@ const FlightList = () => {
                     src={`/images/logos/${logoFile}`}
                     alt={airlineKorean}
                     className="img-fluid me-2"
-                    style={{ maxWidth: '24px', maxHeight: '24px' }}
+                    style={{maxWidth: '24px', maxHeight: '24px'}}
                   />
                   <h3 className="text-lg font-semibold">
                     {airlineKorean} ({flight?.flightNumber}) {/* ✅ 한글명 적용 */}
@@ -61,14 +61,20 @@ const FlightList = () => {
                 <p className="text-gray-500">
                   🕒{' '}
                   {flight?.departure?.time
-                    ? moment(flight?.departure?.time).tz('Asia/Seoul').format('YYYY-MM-DD HH:mm')
+                    ? moment(flight?.departure?.time)
+                        .tz('Asia/Seoul')
+                        .format('YYYY-MM-DD HH:mm')
                     : '시간 미정'}
                   →{' '}
                   {flight?.arrival?.time
-                    ? moment(flight?.arrival?.time).tz('Asia/Seoul').format('YYYY-MM-DD HH:mm')
+                    ? moment(flight?.arrival?.time)
+                        .tz('Asia/Seoul')
+                        .format('YYYY-MM-DD HH:mm')
                     : '시간 미정'}
                 </p>
-                <p className="text-gray-700">좌석: {flight?.seatsAvailable || '정보 없음'}석</p>
+                <p className="text-gray-700">
+                  좌석: {flight?.seatsAvailable || '정보 없음'}석
+                </p>
                 <p className="text-md font-semibold text-green-600">
                   💺 {flight?.seatClass || '등급 미정'}
                 </p>
