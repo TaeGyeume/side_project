@@ -16,7 +16,7 @@ export const useAuthStore = create(
           set({ user, isAuthenticated: true });
           return user;
         } catch (error) {
-          console.error('❌ 프로필 불러오기 실패:', error);
+          // console.error('❌ 프로필 불러오기 실패:', error);
           set({ user: null, isAuthenticated: false });
           throw error;
         }
