@@ -6,7 +6,8 @@ const UserSchema = new mongoose.Schema(
     userid: {
       type: String,  // 로그인 시 사용할 사용자 아이디 (로컬 로그인 시 필수)
       unique: true,
-      sparse: true  // 소셜 로그인 시 userid가 없을 수 있으므로 sparse 설정
+      sparse: true,  // 소셜 로그인 시 userid가 없을 수 있으므로 sparse 설정
+      default: undefined  // null 대신 undefined로 설정
     },
     email: {
       type: String,  // 비밀번호 찾기, 알림 수신용 이메일
@@ -16,7 +17,8 @@ const UserSchema = new mongoose.Schema(
     phone: {
       type: String,  // 핸드폰 번호 (로컬 로그인 시 필수)
       unique: true,
-      sparse: true   // 소셜 로그인 시 전화번호가 없을 수 있으므로 sparse 설정
+      sparse: true,   // 소셜 로그인 시 전화번호가 없을 수 있으므로 sparse 설정
+      default: undefined
     },
     password: {
       type: String,  // 비밀번호 (로컬 로그인 시 필수, 소셜 로그인 시 불필요)
@@ -40,7 +42,9 @@ const UserSchema = new mongoose.Schema(
     },
     socialId: {
       type: String,  // 소셜 로그인 ID (Facebook, Google, Naver, Kakao)
-      default: null
+      unique: true,  //  소셜 로그인 시 중복 방지
+      default: null,
+      sparse: true
     },
     membershipLevel: {
       type: String,  // 회원 등급
