@@ -24,12 +24,12 @@ const PrivateRoute = ({allowedRoles}) => {
     return <div className="text-center mt-5">로딩 중...</div>; // 로딩 중 메시지
   }
 
-  // ✅ 인증되지 않은 경우 로그인 페이지로 리다이렉트
+  // 인증되지 않은 경우 로그인 페이지로 리다이렉트
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // ✅ 역할 기반 접근 제어
+  // 역할 기반 접근 제어
   if (allowedRoles) {
     const userRoles = user?.roles;
 
@@ -48,7 +48,7 @@ const PrivateRoute = ({allowedRoles}) => {
     }
   }
 
-  // ✅ 접근 허용
+  // 접근 허용
   return <Outlet />;
 };
 

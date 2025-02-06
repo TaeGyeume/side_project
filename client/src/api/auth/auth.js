@@ -45,7 +45,7 @@ const handleRequest = async (requestPromise, errorMessage) => {
 const clearCookiesManually = () => {
   document.cookie = 'accessToken=; Max-Age=0; path=/;';
   document.cookie = 'refreshToken=; Max-Age=0; path=/;';
-  console.log('브라우저 쿠키 수동 삭제 완료');
+  // console.log('브라우저 쿠키 수동 삭제 완료');
 };
 
 export const authAPI = {
