@@ -110,16 +110,31 @@ const AccommodationModify = () => {
   // 🔹 파일 업로드 핸들러 (미리보기 포함)
   const handleFileChange = e => {
     const files = Array.from(e.target.files);
-    const newPreviews = files.map(file => URL.createObjectURL(file));
 
-    setPreviewImages([...previewImages, ...newPreviews]);
-    setNewImages([...newImages, ...files]); // 🆕 새 이미지 저장
+    // 새 이미지 미리보기 URL 생성
+    const newPreviews = files.map(file => ({
+      file,
+      url: URL.createObjectURL(file)
+    }));
+
+    // 상태 업데이트
+    setPreviewImages([...previewImages, ...newPreviews.map(item => item.url)]);
+    setNewImages([...newImages, ...newPreviews]); // 🆕 File 객체와 URL 저장
   };
 
-  // 🔹 이미지 삭제 핸들러 (백엔드 요청 X, UI에서만 숨김)
+  // 🔹 이미지 삭제 핸들러 (업로드된 이미지 & 새 이미지 모두 포함)
   const handleDeleteImage = imageUrl => {
-    setImagesToDelete([...imagesToDelete, imageUrl]); // 🛑 삭제할 이미지 목록에 추가
+    // 기존 이미지 삭제 목록에 추가
+    if (formData.images.includes(imageUrl.replace(SERVER_URL, ''))) {
+      setImagesToDelete([...imagesToDelete, imageUrl.replace(SERVER_URL, '')]);
+    }
+
+    // 새로 업로드한 이미지인 경우 필터링하여 제거
+    const updatedNewImages = newImages.filter(image => image.url !== imageUrl);
+
+    setNewImages(updatedNewImages); // 🆕 newImages 상태 업데이트
     setPreviewImages(previewImages.filter(img => img !== imageUrl));
+
     setFormData({
       ...formData,
       images: formData.images.filter(img => img !== imageUrl.replace(SERVER_URL, ''))
@@ -174,8 +189,8 @@ const AccommodationModify = () => {
     const remainingImages = formData.images.filter(img => !imagesToDelete.includes(img));
     updatedFormData.append('existingImages', JSON.stringify(remainingImages));
 
-    // ✅ 새로 업로드한 이미지 추가
-    newImages.forEach(image => updatedFormData.append('images', image));
+    // ✅ 새로 업로드한 이미지 중 삭제되지 않은 파일만 추가
+    newImages.forEach(image => updatedFormData.append('images', image.file));
 
     try {
       console.log('📌 전송할 FormData 확인:');
