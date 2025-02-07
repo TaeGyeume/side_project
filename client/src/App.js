@@ -10,6 +10,7 @@ import Header from './components/Header';
 import NaverLoginCallback from './components/SocialLogin/NaverLoginCallback';
 import FacebookLoginCallback from './components/SocialLogin/FacebookLoginCallback';
 import KakaoLoginCallback from './components/SocialLogin/KakaoLoginCallback';
+import GoogleLoginCallback from './components/SocialLogin/GoogleLoginCallback';
 import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
 import Unauthorized from './pages/Unauthorized'; // 권한 없음 페이지 추가
@@ -27,6 +28,9 @@ import AccommodationCreate from './pages/product/accommodations/AccommodationCre
 import AccommodationModify from './pages/product/accommodations/AccommodationModify';
 import RoomNew from './pages/product/accommodations/RoomNew';
 import RoomModify from './pages/product/accommodations/RoomModify';
+import LocationAdd from './pages/product/accommodations/LocationAdd';
+import LocationList from './pages/product/accommodations/LocationList';
+import LocationEdit from './pages/product/accommodations/LocationEdit';
 import TourTicketList from './components/product/tourTicket/TourTicketList';
 import TourTicketForm from './components/product/tourTicket/TourTicketForm';
 import TourTicketDetail from './components/product/tourTicket/TourTicketDetail';
@@ -77,6 +81,7 @@ const App = () => {
             path="/login"
             element={isAuthenticated ? <Navigate to="/profile" /> : <AuthPages.Login />}
           />
+          <Route path="/google/callback" element={<GoogleLoginCallback />} />
           <Route path="/kakao/callback" element={<KakaoLoginCallback />} />
           <Route path="/naver/callback" element={<NaverLoginCallback />} />
           <Route path="/facebook/callback" element={<FacebookLoginCallback />} />
@@ -115,6 +120,12 @@ const App = () => {
             />
             <Route path="/product/room/new" element={<RoomNew />} />
             <Route path="/product/room/modify/:roomId" element={<RoomModify />} />
+            <Route path="/product/locations/new" element={<LocationAdd />} />
+            <Route path="/product/locations/list" element={<LocationList />} />
+            <Route
+              path="/product/locations/Edit/:locationId"
+              element={<LocationEdit />}
+            />
             {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
             {/* <Route path="/admin/settings" element={<AdminSettings />} /> */}
             <Route path="/product" element={<ProductPage />} />

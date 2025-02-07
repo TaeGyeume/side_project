@@ -150,10 +150,15 @@ exports.deleteAccommodation = async (req, res) => {
 
 exports.getAllAccommodations = async (req, res) => {
   try {
-    const accommodations = await accommodationService.getAllAccommodations();
-    res.status(200).json(accommodations);
+    const {page = 1, limit = 6} = req.query; // 기본 페이지 1, 기본 개수 6개
+    const accommodationsData = await accommodationService.getAllAccommodations(
+      page,
+      limit
+    );
+
+    res.json(accommodationsData);
   } catch (error) {
-    res.status(500).json({message: error.message});
+    res.status(500).json({error: error.message});
   }
 };
 
@@ -161,11 +166,14 @@ exports.getAllAccommodations = async (req, res) => {
 exports.searchAccommodationsByName = async (req, res) => {
   try {
     const {name} = req.query;
+    console.log('🔍 검색어:', name);
     if (!name) {
       return res.status(400).json({message: '검색할 숙소 이름을 입력해주세요.'});
     }
 
+    console.log('✅ 검색 요청 수행');
     const accommodations = await accommodationService.getAccommodationsByName(name);
+    console.log('✅ 검색 결과:', accommodations);
     res.status(200).json(accommodations);
   } catch (error) {
     res.status(500).json({message: '숙소 이름 검색 중 오류 발생', error: error.message});
