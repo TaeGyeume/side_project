@@ -23,7 +23,7 @@ const Profile = () => {
 
   const {checkAuth} = useAuthStore();
 
-  // ✅ 사용자 프로필 불러오기
+  //  사용자 프로필 불러오기
   useEffect(() => {
     const fetchProfile = async () => {
       try {
