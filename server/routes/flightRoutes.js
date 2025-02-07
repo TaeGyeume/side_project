@@ -16,7 +16,6 @@ router.get('/', async (req, res) => {
 });
 
 // ✈️ 항공편 검색 API
-// ✈️ 항공편 검색 API
 router.get('/search', async (req, res) => {
   try {
     const {departure, arrival, date} = req.query;
@@ -58,11 +57,9 @@ router.get('/search', async (req, res) => {
     console.log(`🔍 필터링된 결과:`, filteredFlights);
 
     if (filteredFlights.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message: `🚫 선택한 날짜(${date})(${selectedWeekday})에 운항하는 항공편이 없습니다.`
-        });
+      return res.status(404).json({
+        message: `🚫 선택한 날짜(${date})(${selectedWeekday})에 운항하는 항공편이 없습니다.`
+      });
     }
 
     res.json(filteredFlights);

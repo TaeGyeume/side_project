@@ -1,0 +1,31 @@
+/* LoadingScreen.css */
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5); /* 반투명 배경 추가 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* 다른 요소 위에 표시 */
+}
+
+.loading-screen img {
+  position: absolute;
+  top: center;
+  left: center;
+  width: 50%;
+  height: 50%;
+  object-fit: cover; /* 이미지가 화면에 꽉 차도록 조정 */
+  z-index: -1; /* 이미지가 텍스트 뒤에 오도록 설정 */
+}
+
+.loading-screen p {
+  font-size: 32px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* 텍스트 가독성 향상 */
+  z-index: 2;
+}

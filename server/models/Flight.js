@@ -20,7 +20,7 @@ const flightSchema = new mongoose.Schema(
       time: {type: String, required: true}
     },
 
-    flightNumber: {type: String, required: true, unique: true},
+    flightNumber: {type: String, required: true, unique: false},
     operatingDays: {type: [String], required: true},
 
     price: {type: Number, required: true}, // ✅ 가격 필드 추가
