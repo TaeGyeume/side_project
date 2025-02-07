@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import SearchResultsList from '../../components/flights/SearchResultsList';
 
 const FlightResults = () => {
@@ -11,8 +11,6 @@ const FlightResults = () => {
 
   return (
     <div className="container mt-4">
-      <h2 className="text-center">✈️ 검색된 항공편</h2>
-
       {flights.length === 0 ? (
         <p className="text-danger text-center">🚫 검색된 항공편이 없습니다.</p>
       ) : (
@@ -20,9 +18,7 @@ const FlightResults = () => {
       )}
 
       <div className="text-center mt-3">
-        <button
-          onClick={() => navigate('/flights')}
-          className="btn btn-secondary">
+        <button onClick={() => navigate('/flights')} className="btn btn-secondary">
           🔙 다시 검색하기
         </button>
       </div>
