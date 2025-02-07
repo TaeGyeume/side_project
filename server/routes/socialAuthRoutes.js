@@ -20,6 +20,39 @@ const generateTokens = user => {
 
   return { accessToken, refreshToken };
 };
+// =======================
+// ✅ Google 로그인 라우터
+// =======================
+
+// Google 로그인 시작
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+// Google 콜백 처리
+router.get('/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
+  const tokens = generateTokens(req.user);
+
+  // 액세스 토큰 저장
+  res.cookie('accessToken', tokens.accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+    path: '/',
+    maxAge: 15 * 60 * 1000  // 15분
+  });
+
+  // 리프레시 토큰 저장
+  res.cookie('refreshToken', tokens.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60 * 1000  // 7일
+  });
+
+  // 클라이언트로 리디렉션
+  res.redirect(`${process.env.CLIENT_URL}/google/callback`);
+});
+
 
 // =======================
 // 페이스북 로그인 라우터

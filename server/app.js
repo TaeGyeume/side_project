@@ -16,6 +16,8 @@ const flightRoutes = require('./routes/flightRoutes'); // ✈️ 항공편 라�
 const reservationRoutes = require('./routes/reservationRoutes'); // 🎫 예약 라우트 추가
 const socialAuthRoutes = require('./routes/socialAuthRoutes'); // 소셜 로그인 라우트 추가
 const userTourTicketRoutes = require('./routes/tourTicket/userTourTicketRoutes');
+const authMiddleware = require('./middleware/authMiddleware'); // ✅ JWT 인증 미들웨어 추가
+const authorizeRoles = require('./middleware/authorizeRoles'); // ✅ 역할 기반 접근 제어 추가
 
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -37,7 +39,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(passport.initialize()); // Passport 초기화 추가
 
@@ -55,18 +57,10 @@ app.use('/product', productRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/tourTicket', userTourTicketRoutes);
 
-// 리프레시 토큰 엔드포인트
-// app.post('/api/auth/refresh-token', (req, res) => {
-//   const newToken = 'new_refresh_token'; // 실제 토큰 생성 로직 필요
-
-//   res.cookie('refreshToken', newToken, {
-//     ...cookieOptions,
-//     httpOnly: true,
-//     secure: false // 로컬 환경에서는 false 설정 유지
-//   });
-
-//   res.status(200).json({ message: '토큰 갱신 성공' });
-// });
+//테스트용
+app.post('/api/admin', authMiddleware, authorizeRoles('admin'), (req, res) => {
+  res.json({ message: '관리자 전용 페이지' });
+});
 
 // 에러 핸들러
 app.use((err, req, res, next) => {
