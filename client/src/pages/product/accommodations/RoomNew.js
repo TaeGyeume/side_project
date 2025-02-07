@@ -48,10 +48,13 @@ const RoomNew = () => {
   // 🔹 파일 업로드 핸들러 (미리보기 포함)
   const handleFileChange = e => {
     const files = Array.from(e.target.files);
-    const newPreviews = files.map(file => URL.createObjectURL(file));
+    const newFiles = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file) // ✅ preview 속성 추가
+    }));
 
-    setPreviewImages([...previewImages, ...newPreviews]);
-    setNewImages([...newImages, ...files]);
+    setPreviewImages(prev => [...prev, ...newFiles.map(f => f.preview)]);
+    setNewImages(prev => [...prev, ...newFiles]); // ✅ 새 이미지 저장
   };
 
   // ✅ 이미지 삭제 핸들러
@@ -59,10 +62,8 @@ const RoomNew = () => {
     console.log('🛑 삭제할 이미지:', imageUrl);
 
     if (imageUrl.startsWith('blob:')) {
-      // 새로 추가한 이미지인 경우 `newImages`에서도 삭제
-      setNewImages(prev => prev.filter(img => img.url !== imageUrl));
+      setNewImages(prev => prev.filter(img => img.preview !== imageUrl)); // ✅ 정확하게 제거
     } else {
-      // 기존 업로드된 이미지인 경우 삭제 리스트에 추가
       setImagesToDelete(prev => [...prev, imageUrl]);
       setFormData(prev => ({
         ...prev,
@@ -70,7 +71,6 @@ const RoomNew = () => {
       }));
     }
 
-    // ✅ previewImages에서도 제거
     setPreviewImages(prev => prev.filter(img => img !== imageUrl));
   };
 
@@ -92,9 +92,20 @@ const RoomNew = () => {
     const remainingImages = formData.images.filter(img => !imagesToDelete.includes(img));
     newRoomData.append('existingImages', JSON.stringify(remainingImages));
 
-    // ✅ 새로 업로드한 이미지 중 삭제되지 않은 파일만 추가
-    const filteredNewImages = newImages.filter(img => previewImages.includes(img.url));
-    filteredNewImages.forEach(image => newRoomData.append('images', image.file));
+    // ✅ `newImages`에서 삭제된 이미지를 제외하고 남은 이미지만 추가
+    const finalNewImages = newImages
+      .filter(img => !imagesToDelete.includes(img.preview)) // `preview` 값 기준으로 삭제 여부 확인
+      .map(img => img.file); // ✅ `File` 객체만 추출
+
+    console.log('📌 최종 업로드할 새로운 이미지:', finalNewImages);
+
+    if (finalNewImages.length > 0) {
+      finalNewImages.forEach(image => {
+        newRoomData.append('images', image);
+      });
+    } else {
+      console.log('🚨 업로드할 새 이미지 없음!');
+    }
 
     try {
       console.log('📌 삭제할 이미지 리스트:', imagesToDelete);

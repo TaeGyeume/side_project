@@ -79,38 +79,6 @@ const RoomModify = () => {
     setFormData({...formData, amenities: newAmenities});
   };
 
-  // 🔹 파일 업로드 핸들러 (미리보기 포함)
-  const handleFileChange = e => {
-    const files = Array.from(e.target.files);
-    const newPreviews = files.map(file => URL.createObjectURL(file));
-
-    setPreviewImages([...previewImages, ...newPreviews]);
-    setNewImages([...newImages, ...files]);
-  };
-
-  // ✅ 이미지 삭제 핸들러 (UI에서만 제거, 실제 삭제는 수정 완료 후 실행)
-  const handleDeleteImage = imageUrl => {
-    console.log('🛑 삭제할 이미지:', imageUrl);
-
-    if (imageUrl.startsWith('blob:')) {
-      setNewImages(prev => prev.filter(img => URL.createObjectURL(img) !== imageUrl));
-      setPreviewImages(prev => prev.filter(img => img !== imageUrl));
-    } else {
-      const fullImagePath = imageUrl.startsWith('http')
-        ? imageUrl
-        : `${SERVER_URL}${imageUrl}`;
-
-      setImagesToDelete(prev => [...prev, fullImagePath]);
-
-      setPreviewImages(prev => prev.filter(img => img !== imageUrl));
-
-      setFormData(prev => ({
-        ...prev,
-        images: prev.images.filter(img => img !== imageUrl.replace(SERVER_URL, ''))
-      }));
-    }
-  };
-
   useEffect(() => {
     const fetchRoom = async () => {
       try {
@@ -144,6 +112,62 @@ const RoomModify = () => {
     fetchRoom();
   }, [roomId]);
 
+  // 🔹 파일 업로드 핸들러 (미리보기 포함)
+  const handleFileChange = e => {
+    const files = Array.from(e.target.files);
+    const newFiles = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file) // ✅ preview 속성 추가
+    }));
+
+    setPreviewImages(prev => [...prev, ...newFiles.map(f => f.preview)]);
+    setNewImages(prev => [...prev, ...newFiles]); // ✅ 새 이미지 저장
+  };
+
+  // ✅ 이미지 삭제 핸들러 (UI & 데이터에서 정확히 삭제)
+  const handleDeleteImage = imageUrl => {
+    console.log('🛑 삭제할 이미지:', imageUrl);
+
+    if (imageUrl.startsWith('blob:')) {
+      setNewImages(prev => {
+        return prev.filter(img => {
+          if (img.preview === imageUrl) {
+            return false; // ✅ 정확히 제거
+          }
+          return true;
+        });
+      });
+    } else {
+      const fullImagePath = imageUrl.startsWith('http')
+        ? imageUrl
+        : `${SERVER_URL}${imageUrl}`;
+
+      setImagesToDelete(prev => [...prev, fullImagePath]);
+
+      setFormData(prev => ({
+        ...prev,
+        images: prev.images.filter(img => img !== fullImagePath.replace(SERVER_URL, ''))
+      }));
+    }
+
+    setPreviewImages(prev => prev.filter(img => img !== imageUrl));
+  };
+
+  // ✅ blob: URL에 해당하는 File.name 찾기 함수
+  // const findFileNameByBlob = (file, blobUrl) => {
+  //   const tempUrl = URL.createObjectURL(file);
+  //   return tempUrl === blobUrl ? file.name : null;
+  // };
+
+  // ✅ 기존 이미지 삭제된 경우 newImages에서도 제거
+  useEffect(() => {
+    setNewImages(prev =>
+      prev.filter(img => {
+        return !imagesToDelete.some(deletedImg => deletedImg === img.preview);
+      })
+    );
+  }, [imagesToDelete]);
+
   // ✅ 수정 요청 핸들러 (FormData로 업로드)
   const handleSubmit = async e => {
     e.preventDefault();
@@ -151,9 +175,8 @@ const RoomModify = () => {
     console.log('🚀 최종 삭제할 이미지 목록 전송:', imagesToDelete);
 
     try {
-      // ✅ 삭제 요청 전에 `blob:` URL 필터링
       const formattedDeletedImages = imagesToDelete
-        .filter(img => !img.startsWith('blob:')) // 🔥 `blob:` URL 제거
+        .filter(img => !img.startsWith('blob:'))
         .map(img => (img.startsWith(SERVER_URL) ? img.replace(SERVER_URL, '') : img));
 
       console.log('🗑️ DELETE 요청 전송 (삭제할 이미지):', formattedDeletedImages);
@@ -161,18 +184,12 @@ const RoomModify = () => {
       if (formattedDeletedImages.length > 0) {
         await axios.post(
           `/rooms/${roomId}/images/delete`,
-          {
-            deletedImages: formattedDeletedImages
-          },
-          {
-            headers: {'Content-Type': 'application/json'}
-          }
+          {deletedImages: formattedDeletedImages},
+          {headers: {'Content-Type': 'application/json'}}
         );
-
         console.log('✅ 이미지 삭제 완료!');
       }
 
-      // ✅ PATCH 요청으로 나머지 객실 정보 업데이트
       const updatedRoomData = new FormData();
       updatedRoomData.append('name', formData.name);
       updatedRoomData.append('description', formData.description);
@@ -182,23 +199,26 @@ const RoomModify = () => {
       updatedRoomData.append('availableCount', formData.availableCount);
       updatedRoomData.append('amenities', JSON.stringify(formData.amenities));
 
-      // ✅ 기존 이미지 중 삭제되지 않은 이미지만 유지
       const remainingImages = formData.images
         .filter(img => !imagesToDelete.includes(`${SERVER_URL}${img}`))
-        .map(img => `${SERVER_URL}${img}`);
+        .map(img => img.replace(SERVER_URL, ''));
 
-      console.log('📌 기존 이미지 중 유지할 이미지 목록:', remainingImages);
       updatedRoomData.append('existingImages', JSON.stringify(remainingImages));
 
-      // ✅ `newImages`에서도 삭제된 이미지 제거
-      const filteredNewImages = newImages.filter(img =>
-        previewImages.some(preview => preview.includes(img.name))
-      );
+      // ✅ `newImages`에서 삭제된 이미지를 제외하고 남은 이미지만 추가
+      const finalNewImages = newImages
+        .filter(img => !imagesToDelete.includes(img.preview)) // `preview` 값 기준으로 삭제 여부 확인
+        .map(img => img.file); // ✅ `File` 객체만 추출
 
-      console.log('📌 최종 업로드할 새로운 이미지:', filteredNewImages);
+      console.log('📌 최종 업로드할 새로운 이미지:', finalNewImages);
 
-      // ✅ 새로 업로드한 이미지 추가
-      filteredNewImages.forEach(image => updatedRoomData.append('images', image));
+      if (finalNewImages.length > 0) {
+        finalNewImages.forEach(image => {
+          updatedRoomData.append('images', image);
+        });
+      } else {
+        console.log('🚨 업로드할 새 이미지 없음!');
+      }
 
       console.log('📌 PATCH 요청 전송 (객실 수정)');
       await axios.patch(`/rooms/${roomId}`, updatedRoomData, {

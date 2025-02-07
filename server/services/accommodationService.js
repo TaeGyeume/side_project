@@ -297,14 +297,60 @@ exports.deleteAccommodation = async accommodationId => {
       throw new Error('숙소를 찾을 수 없습니다.');
     }
 
-    // 2️⃣ 해당 숙소에 속한 모든 방 삭제
+    console.log(`🛑 숙소 삭제 시작: ${accommodationId}`);
+
+    // 2️⃣ 해당 숙소에 속한 모든 객실(Room) 찾기
+    const rooms = await Room.find({accommodation: accommodationId});
+
+    // 3️⃣ 객실의 모든 이미지 삭제
+    rooms.forEach(room => {
+      if (room.images && room.images.length > 0) {
+        room.images.forEach(imageUrl => {
+          const absoluteFilePath = path.join(
+            __dirname,
+            '../uploads',
+            imageUrl.replace('/uploads/', '')
+          );
+
+          if (fs.existsSync(absoluteFilePath)) {
+            fs.unlinkSync(absoluteFilePath); // ✅ 동기 방식으로 삭제
+            console.log(`✅ 객실 이미지 삭제 성공: ${absoluteFilePath}`);
+          } else {
+            console.warn(`⚠️ 객실 이미지 파일이 존재하지 않음: ${absoluteFilePath}`);
+          }
+        });
+      }
+    });
+
+    // 4️⃣ 숙소의 모든 이미지 삭제
+    if (existingAccommodation.images && existingAccommodation.images.length > 0) {
+      existingAccommodation.images.forEach(imageUrl => {
+        const absoluteFilePath = path.join(
+          __dirname,
+          '../uploads',
+          imageUrl.replace('/uploads/', '')
+        );
+
+        if (fs.existsSync(absoluteFilePath)) {
+          fs.unlinkSync(absoluteFilePath); // ✅ 동기 방식으로 삭제
+          console.log(`✅ 숙소 이미지 삭제 성공: ${absoluteFilePath}`);
+        } else {
+          console.warn(`⚠️ 숙소 이미지 파일이 존재하지 않음: ${absoluteFilePath}`);
+        }
+      });
+    }
+
+    // 5️⃣ 해당 숙소에 속한 모든 객실 삭제
     await Room.deleteMany({accommodation: accommodationId});
 
-    // 3️⃣ 숙소 삭제
+    // 6️⃣ 숙소 삭제
     await Accommodation.findByIdAndDelete(accommodationId);
 
-    return {message: '숙소 및 해당 숙소의 모든 방이 삭제되었습니다.'};
+    console.log(`🚀 숙소 및 관련 데이터 삭제 완료: ${accommodationId}`);
+
+    return {message: '숙소 및 해당 숙소의 모든 객실과 이미지가 삭제되었습니다.'};
   } catch (error) {
+    console.error('❌ 숙소 삭제 중 오류 발생:', error);
     throw new Error('숙소 삭제 중 오류 발생: ' + error.message);
   }
 };
