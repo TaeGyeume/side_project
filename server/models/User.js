@@ -39,8 +39,7 @@ const UserSchema = new mongoose.Schema(
     },
     socialId: {
       type: String,  // 소셜 로그인 ID (Facebook, Google, Naver, Kakao)
-      unique: true,  //  소셜 로그인 시 중복 방지
-      default: null,
+      default: undefined,
       sparse: true
     },
     membershipLevel: {
