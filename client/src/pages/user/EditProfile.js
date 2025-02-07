@@ -153,7 +153,8 @@ const EditProfile = () => {
             </p>
             <button
               className="btn btn-outline-primary btn-sm"
-              onClick={() => openModal(key)}>
+              onClick={() => openModal(key)}
+            >
               수정
             </button>
           </div>
@@ -166,7 +167,8 @@ const EditProfile = () => {
           className="modal fade show d-block"
           tabIndex="-1"
           role="dialog"
-          style={{background: 'rgba(0,0,0,0.5)'}}>
+          style={{background: 'rgba(0,0,0,0.5)'}}
+        >
           <div className="modal-dialog" role="document">
             <div className="modal-content">
               <div className="modal-header">
@@ -174,7 +176,8 @@ const EditProfile = () => {
                 <button
                   type="button"
                   className="close"
-                  onClick={() => setShowModal(false)}>
+                  onClick={() => setShowModal(false)}
+                >
                   &times;
                 </button>
               </div>
@@ -189,7 +192,8 @@ const EditProfile = () => {
                 {['userid', 'email', 'phone'].includes(editingField) && (
                   <button
                     className="btn btn-outline-secondary mt-2"
-                    onClick={() => handleCheckDuplicate(editingField)}>
+                    onClick={() => handleCheckDuplicate(editingField)}
+                  >
                     중복 확인
                   </button>
                 )}
@@ -203,7 +207,8 @@ const EditProfile = () => {
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  onClick={() => setShowModal(false)}>
+                  onClick={() => setShowModal(false)}
+                >
                   닫기
                 </button>
                 <button type="button" className="btn btn-primary" onClick={handleSubmit}>

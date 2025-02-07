@@ -325,7 +325,8 @@ const RoomModify = () => {
               <button
                 type="button"
                 className="btn btn-danger"
-                onClick={() => handleRemoveAmenity(index)}>
+                onClick={() => handleRemoveAmenity(index)}
+              >
                 삭제
               </button>
             </div>
@@ -333,7 +334,8 @@ const RoomModify = () => {
           <button
             type="button"
             className="btn btn-secondary mt-2"
-            onClick={handleAddAmenity}>
+            onClick={handleAddAmenity}
+          >
             + 추가
           </button>
         </div>
@@ -358,7 +360,8 @@ const RoomModify = () => {
                 <button
                   type="button"
                   className="btn btn-danger btn-sm"
-                  onClick={() => handleDeleteImage(image)}>
+                  onClick={() => handleDeleteImage(image)}
+                >
                   삭제
                 </button>
               </div>

@@ -18,7 +18,7 @@ export const fetchFlights = async () => {
 export const searchFlights = async (departure, arrival, date) => {
   try {
     const response = await axios.get(`${API_URL}/flights/search`, {
-      params: { departure, arrival, date }
+      params: {departure, arrival, date}
     });
     return response.data;
   } catch (error) {
