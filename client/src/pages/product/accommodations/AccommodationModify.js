@@ -176,23 +176,42 @@ const AccommodationModify = () => {
 
     console.log('📌 변환된 좌표 데이터:', JSON.stringify(coordinates));
 
-    const updatedFormData = new FormData();
-    updatedFormData.append('name', formData.name);
-    updatedFormData.append('description', formData.description);
-    updatedFormData.append('location', formData.location);
-    updatedFormData.append('address', formData.address);
-    updatedFormData.append('category', formData.category);
-    updatedFormData.append('coordinates', JSON.stringify(coordinates));
-    updatedFormData.append('amenities', JSON.stringify(formData.amenities));
-
-    // ✅ 기존 이미지 유지 (삭제되지 않은 이미지만 추가)
-    const remainingImages = formData.images.filter(img => !imagesToDelete.includes(img));
-    updatedFormData.append('existingImages', JSON.stringify(remainingImages));
-
-    // ✅ 새로 업로드한 이미지 중 삭제되지 않은 파일만 추가
-    newImages.forEach(image => updatedFormData.append('images', image.file));
-
     try {
+      // ✅ 이미지 삭제 요청을 먼저 보낸다.
+      if (imagesToDelete.length > 0) {
+        for (const image of imagesToDelete) {
+          console.log('📌 이미지 삭제 요청:', image);
+
+          await axios.delete(`/accommodations/${accommodationId}/images`, {
+            data: {imageUrl: image}, // ✅ DELETE 요청에서는 `data` 속성을 사용해야 한다.
+            headers: {'Content-Type': 'application/json'}
+          });
+
+          console.log('✅ 이미지 삭제 성공:', image);
+        }
+      }
+
+      console.log('📌 삭제된 이미지 리스트:', imagesToDelete);
+
+      // ✅ 숙소 업데이트 요청
+      const updatedFormData = new FormData();
+      updatedFormData.append('name', formData.name);
+      updatedFormData.append('description', formData.description);
+      updatedFormData.append('location', formData.location);
+      updatedFormData.append('address', formData.address);
+      updatedFormData.append('category', formData.category);
+      updatedFormData.append('coordinates', JSON.stringify(coordinates));
+      updatedFormData.append('amenities', JSON.stringify(formData.amenities));
+
+      // ✅ 기존 이미지 유지 (삭제되지 않은 이미지만 추가)
+      const remainingImages = formData.images.filter(
+        img => !imagesToDelete.includes(img)
+      );
+      updatedFormData.append('existingImages', JSON.stringify(remainingImages));
+
+      // ✅ 새로 업로드한 이미지 중 삭제되지 않은 파일만 추가
+      newImages.forEach(image => updatedFormData.append('images', image.file));
+
       console.log('📌 전송할 FormData 확인:');
       for (let pair of updatedFormData.entries()) {
         console.log(pair[0], pair[1]);

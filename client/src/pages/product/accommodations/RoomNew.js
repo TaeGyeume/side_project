@@ -21,6 +21,7 @@ const RoomNew = () => {
 
   const [previewImages, setPreviewImages] = useState([]);
   const [newImages, setNewImages] = useState([]);
+  const [imagesToDelete, setImagesToDelete] = useState([]);
 
   // 🔹 입력값 변경 핸들러
   const handleChange = e => {
@@ -53,6 +54,26 @@ const RoomNew = () => {
     setNewImages([...newImages, ...files]);
   };
 
+  // ✅ 이미지 삭제 핸들러
+  const handleDeleteImage = imageUrl => {
+    console.log('🛑 삭제할 이미지:', imageUrl);
+
+    if (imageUrl.startsWith('blob:')) {
+      // 새로 추가한 이미지인 경우 `newImages`에서도 삭제
+      setNewImages(prev => prev.filter(img => img.url !== imageUrl));
+    } else {
+      // 기존 업로드된 이미지인 경우 삭제 리스트에 추가
+      setImagesToDelete(prev => [...prev, imageUrl]);
+      setFormData(prev => ({
+        ...prev,
+        images: prev.images.filter(img => img !== imageUrl)
+      }));
+    }
+
+    // ✅ previewImages에서도 제거
+    setPreviewImages(prev => prev.filter(img => img !== imageUrl));
+  };
+
   // ✅ 생성 요청 핸들러 (FormData로 업로드)
   const handleSubmit = async e => {
     e.preventDefault();
@@ -67,10 +88,27 @@ const RoomNew = () => {
     newRoomData.append('availableCount', formData.availableCount);
     newRoomData.append('amenities', JSON.stringify(formData.amenities));
 
-    // ✅ 새로 업로드한 이미지 추가
-    newImages.forEach(image => newRoomData.append('images', image));
+    // ✅ 기존 이미지 중 삭제되지 않은 이미지만 유지
+    const remainingImages = formData.images.filter(img => !imagesToDelete.includes(img));
+    newRoomData.append('existingImages', JSON.stringify(remainingImages));
+
+    // ✅ 새로 업로드한 이미지 중 삭제되지 않은 파일만 추가
+    const filteredNewImages = newImages.filter(img => previewImages.includes(img.url));
+    filteredNewImages.forEach(image => newRoomData.append('images', image.file));
 
     try {
+      console.log('📌 삭제할 이미지 리스트:', imagesToDelete);
+
+      // ✅ 이미지 삭제 요청 (이미 존재하는 이미지 삭제)
+      if (imagesToDelete.length > 0) {
+        await axios.post(
+          `/rooms/${formData.accommodation}/images/delete`,
+          {deletedImages: imagesToDelete},
+          {headers: {'Content-Type': 'application/json'}}
+        );
+      }
+
+      // ✅ 새 객실 생성 요청
       await axios.post('/rooms', newRoomData, {
         headers: {'Content-Type': 'multipart/form-data'}
       });
@@ -195,11 +233,18 @@ const RoomNew = () => {
           />
         </div>
 
+        {/* 🔹 업로드한 이미지 미리보기 및 삭제 */}
         {previewImages.length > 0 && (
           <div className="image-preview">
             {previewImages.map((image, index) => (
               <div key={index} className="preview-container">
                 <img src={image} alt={`preview-${index}`} className="preview-image" />
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={() => handleDeleteImage(image)}>
+                  삭제
+                </button>
               </div>
             ))}
           </div>
