@@ -21,6 +21,7 @@ const RoomNew = () => {
 
   const [previewImages, setPreviewImages] = useState([]);
   const [newImages, setNewImages] = useState([]);
+  const [imagesToDelete, setImagesToDelete] = useState([]);
 
   // 🔹 입력값 변경 핸들러
   const handleChange = e => {
@@ -47,10 +48,30 @@ const RoomNew = () => {
   // 🔹 파일 업로드 핸들러 (미리보기 포함)
   const handleFileChange = e => {
     const files = Array.from(e.target.files);
-    const newPreviews = files.map(file => URL.createObjectURL(file));
+    const newFiles = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file) // ✅ preview 속성 추가
+    }));
 
-    setPreviewImages([...previewImages, ...newPreviews]);
-    setNewImages([...newImages, ...files]);
+    setPreviewImages(prev => [...prev, ...newFiles.map(f => f.preview)]);
+    setNewImages(prev => [...prev, ...newFiles]); // ✅ 새 이미지 저장
+  };
+
+  // ✅ 이미지 삭제 핸들러
+  const handleDeleteImage = imageUrl => {
+    console.log('🛑 삭제할 이미지:', imageUrl);
+
+    if (imageUrl.startsWith('blob:')) {
+      setNewImages(prev => prev.filter(img => img.preview !== imageUrl)); // ✅ 정확하게 제거
+    } else {
+      setImagesToDelete(prev => [...prev, imageUrl]);
+      setFormData(prev => ({
+        ...prev,
+        images: prev.images.filter(img => img !== imageUrl)
+      }));
+    }
+
+    setPreviewImages(prev => prev.filter(img => img !== imageUrl));
   };
 
   // ✅ 생성 요청 핸들러 (FormData로 업로드)
@@ -67,10 +88,38 @@ const RoomNew = () => {
     newRoomData.append('availableCount', formData.availableCount);
     newRoomData.append('amenities', JSON.stringify(formData.amenities));
 
-    // ✅ 새로 업로드한 이미지 추가
-    newImages.forEach(image => newRoomData.append('images', image));
+    // ✅ 기존 이미지 중 삭제되지 않은 이미지만 유지
+    const remainingImages = formData.images.filter(img => !imagesToDelete.includes(img));
+    newRoomData.append('existingImages', JSON.stringify(remainingImages));
+
+    // ✅ `newImages`에서 삭제된 이미지를 제외하고 남은 이미지만 추가
+    const finalNewImages = newImages
+      .filter(img => !imagesToDelete.includes(img.preview)) // `preview` 값 기준으로 삭제 여부 확인
+      .map(img => img.file); // ✅ `File` 객체만 추출
+
+    console.log('📌 최종 업로드할 새로운 이미지:', finalNewImages);
+
+    if (finalNewImages.length > 0) {
+      finalNewImages.forEach(image => {
+        newRoomData.append('images', image);
+      });
+    } else {
+      console.log('🚨 업로드할 새 이미지 없음!');
+    }
 
     try {
+      console.log('📌 삭제할 이미지 리스트:', imagesToDelete);
+
+      // ✅ 이미지 삭제 요청 (이미 존재하는 이미지 삭제)
+      if (imagesToDelete.length > 0) {
+        await axios.post(
+          `/rooms/${formData.accommodation}/images/delete`,
+          {deletedImages: imagesToDelete},
+          {headers: {'Content-Type': 'application/json'}}
+        );
+      }
+
+      // ✅ 새 객실 생성 요청
       await axios.post('/rooms', newRoomData, {
         headers: {'Content-Type': 'multipart/form-data'}
       });
@@ -195,11 +244,18 @@ const RoomNew = () => {
           />
         </div>
 
+        {/* 🔹 업로드한 이미지 미리보기 및 삭제 */}
         {previewImages.length > 0 && (
           <div className="image-preview">
             {previewImages.map((image, index) => (
               <div key={index} className="preview-container">
                 <img src={image} alt={`preview-${index}`} className="preview-image" />
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={() => handleDeleteImage(image)}>
+                  삭제
+                </button>
               </div>
             ))}
           </div>

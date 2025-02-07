@@ -199,7 +199,9 @@ exports.getAvailableRoomsByAccommodation = async ({
 }) => {
   try {
     // 1️⃣ **해당 숙소(Accommodation) 존재 여부 확인**
-    const accommodation = await Accommodation.findById(accommodationId);
+    const accommodation = await Accommodation.findById(accommodationId)
+      .populate('location') // ✅ location 필드의 실제 데이터 가져오기
+      .exec();
     if (!accommodation) {
       throw new Error('해당 숙소를 찾을 수 없습니다.');
     }
@@ -297,21 +299,80 @@ exports.deleteAccommodation = async accommodationId => {
       throw new Error('숙소를 찾을 수 없습니다.');
     }
 
-    // 2️⃣ 해당 숙소에 속한 모든 방 삭제
+    console.log(`🛑 숙소 삭제 시작: ${accommodationId}`);
+
+    // 2️⃣ 해당 숙소에 속한 모든 객실(Room) 찾기
+    const rooms = await Room.find({accommodation: accommodationId});
+
+    // 3️⃣ 객실의 모든 이미지 삭제
+    rooms.forEach(room => {
+      if (room.images && room.images.length > 0) {
+        room.images.forEach(imageUrl => {
+          const absoluteFilePath = path.join(
+            __dirname,
+            '../uploads',
+            imageUrl.replace('/uploads/', '')
+          );
+
+          if (fs.existsSync(absoluteFilePath)) {
+            fs.unlinkSync(absoluteFilePath); // ✅ 동기 방식으로 삭제
+            console.log(`✅ 객실 이미지 삭제 성공: ${absoluteFilePath}`);
+          } else {
+            console.warn(`⚠️ 객실 이미지 파일이 존재하지 않음: ${absoluteFilePath}`);
+          }
+        });
+      }
+    });
+
+    // 4️⃣ 숙소의 모든 이미지 삭제
+    if (existingAccommodation.images && existingAccommodation.images.length > 0) {
+      existingAccommodation.images.forEach(imageUrl => {
+        const absoluteFilePath = path.join(
+          __dirname,
+          '../uploads',
+          imageUrl.replace('/uploads/', '')
+        );
+
+        if (fs.existsSync(absoluteFilePath)) {
+          fs.unlinkSync(absoluteFilePath); // ✅ 동기 방식으로 삭제
+          console.log(`✅ 숙소 이미지 삭제 성공: ${absoluteFilePath}`);
+        } else {
+          console.warn(`⚠️ 숙소 이미지 파일이 존재하지 않음: ${absoluteFilePath}`);
+        }
+      });
+    }
+
+    // 5️⃣ 해당 숙소에 속한 모든 객실 삭제
     await Room.deleteMany({accommodation: accommodationId});
 
-    // 3️⃣ 숙소 삭제
+    // 6️⃣ 숙소 삭제
     await Accommodation.findByIdAndDelete(accommodationId);
 
-    return {message: '숙소 및 해당 숙소의 모든 방이 삭제되었습니다.'};
+    console.log(`🚀 숙소 및 관련 데이터 삭제 완료: ${accommodationId}`);
+
+    return {message: '숙소 및 해당 숙소의 모든 객실과 이미지가 삭제되었습니다.'};
   } catch (error) {
+    console.error('❌ 숙소 삭제 중 오류 발생:', error);
     throw new Error('숙소 삭제 중 오류 발생: ' + error.message);
   }
 };
 
-exports.getAllAccommodations = async () => {
+exports.getAllAccommodations = async (page = 1, limit = 6) => {
   try {
-    return await Accommodation.find().populate('rooms'); // 숙소와 관련된 방 정보도 가져오기
+    const skip = (page - 1) * limit; // 스킵할 데이터 개수
+
+    const accommodations = await Accommodation.find()
+      .populate('rooms') // 숙소와 관련된 방 정보 가져오기
+      .skip(skip) // 이전 페이지 데이터 건너뛰기
+      .limit(parseInt(limit)); // 특정 개수만큼 가져오기
+
+    const totalCount = await Accommodation.countDocuments(); // 전체 숙소 개수
+
+    return {
+      accommodations,
+      totalPages: Math.ceil(totalCount / limit), // 총 페이지 수 계산
+      currentPage: parseInt(page)
+    };
   } catch (error) {
     throw new Error('숙소 목록을 불러오는 중 오류 발생: ' + error.message);
   }
@@ -358,7 +419,10 @@ exports.getAccommodationById = async accommodationId => {
     throw new Error('잘못된 숙소 ID 형식입니다.');
   }
 
-  const accommodation = await Accommodation.findById(accommodationId);
+  const accommodation = await Accommodation.findById(accommodationId)
+    .populate('location') // ✅ location 필드의 실제 데이터를 함께 가져옴
+    .exec();
+
   if (!accommodation) {
     throw new Error('숙소를 찾을 수 없습니다.');
   }

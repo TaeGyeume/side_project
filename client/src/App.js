@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import api from './api/axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { AuthPages, Main, UserPages } from './pages';
+import {BrowserRouter as Router, Route, Routes, Navigate} from 'react-router-dom';
+import {AuthPages, Main, UserPages} from './pages';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import EditProfile from './pages/user/EditProfile';
@@ -11,7 +11,7 @@ import NaverLoginCallback from './components/SocialLogin/NaverLoginCallback';
 import FacebookLoginCallback from './components/SocialLogin/FacebookLoginCallback';
 import KakaoLoginCallback from './components/SocialLogin/KakaoLoginCallback';
 import GoogleLoginCallback from './components/SocialLogin/GoogleLoginCallback';
-import { useAuthStore } from './store/authStore'; // Zustand 스토어
+import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
 import Unauthorized from './pages/Unauthorized'; // 권한 없음 페이지 추가
 // import AdminDashboard from './pages/admin/AdminDashboard'; // 어드민 대시보드 추가
@@ -28,12 +28,14 @@ import AccommodationCreate from './pages/product/accommodations/AccommodationCre
 import AccommodationModify from './pages/product/accommodations/AccommodationModify';
 import RoomNew from './pages/product/accommodations/RoomNew';
 import RoomModify from './pages/product/accommodations/RoomModify';
+import LocationAdd from './pages/product/accommodations/LocationAdd';
+import LocationList from './pages/product/accommodations/LocationList';
+import LocationEdit from './pages/product/accommodations/LocationEdit';
 import TourTicketList from './components/product/tourTicket/TourTicketList';
 import TourTicketForm from './components/product/tourTicket/TourTicketForm';
 import TourTicketDetail from './components/product/tourTicket/TourTicketDetail';
 import TourTicketModify from './components/product/tourTicket/TourTicketModify';
 import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
-
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -62,8 +64,9 @@ const App = () => {
         <h1 className="text-center">Our Real Trip</h1>
         {serverMessage && (
           <div
-            className={`alert ${serverMessage.includes('실패') ? 'alert-danger' : 'alert-success'
-              }`}
+            className={`alert ${
+              serverMessage.includes('실패') ? 'alert-danger' : 'alert-success'
+            }`}
             role="alert">
             {serverMessage}
           </div>
@@ -117,6 +120,12 @@ const App = () => {
             />
             <Route path="/product/room/new" element={<RoomNew />} />
             <Route path="/product/room/modify/:roomId" element={<RoomModify />} />
+            <Route path="/product/locations/new" element={<LocationAdd />} />
+            <Route path="/product/locations/list" element={<LocationList />} />
+            <Route
+              path="/product/locations/Edit/:locationId"
+              element={<LocationEdit />}
+            />
             {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
             {/* <Route path="/admin/settings" element={<AdminSettings />} /> */}
             <Route path="/product" element={<ProductPage />} />

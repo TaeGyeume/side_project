@@ -1,9 +1,12 @@
 // src/components/accommodations/RoomCard.js
 import React from 'react';
 import {useNavigate} from 'react-router-dom';
+import {useAuthStore} from '../../store/authStore';
+import axios from '../../api/axios';
 
-const RoomCard = ({room}) => {
+const RoomCard = ({room, onRoomDeleted}) => {
   const navigate = useNavigate();
+  const {user, isAuthenticated} = useAuthStore();
   const SERVER_URL = 'http://localhost:5000';
 
   // ✅ 이미지가 없는 경우 기본 이미지 설정
@@ -14,7 +17,26 @@ const RoomCard = ({room}) => {
     imageUrl = `${SERVER_URL}${imageUrl}`;
   }
 
-  console.log('Room Image:', imageUrl); // 디버깅용
+  // ✅ 객실 삭제 핸들러
+  const handleDeleteRoom = async () => {
+    const confirmDelete = window.confirm(`"${room.name}" 객실을 삭제하시겠습니까?`);
+    if (!confirmDelete) return;
+
+    try {
+      await axios.delete(`/rooms/${room._id}`);
+
+      alert('✅ 객실이 삭제되었습니다.');
+
+      if (onRoomDeleted) {
+        onRoomDeleted(room._id); // 부모 컴포넌트에서 목록 업데이트
+      } else {
+        window.location.reload(); // 현재 페이지 새로고침
+      }
+    } catch (err) {
+      console.error('❌ 객실 삭제 오류:', err);
+      alert('❌ 객실 삭제에 실패했습니다.');
+    }
+  };
 
   return (
     <div className="card mb-3">
@@ -39,12 +61,24 @@ const RoomCard = ({room}) => {
             <strong>편의시설:</strong> {room.amenities.join(', ')}
           </p>
         )}
-        <button
-          type="button"
-          className="btn btn-warning mt-2"
-          onClick={() => navigate(`/product/room/modify/${room._id}`)}>
-          ✏️ 객실 수정
-        </button>
+        {/* ✅ 관리자인 경우에만 객실 수정 버튼 표시 */}
+        {isAuthenticated && user?.roles.includes('admin') && (
+          <>
+            <button
+              type="button"
+              className="btn btn-warning mt-2"
+              onClick={() => navigate(`/product/room/modify/${room._id}`)}>
+              ✏️ 객실 수정
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-danger mt-2"
+              onClick={handleDeleteRoom}>
+              🗑️ 객실 삭제
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
