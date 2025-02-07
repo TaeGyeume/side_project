@@ -4,8 +4,66 @@ const NaverStrategy = require('passport-naver').Strategy;
 const KakaoStrategy = require('passport-kakao').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');  // User 모델 불러오기
+const jwt = require('jsonwebtoken');
 
 const generateUniqueUserId = () => `user_${new Date().getTime()}_${Math.floor(Math.random() * 1000)}`;
+const secretKey = process.env.JWT_SECRET || 'your_secret_key';
+
+// ✅ JWT 발급 함수
+const generateToken = (user) => {
+  return jwt.sign({ id: user._id, roles: user.roles }, secretKey, { expiresIn: '1h' });
+};
+
+// ✅ Passport 전략에 JWT 발급 로직 추가
+const socialLoginCallback = async (accessToken, refreshToken, profile, done, provider) => {
+  try {
+    let user = await User.findOne({ provider, socialId: profile.id });
+
+    if (!user) {
+      user = new User({
+        userid: generateUniqueUserId(),
+        provider,
+        socialId: profile.id,
+        email: profile.emails?.[0]?.value || '',
+        username: profile.displayName || `${provider} User`,
+        roles: 'user' // ✅ 기본적으로 일반 사용자로 설정
+      });
+      await user.save();
+    }
+
+    const token = generateToken(user); // ✅ JWT 발급
+    return done(null, { user, token }); // ✅ 사용자 + JWT 반환
+  } catch (err) {
+    return done(err, null);
+  }
+};
+
+// ✅ 소셜 로그인 전략 등록
+passport.use(new GoogleStrategy(
+  { clientID: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET, callbackURL: process.env.GOOGLE_CALLBACK_URL },
+  (accessToken, refreshToken, profile, done) => socialLoginCallback(accessToken, refreshToken, profile, done, 'google')
+));
+
+passport.use(new FacebookStrategy(
+  { clientID: process.env.FACEBOOK_APP_ID, clientSecret: process.env.FACEBOOK_APP_SECRET, callbackURL: process.env.FACEBOOK_CALLBACK_URL, profileFields: ['id', 'emails', 'name'] },
+  (accessToken, refreshToken, profile, done) => socialLoginCallback(accessToken, refreshToken, profile, done, 'facebook')
+));
+
+passport.use(new NaverStrategy(
+  { clientID: process.env.NAVER_CLIENT_ID, clientSecret: process.env.NAVER_CLIENT_SECRET, callbackURL: process.env.NAVER_REDIRECT_URI },
+  (accessToken, refreshToken, profile, done) => socialLoginCallback(accessToken, refreshToken, profile, done, 'naver')
+));
+
+passport.use(new KakaoStrategy(
+  { clientID: process.env.KAKAO_CLIENT_ID, clientSecret: process.env.KAKAO_CLIENT_SECRET, callbackURL: process.env.KAKAO_REDIRECT_URI },
+  (accessToken, refreshToken, profile, done) => socialLoginCallback(accessToken, refreshToken, profile, done, 'kakao')
+));
+
+passport.serializeUser((user, done) => done(null, user.id));
+passport.deserializeUser(async (id, done) => {
+  const user = await User.findById(id);
+  done(null, user);
+});
 
 // ✅ Google 로그인 설정
 passport.use(new GoogleStrategy({
