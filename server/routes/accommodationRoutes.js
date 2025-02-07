@@ -18,6 +18,8 @@ router.get(
 router.get('/list', accommodationController.getAllAccommodations);
 // 숙소 업데이트 API (PATCH /api/accommodations/:accommodationId)
 router.patch('/:accommodationId', upload, accommodationController.updateAccommodation);
+// 숙소 이름 검색 API
+router.get('/searchByName', accommodationController.searchAccommodationsByName);
 // 특정 숙소 상세 정보 조회 API
 router.get('/:accommodationId', accommodationController.getAccommodationById);
 // 숙소 이미지 삭제 API (DELETE)
@@ -27,8 +29,5 @@ router.delete(
 );
 // 숙소 삭제 API (DELETE /api/accommodations/:accommodationId)
 router.delete('/:accommodationId', accommodationController.deleteAccommodation);
-// 숙소 이름 검색 API
-router.get('/searchByName', accommodationController.searchAccommodationsByName);
 
 module.exports = router;
- 
