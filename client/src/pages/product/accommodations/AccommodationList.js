@@ -47,6 +47,12 @@ const AccommodationList = ({limit}) => {
             onClick={() => navigate('/product/accommodations/new')}>
             + 숙소 등록
           </button>
+          <button
+            type="button"
+            className="btn btn-primary ml-2"
+            onClick={() => navigate('/product/locations/list')}>
+            📍 위치 리스트
+          </button>
         </>
       )}
       <div className="row">

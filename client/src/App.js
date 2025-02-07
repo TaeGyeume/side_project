@@ -27,6 +27,9 @@ import AccommodationCreate from './pages/product/accommodations/AccommodationCre
 import AccommodationModify from './pages/product/accommodations/AccommodationModify';
 import RoomNew from './pages/product/accommodations/RoomNew';
 import RoomModify from './pages/product/accommodations/RoomModify';
+import LocationAdd from './pages/product/accommodations/LocationAdd';
+import LocationList from './pages/product/accommodations/LocationList';
+import LocationEdit from './pages/product/accommodations/LocationEdit';
 import TourTicketList from './components/product/tourTicket/TourTicketList';
 import TourTicketForm from './components/product/tourTicket/TourTicketForm';
 import TourTicketDetail from './components/product/tourTicket/TourTicketDetail';
@@ -115,6 +118,12 @@ const App = () => {
             />
             <Route path="/product/room/new" element={<RoomNew />} />
             <Route path="/product/room/modify/:roomId" element={<RoomModify />} />
+            <Route path="/product/locations/new" element={<LocationAdd />} />
+            <Route path="/product/locations/list" element={<LocationList />} />
+            <Route
+              path="/product/locations/Edit/:locationId"
+              element={<LocationEdit />}
+            />
             {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
             {/* <Route path="/admin/settings" element={<AdminSettings />} /> */}
             <Route path="/product" element={<ProductPage />} />

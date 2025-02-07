@@ -11,6 +11,39 @@ exports.createLocation = async locationData => {
   }
 };
 
+// ✅ 여행지 수정 함수 (PATCH 지원)
+exports.updateLocation = async (locationId, updateData) => {
+  try {
+    const updatedLocation = await Location.findByIdAndUpdate(locationId, updateData, {
+      new: true, // 업데이트된 데이터 반환
+      runValidators: true // 유효성 검사 실행
+    });
+
+    if (!updatedLocation) {
+      throw new Error('해당 여행지를 찾을 수 없습니다.');
+    }
+
+    return updatedLocation;
+  } catch (error) {
+    throw new Error('여행지 수정 중 오류 발생: ' + error.message);
+  }
+};
+
+// ✅ 여행지 삭제 함수
+exports.deleteLocation = async locationId => {
+  try {
+    const deletedLocation = await Location.findByIdAndDelete(locationId);
+
+    if (!deletedLocation) {
+      throw new Error('해당 여행지를 찾을 수 없습니다.');
+    }
+
+    return deletedLocation;
+  } catch (error) {
+    throw new Error('여행지 삭제 중 오류 발생: ' + error.message);
+  }
+};
+
 // ✅ 모든 여행지 조회 서비스
 exports.getLocations = async () => {
   return await Location.find();
@@ -69,5 +102,20 @@ exports.getCitiesByCountry = async country => {
     return cities;
   } catch (error) {
     throw new Error('도시 목록 조회 중 오류 발생: ' + error.message);
+  }
+};
+
+// ✅ 특정 위치 조회 함수
+exports.getLocationById = async locationId => {
+  try {
+    const location = await Location.findById(locationId);
+
+    if (!location) {
+      throw new Error('해당 위치를 찾을 수 없습니다.');
+    }
+
+    return location;
+  } catch (error) {
+    throw new Error('위치 조회 중 오류 발생: ' + error.message);
   }
 };
