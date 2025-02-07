@@ -4,14 +4,21 @@ import {fetchFlights} from '../../api/flight/flights';
 
 // ✅ 항공사별 로고 파일 매핑
 const AIRLINE_LOGOS = {
-  'KOREAN AIR': 'korean.png',
-  'ASIANA AIRLINE': 'asiana.png'
+  대한항공: 'korean.png',
+  아시아나항공: 'asiana.png',
+  에어서울: 'airseoul.png',
+  이스타항공: 'eastar.png',
+  진에어: 'jinair.png',
+  티웨이항공: 'twayair.png',
+  제주항공: 'jejuair.png'
 };
 
 // ✅ 항공사 한글명 매핑
 const AIRLINE_NAMES = {
   'KOREAN AIR': '대한항공',
-  'ASIANA AIRLINE': '아시아나항공'
+  'ASIANA AIRLINE': '아시아나항공',
+  'AIR SEOUL': '에어서울',
+  'EASTAR JET': '이스타항공'
 };
 
 const FlightList = () => {
@@ -31,56 +38,78 @@ const FlightList = () => {
   }, []);
 
   return (
-    <div className="mt-4">
-      <h2 className="text-2xl font-bold mb-4">✈️ 모든 항공편 리스트</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="container-md mt-4" style={{maxWidth: '900px'}}>
+      <h2 className="fw-bold mb-4 text-center">✈️ 모든 항공편 리스트</h2>
+      <div className="row justify-content-center">
         {flights.length === 0 ? (
-          <p className="text-gray-600">항공편 데이터가 없습니다.</p>
+          <p className="text-muted text-center">🚫 검색된 항공편이 없습니다.</p>
         ) : (
           flights.map(flight => {
-            const logoFile = AIRLINE_LOGOS[flight?.airline] || 'default.png'; // ✅ 기본 로고 처리
-            const airlineKorean = AIRLINE_NAMES[flight?.airline] || flight?.airline; // ✅ 한글명 매핑
+            const logoFile = AIRLINE_LOGOS[flight?.airline] || 'default.png';
+            const airlineKorean = AIRLINE_NAMES[flight?.airline] || flight?.airline;
             return (
-              <div
-                key={flight?._id}
-                className="border p-4 rounded-lg shadow-md flex items-center space-x-4">
-                <div className="d-flex align-items-center">
-                  <img
-                    src={`/images/logos/${logoFile}`}
-                    alt={airlineKorean}
-                    className="img-fluid me-2"
-                    style={{maxWidth: '24px', maxHeight: '24px'}}
-                  />
-                  <h3 className="text-lg font-semibold">
-                    {airlineKorean} ({flight?.flightNumber}) {/* ✅ 한글명 적용 */}
-                  </h3>
+              <div key={flight?._id} className="col-12 mb-3">
+                <div
+                  className="card p-3 shadow-sm d-flex flex-row align-items-center"
+                  style={{minHeight: '80px'}}>
+                  {/* 항공사 로고 및 정보 */}
+                  <div
+                    className="d-flex align-items-center me-3"
+                    style={{flexBasis: '200px'}}>
+                    <img
+                      src={`/images/logos/${logoFile}`}
+                      alt={airlineKorean}
+                      className="img-fluid"
+                      style={{width: '40px', height: '40px'}}
+                    />
+                    <div className="ms-2">
+                      <h6 className="mb-1">{airlineKorean}</h6>
+                      <small className="text-muted">{flight?.flightNumber}</small>
+                    </div>
+                  </div>
+
+                  {/* 출발 시간 */}
+                  <div className="text-center" style={{flexBasis: '150px'}}>
+                    <p className="fs-5 fw-bold mb-0">
+                      {flight?.departure?.time
+                        ? moment(flight?.departure?.time).tz('Asia/Seoul').format('HH:mm')
+                        : '시간 미정'}
+                    </p>
+                    <small className="text-muted">{flight?.departure?.airport}</small>
+                  </div>
+
+                  {/* 방향 아이콘 */}
+                  <div className="fs-5 text-muted mx-2">→</div>
+
+                  {/* 도착 시간 */}
+                  <div className="text-center" style={{flexBasis: '150px'}}>
+                    <p className="fs-5 fw-bold mb-0">
+                      {flight?.arrival?.time
+                        ? moment(flight?.arrival?.time).tz('Asia/Seoul').format('HH:mm')
+                        : '시간 미정'}
+                    </p>
+                    <small className="text-muted">{flight?.arrival?.airport}</small>
+                  </div>
+
+                  {/* 좌석 정보 */}
+                  <div className="text-center" style={{flexBasis: '120px'}}>
+                    <p className="fw-semibold text-success mb-0">
+                      {flight?.seatClass || '등급 미정'}
+                    </p>
+                    <small className="text-muted">
+                      {flight?.seatsAvailable || '정보 없음'}석
+                    </small>
+                  </div>
+
+                  {/* 가격 */}
+                  <div
+                    className="text-end ms-auto"
+                    style={{flexBasis: '130px', whiteSpace: 'nowrap'}}>
+                    <p className="fs-5 fw-bold text-primary mb-0">
+                      {flight?.price ? flight.price.toLocaleString() : '0'}원
+                    </p>
+                  </div>
                 </div>
-                <p className="text-gray-600">
-                  {flight?.departure?.city} → {flight?.arrival?.city}
-                </p>
-                <p className="text-gray-500">
-                  🕒{' '}
-                  {flight?.departure?.time
-                    ? moment(flight?.departure?.time)
-                        .tz('Asia/Seoul')
-                        .format('YYYY-MM-DD HH:mm')
-                    : '시간 미정'}
-                  →{' '}
-                  {flight?.arrival?.time
-                    ? moment(flight?.arrival?.time)
-                        .tz('Asia/Seoul')
-                        .format('YYYY-MM-DD HH:mm')
-                    : '시간 미정'}
-                </p>
-                <p className="text-gray-700">
-                  좌석: {flight?.seatsAvailable || '정보 없음'}석
-                </p>
-                <p className="text-md font-semibold text-green-600">
-                  💺 {flight?.seatClass || '등급 미정'}
-                </p>
-                <p className="text-lg font-bold text-blue-600">
-                  {flight?.price ? flight.price.toLocaleString() : '0'}원
-                </p>
               </div>
             );
           })
