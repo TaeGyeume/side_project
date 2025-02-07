@@ -19,7 +19,7 @@ const userTourTicketRoutes = require('./routes/tourTicket/userTourTicketRoutes')
 
 const path = require('path');
 const cookieParser = require('cookie-parser');
-
+  
 const app = express();
 
 // DB 연결

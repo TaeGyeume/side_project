@@ -2,9 +2,36 @@ const passport = require('passport');
 const FacebookStrategy = require('passport-facebook').Strategy;
 const NaverStrategy = require('passport-naver').Strategy;
 const KakaoStrategy = require('passport-kakao').Strategy;
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');  // User 모델 불러오기
 
 const generateUniqueUserId = () => `user_${new Date().getTime()}_${Math.floor(Math.random() * 1000)}`;
+
+// ✅ Google 로그인 설정
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: process.env.GOOGLE_CALLBACK_URL,  // Google OAuth 콜백 URL
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    let user = await User.findOne({ provider: 'google', socialId: profile.id });
+    if (!user) {
+      // 새 사용자 생성
+      user = new User({
+        userid: generateUniqueUserId(),
+        provider: 'google',
+        socialId: profile.id,
+        email: profile.emails?.[0]?.value || '',
+        username: profile.displayName || 'Google User',
+      });
+      await user.save();
+    }
+
+    return done(null, user);  // 사용자 반환
+  } catch (err) {
+    return done(err, null);  // 에러 처리
+  }
+}));
 
 // 페이스북 설정
 passport.use(new FacebookStrategy({
@@ -106,5 +133,3 @@ passport.deserializeUser(async (id, done) => {
   const user = await User.findById(id);
   done(null, user);
 });
-
-
