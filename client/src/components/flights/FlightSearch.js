@@ -1,12 +1,12 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
+import moment from 'moment-timezone';
 import './styles/FlightSearch.css';
 import {searchFlights} from '../../api/flight/flights';
 import LoadingScreen from './LoadingScreen';
 
 // ✅ 공항 한글 → 코드 변환
 const AIRPORT_CODES = {
-  // 김포
   서울: 'GMP',
   인천: 'ICN',
   부산: 'PUS',
@@ -18,8 +18,7 @@ const AIRPORT_CODES = {
   무안: 'MWX'
 };
 
-// ✅ 공항 목록
-const AIRPORT_LIST = ['서울', '부산', '제주', '대구', '광주', '청주', '여수', '무안'];
+const AIRPORT_LIST = Object.keys(AIRPORT_CODES);
 
 const FlightSearch = () => {
   const [departure, setDeparture] = useState('');
@@ -28,32 +27,54 @@ const FlightSearch = () => {
   const [passengers, setPassengers] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // ✅ 검색 후 페이지 이동을 위한 useNavigate
+  const navigate = useNavigate();
 
   const handleSearch = async () => {
-    console.log('🔍 검색 요청:', {departure, arrival, date});
+    console.log('🔍 검색 요청:', {departure, arrival, date, passengers});
 
-    if (!date) {
-      setErrorMessage('📅 날짜를 선택해주세요.');
+    // ✅ 필수 입력값 검증
+    if (!departure || !arrival || !date || passengers < 1) {
+      setErrorMessage('출발지, 도착지, 날짜, 인원수를 입력해주세요.');
       return;
     }
 
-    // ✅ 한글 입력 시 공항 코드 변환
+    // ✅ 출발지와 도착지가 같은 경우 예외 처리
+    if (departure === arrival) {
+      setErrorMessage('출발지와 도착지는 같을 수 없습니다.');
+      return;
+    }
+
     const deptCode = AIRPORT_CODES[departure] || departure;
     const arrCode = AIRPORT_CODES[arrival] || arrival;
+    const formattedDate = moment(date).format('YYYY-MM-DD');
+
+    // ✅ 날짜 형식 검증
+    if (!moment(formattedDate, 'YYYY-MM-DD', true).isValid()) {
+      setErrorMessage('🚨 잘못된 날짜 형식입니다. YYYY-MM-DD 형식이어야 합니다.');
+      return;
+    }
 
     setLoading(true);
 
     try {
-      const searchData = await searchFlights(deptCode, arrCode, date);
+      console.log(`✅ 변환된 검색 날짜: ${formattedDate}`);
 
-      if (searchData.length === 0) {
-        setErrorMessage(`🚫 선택한 날짜 (${date})에 운항하는 항공편이 없습니다.`);
+      // ✅ API 요청에 passengers 값 추가
+      const searchData = await searchFlights(
+        deptCode,
+        arrCode,
+        formattedDate,
+        passengers
+      );
+
+      if (!searchData || searchData.length === 0) {
+        setErrorMessage(
+          `🚫 선택한 날짜 (${formattedDate})에 운항하는 항공편이 없습니다.`
+        );
         setLoading(false);
       } else {
         setErrorMessage('');
         console.log('✅ 검색된 데이터:', searchData);
-
         setTimeout(() => {
           navigate('/flights/results', {state: {flights: searchData}});
         }, 500);
@@ -70,7 +91,6 @@ const FlightSearch = () => {
       <h2 className="text-xl font-semibold mb-2">✈️ 항공편 검색</h2>
 
       <div className="flex space-x-2 items-center">
-        {/* 출발지 드롭다운 */}
         <select
           value={departure}
           onChange={e => setDeparture(e.target.value)}
@@ -83,7 +103,6 @@ const FlightSearch = () => {
           ))}
         </select>
 
-        {/* 도착지 드롭다운 */}
         <select
           value={arrival}
           onChange={e => setArrival(e.target.value)}
@@ -96,7 +115,6 @@ const FlightSearch = () => {
           ))}
         </select>
 
-        {/* 날짜 선택 */}
         <input
           type="date"
           value={date}
@@ -104,7 +122,6 @@ const FlightSearch = () => {
           className="border p-2 rounded w-1/4"
         />
 
-        {/* ✅ 인원 선택 드롭다운 */}
         <select
           value={passengers}
           onChange={e => setPassengers(Number(e.target.value))}
@@ -124,8 +141,6 @@ const FlightSearch = () => {
       </div>
 
       {errorMessage && <p className="text-red-600 mt-2">{errorMessage}</p>}
-
-      {/* ✅ 로딩 화면 표시 */}
       {loading && <LoadingScreen />}
     </div>
   );
