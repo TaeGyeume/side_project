@@ -58,6 +58,18 @@ TravelItemSchema.pre('save', function (next) {
   next();
 });
 
+// ✅ `subCategories` 자동 업데이트 기능 추가
+TravelItemSchema.post('save', async function (doc, next) {
+  if (doc.parentCategory) {
+    await mongoose.model('TravelItem').findByIdAndUpdate(
+      doc.parentCategory,
+      {$addToSet: {subCategories: doc._id}}, // ✅ `subCategories` 배열에 추가
+      {new: true}
+    );
+  }
+  next();
+});
+
 // ✅ 상품이 저장될 때 재고(stock) 확인 후 품절(soldOut) 처리
 TravelItemSchema.pre('save', function (next) {
   this.soldOut = this.stock === 0;
