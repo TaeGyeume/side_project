@@ -38,7 +38,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(passport.initialize()); // Passport 초기화 추가
 
@@ -57,7 +57,7 @@ app.use('/tourTicket', userTourTicketRoutes);
 
 //테스트용
 app.post('/api/admin', authMiddleware, authorizeRoles('admin'), (req, res) => {
-  res.json({ message: '관리자 전용 페이지' });
+  res.json({message: '관리자 전용 페이지'});
 });
 
 // 에러 핸들러

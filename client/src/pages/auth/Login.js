@@ -20,7 +20,7 @@ const Login = () => {
     setFormData({...formData, [e.target.name]: e.target.value});
   };
 
-  // 폼 제출 핸들러 (쿠키 기반 인증 적용)
+  // 폼 제출 핸들러
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
@@ -33,7 +33,6 @@ const Login = () => {
     } catch (error) {
       console.error('로그인 오류:', error);
 
-      // 인증 오류 상태에 따른 메시지 처리
       if (error.response?.status === 401) {
         setError('아이디 또는 비밀번호가 잘못되었습니다.');
       } else if (error.response?.status === 500) {
@@ -83,11 +82,21 @@ const Login = () => {
               {loading ? '로그인 중...' : '로그인'}
             </button>
           </form>
+
+          {/* ✅ 아이디 찾기 링크 추가 */}
+          <div className="text-center mt-3">
+            <a href="/find-userid" className="text-decoration-none">
+              아이디 찾기
+            </a>
+          </div>
+
+          {/* ✅ 비밀번호 찾기 (기존 코드 유지) */}
           <div className="text-center mt-3">
             <a href="/forgot-password" className="text-decoration-none">
               비밀번호를 잊으셨나요?
             </a>
           </div>
+
           <div className="text-center mt-3">
             <a href="/register" className="text-decoration-none">
               회원가입

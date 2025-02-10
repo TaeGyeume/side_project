@@ -120,7 +120,32 @@ export const authAPI = {
     handleRequest(
       api.post('/auth/refresh-token', {}, requestConfig),
       '토큰 갱신 요청 중 오류 발생'
-    )
+    ),
+
+  // ✅ 아이디 찾기 API 요청
+  findUserId: async email => {
+    console.log('🔍 아이디 찾기 요청 시작:', email); // ✅ 요청 확인
+    try {
+      const response = await handleRequest(
+        api.post('/auth/find-userid', {email}, requestConfig),
+        '아이디 찾기 요청 중 오류 발생'
+      );
+      console.log('✅ 아이디 찾기 API 응답:', response); // ✅ 서버 응답 확인
+      return response;
+    } catch (error) {
+      console.error('❌ 아이디 찾기 API 요청 실패:', error.response?.data || error); // ✅ 오류 로그 출력
+      throw error;
+    }
+  },
+
+  // ✅ 인증 코드 검증 API 추가
+  verifyCode: async ({email, code}) => {
+    console.log('🔍 [클라이언트] 인증 코드 검증 요청:', email, code); // 디버깅
+    return handleRequest(
+      api.post('/auth/verify-code', {email, code}, requestConfig),
+      '인증 코드 확인 요청 중 오류 발생'
+    );
+  }
 };
 
 export default authAPI;

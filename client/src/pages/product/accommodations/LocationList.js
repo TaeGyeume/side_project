@@ -47,14 +47,16 @@ const LocationList = () => {
       <button
         type="button"
         className="btn btn-primary"
-        onClick={() => navigate('/product/locations/new')}>
+        onClick={() => navigate('/product/locations/new')}
+      >
         📍 위치 추가
       </button>
       <ul className="list-group">
         {locations.map(location => (
           <li
             key={location._id}
-            className="list-group-item d-flex justify-content-between align-items-center">
+            className="list-group-item d-flex justify-content-between align-items-center"
+          >
             <div>
               <strong>
                 {location.name} ({location.country})
@@ -63,12 +65,14 @@ const LocationList = () => {
             </div>
             <button
               className="btn btn-warning btn-sm"
-              onClick={() => navigate(`/product/locations/edit/${location._id}`)}>
+              onClick={() => navigate(`/product/locations/edit/${location._id}`)}
+            >
               ✏️ 수정
             </button>
             <button
               className="btn btn-danger btn-sm"
-              onClick={() => handleDelete(location._id)}>
+              onClick={() => handleDelete(location._id)}
+            >
               🗑️ 삭제
             </button>
           </li>

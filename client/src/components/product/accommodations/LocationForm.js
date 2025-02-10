@@ -143,7 +143,8 @@ const LocationForm = ({locationData = null, isEdit = false}) => {
             <button
               type="button"
               className="btn btn-danger"
-              onClick={() => handleRemovePopularPlace(index)}>
+              onClick={() => handleRemovePopularPlace(index)}
+            >
               삭제
             </button>
           </div>
@@ -151,7 +152,8 @@ const LocationForm = ({locationData = null, isEdit = false}) => {
         <button
           type="button"
           className="btn btn-secondary mt-2"
-          onClick={handleAddPopularPlace}>
+          onClick={handleAddPopularPlace}
+        >
           + 추가
         </button>
       </div>

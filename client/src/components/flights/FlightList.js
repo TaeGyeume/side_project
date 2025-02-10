@@ -58,11 +58,13 @@ const FlightList = () => {
               <div key={flight?._id} className="col-12 mb-3">
                 <div
                   className="card p-3 shadow-sm d-flex flex-row align-items-center"
-                  style={{minHeight: '80px'}}>
+                  style={{minHeight: '80px'}}
+                >
                   {/* 항공사 로고 및 정보 */}
                   <div
                     className="d-flex align-items-center me-3"
-                    style={{flexBasis: '200px'}}>
+                    style={{flexBasis: '200px'}}
+                  >
                     <img
                       src={`/images/logos/${logoFile}`}
                       alt={airlineKorean}
@@ -107,7 +109,8 @@ const FlightList = () => {
                   {/* 가격 */}
                   <div
                     className="text-end ms-auto"
-                    style={{flexBasis: '130px', whiteSpace: 'nowrap'}}>
+                    style={{flexBasis: '130px', whiteSpace: 'nowrap'}}
+                  >
                     <p className="fs-5 fw-bold text-primary mb-0">
                       {flight?.price ? flight.price.toLocaleString() : '0'}원
                     </p>
