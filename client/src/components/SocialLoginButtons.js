@@ -24,21 +24,20 @@ const SocialLoginButtons = () => {
   return (
     <div>
       {/* 페이스북 로그인 버튼 */}
-      <button
+      {/* <button
         onClick={handleFacebookLogin}
         className="btn btn-primary"
         style={{marginBottom: '10px'}}
       >
         Facebook으로 로그인
-      </button>
+      </button> */}
       <br />
 
       {/* 네이버 로그인 버튼 */}
       <button
         onClick={handleNaverLogin}
         className="btn btn-success"
-        style={{marginBottom: '10px'}}
-      >
+        style={{marginBottom: '10px'}}>
         Naver로 로그인
       </button>
       <br />
@@ -47,8 +46,7 @@ const SocialLoginButtons = () => {
       <button
         onClick={handleKakaoLogin}
         className="btn btn-warning"
-        style={{marginBottom: '10px'}}
-      >
+        style={{marginBottom: '10px'}}>
         Kakao로 로그인
       </button>
       <br />

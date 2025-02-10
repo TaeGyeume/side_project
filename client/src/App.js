@@ -67,8 +67,7 @@ const App = () => {
             className={`alert ${
               serverMessage.includes('실패') ? 'alert-danger' : 'alert-success'
             }`}
-            role="alert"
-          >
+            role="alert">
             {serverMessage}
           </div>
         )}

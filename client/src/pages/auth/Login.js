@@ -85,6 +85,11 @@ const Login = () => {
           </form>
           <div className="text-center mt-3">
             <a href="/forgot-password" className="text-decoration-none">
+              아이디 찾기
+            </a>
+          </div>
+          <div className="text-center mt-3">
+            <a href="/forgot-password" className="text-decoration-none">
               비밀번호를 잊으셨나요?
             </a>
           </div>
