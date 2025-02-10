@@ -33,6 +33,9 @@ import TourTicketList from './components/product/tourTicket/TourTicketList';
 import TourTicketForm from './components/product/tourTicket/TourTicketForm';
 import TourTicketDetail from './components/product/tourTicket/TourTicketDetail';
 import TourTicketModify from './components/product/tourTicket/TourTicketModify';
+import CategoryPage from './pages/product/travelItems/CategoryPage';
+import TravelItemPage from './pages/product/travelItems/TravelItemPage';
+import TravelItemListPage from './pages/product/travelItems/TravelItemListPage';
 import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
 
 const App = () => {
@@ -121,13 +124,14 @@ const App = () => {
               path="/product/locations/Edit/:locationId"
               element={<LocationEdit />}
             />
-            {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
-            {/* <Route path="/admin/settings" element={<AdminSettings />} /> */}
             <Route path="/product" element={<ProductPage />} />
             <Route path="/product/tourTicket/list" element={<TourTicketList />} />
             <Route path="/product/tourTicket/:id" element={<TourTicketDetail />} />
             <Route path="/product/tourTicket/modify/:id" element={<TourTicketModify />} />
             <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
+            <Route path="/product/travelItems/newCategory" element={<CategoryPage />} />
+            <Route path="/product/travelItems/new" element={<TravelItemPage />} />
+            <Route path="/product/travelItems/list" element={<TravelItemListPage />} />
           </Route>
           {/* ❌ 권한 없음 페이지 */}
           <Route path="/unauthorized" element={<Unauthorized />} />
