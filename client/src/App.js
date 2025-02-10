@@ -14,14 +14,11 @@ import GoogleLoginCallback from './components/SocialLogin/GoogleLoginCallback';
 import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
 import Unauthorized from './pages/Unauthorized'; // 권한 없음 페이지 추가
-// import AdminDashboard from './pages/admin/AdminDashboard'; // 어드민 대시보드 추가
-// import AdminSettings from './pages/admin/AdminSettings'; // 어드민 설정 추가
 import AccommodationSearch from './pages/accommodations/AccommodationSearch';
 import AccommodationResults from './pages/accommodations/AccommodationResults';
 import AccommodationDetail from './pages/accommodations/AccommodationDetail';
 import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이지 추가
 import FlightResults from './pages/flights/FlightResults';
-// import Reservation from './pages/reservations/Reservation'; // 🎫 예약 페이지 추가
 import ProductPage from './pages/product/ProductPage';
 import AccommodationList from './pages/product/accommodations/AccommodationList';
 import AccommodationCreate from './pages/product/accommodations/AccommodationCreate';
@@ -35,6 +32,9 @@ import TourTicketList from './components/product/tourTicket/TourTicketList';
 import TourTicketForm from './components/product/tourTicket/TourTicketForm';
 import TourTicketDetail from './components/product/tourTicket/TourTicketDetail';
 import TourTicketModify from './components/product/tourTicket/TourTicketModify';
+import CategoryPage from './pages/product/travelItems/CategoryPage';
+import TravelItemPage from './pages/product/travelItems/TravelItemPage';
+import TravelItemListPage from './pages/product/travelItems/TravelItemListPage';
 import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
 
 const App = () => {
@@ -126,13 +126,14 @@ const App = () => {
               path="/product/locations/Edit/:locationId"
               element={<LocationEdit />}
             />
-            {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
-            {/* <Route path="/admin/settings" element={<AdminSettings />} /> */}
             <Route path="/product" element={<ProductPage />} />
             <Route path="/product/tourTicket/list" element={<TourTicketList />} />
             <Route path="/product/tourTicket/:id" element={<TourTicketDetail />} />
             <Route path="/product/tourTicket/modify/:id" element={<TourTicketModify />} />
             <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
+            <Route path="/product/travelItems/newCategory" element={<CategoryPage />} />
+            <Route path="/product/travelItems/new" element={<TravelItemPage />} />
+            <Route path="/product/travelItems/list" element={<TravelItemListPage />} />
           </Route>
 
           {/* ❌ 권한 없음 페이지 */}

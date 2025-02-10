@@ -69,6 +69,6 @@ const AccommodationSchema = new mongoose.Schema({
 
 // 위치 기반 검색을 위한 2dsphere 인덱스 추가
 AccommodationSchema.index({coordinates: '2dsphere'});
-AccommodationSchema.index({name: 'text'});
+AccommodationSchema.index({name: 'text', description: 'text', location: 'text'});
 
 module.exports = mongoose.model('Accommodation', AccommodationSchema);

@@ -17,10 +17,10 @@ const AccommodationList = ({limit = 6}) => {
   const loadingRef = useRef(false);
   const observerInstance = useRef(null);
 
-  // ✅ 데이터 가져오기 함수
+  // ✅ 데이터 가져오기 함수 (검색 + 페이지네이션 적용)
   const fetchAccommodations = useCallback(
-    async (pageNumber = 1, isNewSearch = false, searchValue = searchTerm) => {
-      if (loadingRef.current || (pageNumber > totalPages && !isNewSearch)) return;
+    async (pageNumber = 1, reset = false, searchValue = searchTerm) => {
+      if (loadingRef.current || pageNumber > totalPages) return;
 
       loadingRef.current = true;
       setLoading(true);
@@ -48,11 +48,16 @@ const AccommodationList = ({limit = 6}) => {
         // ✅ 중복 제거 로직 적용
         setAccommodations(prev => {
           const uniqueAccommodations = new Map();
-          [...prev, ...result].forEach(acc => uniqueAccommodations.set(acc._id, acc));
+          [...(reset ? [] : prev), ...result].forEach(acc =>
+            uniqueAccommodations.set(acc._id, acc)
+          );
           return Array.from(uniqueAccommodations.values());
         });
 
         setTotalPages(response.data.totalPages || 1);
+
+        // ✅ 검색 시 첫 번째 페이지를 불러온 경우, 페이지 초기화
+        if (reset) setPage(1);
       } catch (err) {
         console.error('❌ 숙소 데이터를 불러오는 중 오류:', err);
         setError('숙소 정보를 불러오는 중 오류 발생');
@@ -64,21 +69,14 @@ const AccommodationList = ({limit = 6}) => {
     [totalPages, limit, searchTerm]
   );
 
-  // ✅ 검색어가 변경될 때 새로운 검색 수행
+  // ✅ 검색어 변경 시 새로운 검색 실행 (무한 스크롤 유지)
   useEffect(() => {
     console.log('✅ 검색어 변경됨. 새로운 검색 실행!', searchTerm);
-    setAccommodations([]);
-    setPage(1);
-    fetchAccommodations(1, true, searchTerm);
+    setAccommodations([]); // ✅ 기존 데이터 초기화
+    fetchAccommodations(1, true, searchTerm); // ✅ 첫 페이지부터 다시 검색
   }, [searchTerm, fetchAccommodations]);
 
-  // ✅ 초기 데이터 로드
-  useEffect(() => {
-    console.log('✅ 초기 데이터 로드');
-    fetchAccommodations(1, true);
-  }, [fetchAccommodations]);
-
-  // ✅ 페이지 변경 시 데이터 불러오기 (즉시 실행)
+  // ✅ 페이지 변경 시 추가 데이터 로드
   useEffect(() => {
     if (page > 1 && !loadingRef.current) {
       console.log('📌 페이지 변경됨, 데이터 불러오기', page);
@@ -86,26 +84,19 @@ const AccommodationList = ({limit = 6}) => {
     }
   }, [page, fetchAccommodations]);
 
-  // ✅ 무한 스크롤 (Intersection Observer 사용)
+  // ✅ totalPages 변경을 감지하여 무한 스크롤 다시 적용
   useEffect(() => {
-    if (!observerRef.current) {
-      console.log('❌ observerRef.current가 설정되지 않음');
-      return;
-    }
+    if (!observerRef.current) return;
 
     if (observerInstance.current) {
-      observerInstance.current.disconnect(); // 기존 observer 해제
+      observerInstance.current.disconnect();
     }
 
     observerInstance.current = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting && !loadingRef.current && page < totalPages) {
           console.log('✅ 마지막 요소 감지 → 다음 페이지 불러오기!', {page, totalPages});
-          setPage(prev => {
-            const newPage = prev + 1;
-            fetchAccommodations(newPage);
-            return newPage;
-          });
+          setPage(prev => prev + 1);
         }
       },
       {threshold: 1.0}
@@ -116,7 +107,7 @@ const AccommodationList = ({limit = 6}) => {
     return () => {
       if (observerInstance.current) observerInstance.current.disconnect();
     };
-  }, [totalPages, fetchAccommodations, page]);
+  }, [totalPages, page]);
 
   if (error) return <div>{error}</div>;
 
