@@ -11,6 +11,7 @@ import NaverLoginCallback from './components/SocialLogin/NaverLoginCallback';
 import FacebookLoginCallback from './components/SocialLogin/FacebookLoginCallback';
 import KakaoLoginCallback from './components/SocialLogin/KakaoLoginCallback';
 import GoogleLoginCallback from './components/SocialLogin/GoogleLoginCallback';
+import FindUserId from './pages/auth/FindUserId';
 import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
 import Unauthorized from './pages/Unauthorized'; // 권한 없음 페이지 추가
@@ -81,6 +82,7 @@ const App = () => {
             path="/login"
             element={isAuthenticated ? <Navigate to="/profile" /> : <AuthPages.Login />}
           />
+          <Route path="/find-userid" element={<FindUserId />} />
           <Route path="/google/callback" element={<GoogleLoginCallback />} />
           <Route path="/kakao/callback" element={<KakaoLoginCallback />} />
           <Route path="/naver/callback" element={<NaverLoginCallback />} />
@@ -93,20 +95,16 @@ const App = () => {
             path="/accommodations/:accommodationId/detail"
             element={<AccommodationDetail />}
           />
-
           {/* ✈️ 항공편 목록 페이지 추가 */}
           <Route path="/flights" element={<Flights />} />
           <Route path="/flights/results" element={<FlightResults />} />
-
           <Route path="/tourTicket/*" element={<UserTourTicketPage />} />
-
           {/* 🔐 인증된 사용자만 접근 가능 */}
           <Route element={<PrivateRoute />}>
             {/* <Route path="/reservation/:flightId" element={<Reservation />} /> */}
             <Route path="/profile" element={<UserPages.Profile />} />
             <Route path="/profile/update" element={<EditProfile />} />
           </Route>
-
           {/* 🔒 어드민 전용 페이지 */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>
             <Route path="/product" element={<ProductPage />} />
@@ -135,10 +133,8 @@ const App = () => {
             <Route path="/product/travelItems/new" element={<TravelItemPage />} />
             <Route path="/product/travelItems/list" element={<TravelItemListPage />} />
           </Route>
-
           {/* ❌ 권한 없음 페이지 */}
           <Route path="/unauthorized" element={<Unauthorized />} />
-
           {/* 404 처리 */}
           <Route path="*" element={<div>페이지를 찾을 수 없습니다.</div>} />
         </Routes>

@@ -294,7 +294,8 @@ const AccommodationModify = () => {
           <select
             className="form-control"
             value={selectedCountry}
-            onChange={handleCountryChange}>
+            onChange={handleCountryChange}
+          >
             <option value="">국가를 선택하세요</option>
             {countries.map((country, index) => (
               <option key={index} value={country}>
@@ -311,7 +312,8 @@ const AccommodationModify = () => {
             name="location"
             value={formData.location}
             onChange={handleCityChange}
-            required>
+            required
+          >
             <option value="">도시를 선택하세요</option>
             {cities.map(city => (
               <option key={city._id} value={city._id}>
@@ -390,7 +392,8 @@ const AccommodationModify = () => {
             className="form-control"
             name="category"
             value={formData.category}
-            onChange={handleChange}>
+            onChange={handleChange}
+          >
             <option value="Hotel">호텔</option>
             <option value="Pension">펜션</option>
             <option value="Resort">리조트</option>
@@ -440,7 +443,8 @@ const AccommodationModify = () => {
                 <button
                   type="button"
                   className="btn btn-danger btn-sm"
-                  onClick={() => handleDeleteImage(image)}>
+                  onClick={() => handleDeleteImage(image)}
+                >
                   삭제
                 </button>
               </div>
@@ -451,9 +455,8 @@ const AccommodationModify = () => {
         <button
           type="button"
           className="btn btn-primary mt-2"
-          onClick={() =>
-            navigate(`/product/room/new?accommodationId=${accommodationId}`)
-          }>
+          onClick={() => navigate(`/product/room/new?accommodationId=${accommodationId}`)}
+        >
           + 객실 추가
         </button>
 

@@ -66,7 +66,8 @@ const FilterPanel = ({onFilterChange}) => {
         <select
           className="form-select"
           value={category}
-          onChange={e => setCategory(e.target.value)}>
+          onChange={e => setCategory(e.target.value)}
+        >
           <option value="all">전체</option>
           <option value="Hotel">호텔</option>
           <option value="Pension">펜션</option>
@@ -80,7 +81,8 @@ const FilterPanel = ({onFilterChange}) => {
         <select
           className="form-select"
           value={sortBy}
-          onChange={e => setSortBy(e.target.value)}>
+          onChange={e => setSortBy(e.target.value)}
+        >
           <option value="default">기본순</option>
           <option value="priceLow">가격 낮은 순</option>
           <option value="priceHigh">가격 높은 순</option>

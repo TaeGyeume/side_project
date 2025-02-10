@@ -46,7 +46,8 @@ const AccommodationCard = ({accommodation, queryOptions = {}}) => {
     <div
       className="card accommodation-card mb-3"
       onClick={handleCardClick}
-      style={{cursor: 'pointer'}}>
+      style={{cursor: 'pointer'}}
+    >
       <img
         src={imageUrl}
         className="card-img-top accommodation-image"
