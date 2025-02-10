@@ -1,5 +1,5 @@
 import React from 'react';
-import moment from 'moment-timezone';
+// import moment from 'moment-timezone';
 
 // ✅ 항공사별 로고 파일 매핑
 const AIRLINE_LOGOS = {
@@ -10,6 +10,14 @@ const AIRLINE_LOGOS = {
   진에어: 'jinair.png',
   티웨이항공: 'twayair.png',
   제주항공: 'jejuair.png'
+};
+
+// ✅ 시간 포맷 변환 함수 (0700 → 07:00)
+const formatTime = timeString => {
+  if (!timeString || typeof timeString !== 'string' || timeString.length !== 4) {
+    return '시간 미정';
+  }
+  return `${timeString.substr(0, 2)}:${timeString.substr(2, 2)}`;
 };
 
 const SearchResultsList = ({flights}) => {
@@ -24,7 +32,7 @@ const SearchResultsList = ({flights}) => {
             const logoFile = AIRLINE_LOGOS[flight?.airline] || 'default.png';
 
             return (
-              <div key={flight._id} className="col-12 mb-3">
+              <div key={flight?._id} className="col-12 mb-3">
                 <div
                   className="card p-3 shadow-sm d-flex flex-row align-items-center"
                   style={{minHeight: '80px'}}>
@@ -47,9 +55,7 @@ const SearchResultsList = ({flights}) => {
                   {/* 출발 시간 */}
                   <div className="text-center" style={{flexBasis: '150px'}}>
                     <p className="fs-5 fw-bold mb-0">
-                      {flight?.departure?.time
-                        ? moment(flight?.departure?.time).tz('Asia/Seoul').format('HH:mm')
-                        : '시간 미정'}
+                      {formatTime(flight?.departure?.time)}
                     </p>
                     <small className="text-muted">{flight?.departure?.airport}</small>
                   </div>
@@ -60,9 +66,7 @@ const SearchResultsList = ({flights}) => {
                   {/* 도착 시간 */}
                   <div className="text-center" style={{flexBasis: '150px'}}>
                     <p className="fs-5 fw-bold mb-0">
-                      {flight?.arrival?.time
-                        ? moment(flight?.arrival?.time).tz('Asia/Seoul').format('HH:mm')
-                        : '시간 미정'}
+                      {formatTime(flight?.arrival?.time)}
                     </p>
                     <small className="text-muted">{flight?.arrival?.airport}</small>
                   </div>
