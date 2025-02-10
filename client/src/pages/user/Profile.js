@@ -140,16 +140,14 @@ const Profile = () => {
         {Object.entries(userData).map(([key, value]) => (
           <div
             key={key}
-            className="d-flex justify-content-between align-items-center border-bottom py-2"
-          >
+            className="d-flex justify-content-between align-items-center border-bottom py-2">
             <p className="mb-0">
               <strong>{fieldNames[key] || key}:</strong> {value || '미등록'}
             </p>
             {key !== 'membershipLevel' && key !== 'mileage' && (
               <button
                 className="btn btn-outline-primary btn-sm"
-                onClick={() => openModal(key)}
-              >
+                onClick={() => openModal(key)}>
                 수정
               </button>
             )}
@@ -163,8 +161,7 @@ const Profile = () => {
           className="modal fade show d-block"
           tabIndex="-1"
           role="dialog"
-          style={{background: 'rgba(0,0,0,0.5)'}}
-        >
+          style={{background: 'rgba(0,0,0,0.5)'}}>
           <div className="modal-dialog" role="document">
             <div className="modal-content">
               <div className="modal-header">
@@ -183,8 +180,7 @@ const Profile = () => {
                 {['userid', 'email', 'phone'].includes(editingField) && (
                   <button
                     className="btn btn-outline-secondary mt-2 w-100"
-                    onClick={handleCheckDuplicate}
-                  >
+                    onClick={handleCheckDuplicate}>
                     중복 확인
                   </button>
                 )}
@@ -198,8 +194,7 @@ const Profile = () => {
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  onClick={() => setShowModal(false)}
-                >
+                  onClick={() => setShowModal(false)}>
                   닫기
                 </button>
                 <button type="button" className="btn btn-primary" onClick={handleSubmit}>
