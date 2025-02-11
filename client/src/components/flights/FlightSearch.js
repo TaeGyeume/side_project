@@ -77,7 +77,7 @@ const FlightSearch = () => {
         console.log('✅ 검색된 데이터:', searchData);
         setTimeout(() => {
           navigate('/flights/results', {state: {flights: searchData}});
-        }, 500);
+        }, 5000);
       }
     } catch (error) {
       console.error('🚨 검색 실패:', error);
@@ -94,8 +94,7 @@ const FlightSearch = () => {
         <select
           value={departure}
           onChange={e => setDeparture(e.target.value)}
-          className="border p-2 rounded w-1/4"
-        >
+          className="border p-2 rounded w-1/4">
           <option value="">출발 공항</option>
           {AIRPORT_LIST.map(airport => (
             <option key={airport} value={airport}>
@@ -107,8 +106,7 @@ const FlightSearch = () => {
         <select
           value={arrival}
           onChange={e => setArrival(e.target.value)}
-          className="border p-2 rounded w-1/4"
-        >
+          className="border p-2 rounded w-1/4">
           <option value="">도착 공항</option>
           {AIRPORT_LIST.map(airport => (
             <option key={airport} value={airport}>
@@ -127,8 +125,7 @@ const FlightSearch = () => {
         <select
           value={passengers}
           onChange={e => setPassengers(Number(e.target.value))}
-          className="border p-2 rounded w-1/5"
-        >
+          className="border p-2 rounded w-1/5">
           {[...Array(9)].map((_, i) => (
             <option key={i + 1} value={i + 1}>
               {i + 1}명
@@ -138,8 +135,7 @@ const FlightSearch = () => {
 
         <button
           onClick={handleSearch}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
           검색
         </button>
       </div>

@@ -81,16 +81,19 @@ const RoundTripSearch = () => {
         setErrorMessage('');
         console.log('✅ 출발편 검색 완료:', departureFlights);
 
-        // ✅ 출발편 선택 후, 도착편 검색 페이지로 이동
-        navigate('/flights/roundtrip-departure', {
-          state: {
-            departureFlights,
-            returnDate: formattedReturnDate,
-            passengers,
-            deptCode,
-            arrCode
-          }
-        });
+        // ✅ 500ms 딜레이 후 navigate 실행 (로딩 화면이 보이도록)
+        setTimeout(() => {
+          setLoading(false);
+          navigate('/flights/roundtrip-departure', {
+            state: {
+              departureFlights,
+              returnDate: formattedReturnDate,
+              passengers,
+              deptCode,
+              arrCode
+            }
+          });
+        }, 500);
       }
     } catch (error) {
       console.error('🚨 검색 실패:', error);
