@@ -7,7 +7,7 @@ const tourTicketSchema = new mongoose.Schema(
     location: {type: String, required: true}, // 위치
     price: {type: Number, required: true}, // 가격
     stock: {type: Number, required: true}, // 재고
-    images: [{type: String}], // 이미지 URL 목록
+    images: [{type: String}], // 이미지
     createdAt: {
       type: Date,
       default: () => new Date(Date.now() + 9 * 60 * 60 * 1000) // KST

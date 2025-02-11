@@ -18,6 +18,11 @@ const TourTicketList = () => {
     const fetchTickets = async () => {
       try {
         const data = await getTourTickets();
+
+        const sortedTickets = data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+
         setTickets(data);
       } catch (error) {
         console.error('투어 티켓 목록을 가져오는 중 오류 발생:', error);
@@ -129,6 +134,7 @@ const TourTicketList = () => {
               <div className="ticket-info">
                 <h3 className="ticket-title">{ticket.title}</h3>
                 <p className="ticket-description">✏️| {ticket.description}</p>
+                <p className="ticket-location">지역: {ticket.location}</p>
                 <p className="ticket-price">{ticket.price.toLocaleString()}원</p>
                 <p className="ticket-stock">재고: {ticket.stock}개</p>
               </div>
