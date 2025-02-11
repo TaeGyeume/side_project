@@ -1,9 +1,9 @@
-const tourTicketBookingService = require('../../../services/booking/tourTicket/tourTicketBookingService');
+const bookingService = require('../services/bookingService');
 
 exports.createBooking = async (req, res) => {
   try {
     const bookingData = req.body;
-    const booking = await tourTicketBookingService.createBooking(bookingData);
+    const booking = await bookingService.createBooking(bookingData);
     res.status(201).json({message: '예약이 성공적으로 생성되었습니다.', booking});
   } catch (error) {
     console.error('예약 생성 오류:', error);
@@ -11,12 +11,11 @@ exports.createBooking = async (req, res) => {
   }
 };
 
-exports.verifyTourTicketPayment = async (req, res) => {
+exports.verifyPayment = async (req, res) => {
   try {
     const {imp_uid, merchant_uid} = req.body;
-    const result = await tourTicketBookingService.verifyTourTicketPayment({
-      imp_uid,
-      merchant_uid
+    const result = await bookingService.verifyPayment({
+      verifyPaymenthant_uid
     });
 
     res.status(result.status).json({message: result.message, booking: result.booking});
@@ -29,7 +28,7 @@ exports.verifyTourTicketPayment = async (req, res) => {
 exports.cancelBooking = async (req, res) => {
   try {
     const {bookingId} = req.params;
-    const result = await tourTicketBookingService.cancelBooking(bookingId);
+    const result = await bookingService.cancelBooking(bookingId);
 
     res.status(result.status).json({message: result.message});
   } catch (error) {
