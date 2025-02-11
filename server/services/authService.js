@@ -194,7 +194,7 @@ exports.loginUser = async ({userid, password}, res) => {
     secure: isProduction,
     sameSite: isProduction ? 'None' : 'Lax',
     path: '/',
-    maxAge: 15 * 60 * 1000 // 15분
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 15분
   });
 
   // 리프레시 토큰 쿠키 저장
@@ -319,7 +319,6 @@ exports.resetPassword = async ({userId, token, currentPassword, newPassword}) =>
 };
 
 // 로그아웃 서비스 (쿠키 삭제)
-// ✅ 로그아웃 서비스 (리프레시 토큰 삭제 추가)
 exports.logoutUser = async (res, userId) => {
   if (userId) {
     await RefreshToken.deleteMany({userId}); //  유저의 모든 리프레시 토큰 삭제
@@ -394,7 +393,7 @@ exports.refreshAccessToken = async (refreshToken, res) => {
       secure: isProduction,
       sameSite: isProduction ? 'None' : 'Lax',
       path: '/',
-      maxAge: 15 * 60 * 1000
+      maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     return newAccessToken;

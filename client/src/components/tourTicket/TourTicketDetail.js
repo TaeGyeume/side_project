@@ -44,6 +44,10 @@ const TourTicketDetail = () => {
     setCurrentIndex(index);
   };
 
+  const handleReserve = () => {
+    navigate(`/tourTicket/booking/${id}`);
+  };
+
   return (
     <div className="tour-ticket-detail">
       <h1>{ticket.title}</h1>
@@ -78,9 +82,13 @@ const TourTicketDetail = () => {
       </div>
 
       <p>설명: {ticket.description}</p>
+      {/* <p>가격: {ticket.price.toLocaleString()}원</p> */}
       <p>가격: {ticket.price.toLocaleString()}원</p>
 
       <button onClick={() => navigate('/tourTicket/list')}>상품 목록</button>
+      <button onClick={handleReserve} className="reserve-btn">
+        예약하기
+      </button>
     </div>
   );
 };

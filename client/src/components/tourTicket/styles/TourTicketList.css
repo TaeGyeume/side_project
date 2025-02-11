@@ -79,6 +79,11 @@
   color: #333;
 }
 
+.ticket-location {
+  font-size: 0.9rem;
+  color: #555;
+}
+
 /* 상품 등록 & 삭제 버튼 스타일 */
 .button-group {
   display: flex;
