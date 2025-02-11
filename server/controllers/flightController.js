@@ -67,3 +67,33 @@ exports.searchFlights = async (req, res) => {
     res.status(500).json({error: '서버 오류 발생'});
   }
 };
+
+// ✈️ 출발지 & 도착지만으로 항공편 검색
+exports.searchFlightsByRoute = async (req, res) => {
+  try {
+    const {departure, arrival} = req.query;
+
+    if (!departure || !arrival) {
+      return res.status(400).json({error: '출발지와 도착지를 입력해주세요.'});
+    }
+
+    console.log(`🔍 출발지(${departure}) - 도착지(${arrival}) 검색 요청`);
+
+    // 출발지 & 도착지가 일치하는 항공편 찾기 (날짜 필터 X)
+    const flights = await Flight.find({
+      'departure.airport': departure,
+      'arrival.airport': arrival
+    });
+
+    console.log(`✅ 검색된 항공편 수: ${flights.length}`);
+
+    if (flights.length === 0) {
+      return res.status(404).json({message: '🚫 해당 구간의 항공편이 없습니다.'});
+    }
+
+    res.status(200).json(flights);
+  } catch (error) {
+    console.error('🚨 출발지-도착지 검색 오류:', error.message);
+    res.status(500).json({error: '서버 오류 발생'});
+  }
+};

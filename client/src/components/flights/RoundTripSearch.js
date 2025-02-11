@@ -20,36 +20,43 @@ const AIRPORT_CODES = {
 
 const AIRPORT_LIST = Object.keys(AIRPORT_CODES);
 
-const FlightSearch = () => {
+const RoundTripSearch = () => {
   const [departure, setDeparture] = useState('');
   const [arrival, setArrival] = useState('');
-  const [date, setDate] = useState('');
+  const [departureDate, setDepartureDate] = useState('');
+  const [returnDate, setReturnDate] = useState('');
   const [passengers, setPassengers] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSearch = async () => {
-    console.log('🔍 검색 요청:', {departure, arrival, date, passengers});
+    console.log('🔍 왕복 검색 요청:', {
+      departure,
+      arrival,
+      departureDate,
+      returnDate,
+      passengers
+    });
 
-    // ✅ 필수 입력값 검증
-    if (!departure || !arrival || !date || passengers < 1) {
-      setErrorMessage('출발지, 도착지, 날짜, 인원수를 입력해주세요.');
-      return;
-    }
-
-    // ✅ 출발지와 도착지가 같은 경우 예외 처리
-    if (departure === arrival) {
-      setErrorMessage('출발지와 도착지는 같을 수 없습니다.');
+    if (!departure || !arrival || !departureDate || !returnDate || passengers < 1) {
+      setErrorMessage('출발지, 도착지, 출발 날짜, 오는 날짜, 인원수를 입력해주세요.');
       return;
     }
 
     const deptCode = AIRPORT_CODES[departure] || departure;
     const arrCode = AIRPORT_CODES[arrival] || arrival;
-    const formattedDate = moment(date).format('YYYY-MM-DD');
+    const formattedDepartureDate = moment(departureDate, 'YYYY-MM-DD', true).format(
+      'YYYY-MM-DD'
+    );
+    const formattedReturnDate = moment(returnDate, 'YYYY-MM-DD', true).format(
+      'YYYY-MM-DD'
+    );
 
-    // ✅ 날짜 형식 검증
-    if (!moment(formattedDate, 'YYYY-MM-DD', true).isValid()) {
+    if (
+      !moment(formattedDepartureDate, 'YYYY-MM-DD', true).isValid() ||
+      !moment(formattedReturnDate, 'YYYY-MM-DD', true).isValid()
+    ) {
       setErrorMessage('🚨 잘못된 날짜 형식입니다. YYYY-MM-DD 형식이어야 합니다.');
       return;
     }
@@ -57,27 +64,36 @@ const FlightSearch = () => {
     setLoading(true);
 
     try {
-      console.log(`✅ 변환된 검색 날짜: ${formattedDate}`);
-
-      // ✅ API 요청에 passengers 값 추가
-      const searchData = await searchFlights(
+      console.log(`✅ 출발편 검색 날짜: ${formattedDepartureDate}`);
+      const departureFlights = await searchFlights(
         deptCode,
         arrCode,
-        formattedDate,
+        formattedDepartureDate,
         passengers
       );
 
-      if (!searchData || searchData.length === 0) {
+      if (!departureFlights || departureFlights.length === 0) {
         setErrorMessage(
-          `🚫 선택한 날짜 (${formattedDate})에 운항하는 항공편이 없습니다.`
+          `🚫 출발편 (${formattedDepartureDate})에 운항하는 항공편이 없습니다.`
         );
         setLoading(false);
       } else {
         setErrorMessage('');
-        console.log('✅ 검색된 데이터:', searchData);
+        console.log('✅ 출발편 검색 완료:', departureFlights);
+
+        // ✅ 500ms 딜레이 후 navigate 실행 (로딩 화면이 보이도록)
         setTimeout(() => {
-          navigate('/flights/results', {state: {flights: searchData}});
-        }, 5000);
+          setLoading(false);
+          navigate('/flights/roundtrip-departure', {
+            state: {
+              departureFlights,
+              returnDate: formattedReturnDate,
+              passengers,
+              deptCode,
+              arrCode
+            }
+          });
+        }, 500);
       }
     } catch (error) {
       console.error('🚨 검색 실패:', error);
@@ -88,7 +104,7 @@ const FlightSearch = () => {
 
   return (
     <div className="p-4 bg-gray-100 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-2">✈️ 항공편 검색</h2>
+      <h2 className="text-xl font-semibold mb-2">🔄 왕복 항공편 검색</h2>
 
       <div className="flex space-x-2 items-center">
         <select
@@ -117,15 +133,22 @@ const FlightSearch = () => {
 
         <input
           type="date"
-          value={date}
-          onChange={e => setDate(e.target.value)}
-          className="border p-2 rounded w-1/4"
+          value={departureDate}
+          onChange={e => setDepartureDate(e.target.value)}
+          className="border p-2 rounded w-1/5"
+        />
+
+        <input
+          type="date"
+          value={returnDate}
+          onChange={e => setReturnDate(e.target.value)}
+          className="border p-2 rounded w-1/5"
         />
 
         <select
           value={passengers}
           onChange={e => setPassengers(Number(e.target.value))}
-          className="border p-2 rounded w-1/5">
+          className="border p-2 rounded w-1/6">
           {[...Array(9)].map((_, i) => (
             <option key={i + 1} value={i + 1}>
               {i + 1}명
@@ -146,4 +169,4 @@ const FlightSearch = () => {
   );
 };
 
-export default FlightSearch;
+export default RoundTripSearch;

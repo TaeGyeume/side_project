@@ -10,7 +10,11 @@ const flightSchema = new mongoose.Schema(
     departure: {
       airport: {type: String, required: true},
       city: {type: String, required: true},
-      date: {type: Date, required: true}, // ✅ 날짜 추가 (YYYYMMDD 형식)
+      date: {
+        type: Date,
+        default: () => new Date(Date.now() + 9 * 60 * 60 * 1000),
+        required: true
+      },
       time: {type: String, required: true}, // ✅ 원본 그대로 유지 (HHmm 형식)
       weekday: {type: String, required: true}
     },
@@ -18,7 +22,11 @@ const flightSchema = new mongoose.Schema(
     arrival: {
       airport: {type: String, required: true},
       city: {type: String, required: true},
-      date: {type: Date, required: true}, // ✅ 날짜 추가 (YYYYMMDD 형식)
+      date: {
+        type: Date,
+        default: () => new Date(Date.now() + 9 * 60 * 60 * 1000),
+        required: true
+      },
       time: {type: String, required: true}, // ✅ 원본 그대로 유지 (HHmm 형식)
       weekday: {type: String, required: true}
     },
