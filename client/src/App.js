@@ -37,6 +37,7 @@ import CategoryPage from './pages/product/travelItems/CategoryPage';
 import TravelItemPage from './pages/product/travelItems/TravelItemPage';
 import TravelItemListPage from './pages/product/travelItems/TravelItemListPage';
 import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
+import TourTicketBookingPage from './pages/booking/tourTicket/TourTicketBookingPage';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -104,6 +105,7 @@ const App = () => {
             {/* <Route path="/reservation/:flightId" element={<Reservation />} /> */}
             <Route path="/profile" element={<UserPages.Profile />} />
             <Route path="/profile/update" element={<EditProfile />} />
+            <Route path="/tourTicket/booking/:id" element={<TourTicketBookingPage />} />
           </Route>
           {/* 🔒 어드민 전용 페이지 */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>

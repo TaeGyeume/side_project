@@ -4,6 +4,19 @@ import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {createTourTicket} from '../../../api/tourTicket/tourTicketService';
 
+const locationOptions = [
+  '서울',
+  '경기도',
+  '강원도',
+  '충청북도',
+  '충청남도',
+  '전라북도',
+  '전라남도',
+  '경상북도',
+  '경상남도',
+  '제주도'
+];
+
 const TourTicketForm = () => {
   const navigate = useNavigate();
 
@@ -66,14 +79,18 @@ const TourTicketForm = () => {
           onChange={handleChange}
           required
         />
-        <input
-          type="text"
+        <select
           name="location"
-          placeholder="위치"
           value={formData.location}
           onChange={handleChange}
-          required
-        />
+          required>
+          <option value="">지역 선택</option>
+          {locationOptions.map(loc => (
+            <option key={loc} value={loc}>
+              {loc}
+            </option>
+          ))}
+        </select>
         <input
           type="number"
           name="price"
