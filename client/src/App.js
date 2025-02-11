@@ -37,7 +37,7 @@ import CategoryPage from './pages/product/travelItems/CategoryPage';
 import TravelItemPage from './pages/product/travelItems/TravelItemPage';
 import TravelItemListPage from './pages/product/travelItems/TravelItemListPage';
 import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
-import TourTicketBookingPage from './pages/booking/tourTicket/TourTicketBookingPage';
+import TourTicketBookingPage from './pages/booking/BookingPage';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
