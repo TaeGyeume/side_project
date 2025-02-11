@@ -18,6 +18,7 @@ const userTourTicketRoutes = require('./routes/tourTicket/userTourTicketRoutes')
 const travelItemRoutes = require('./routes/travelItemRoutes');
 const authMiddleware = require('./middleware/authMiddleware'); // ✅ JWT 인증 미들웨어 추가
 const authorizeRoles = require('./middleware/authorizeRoles'); // ✅ 역할 기반 접근 제어 추가
+const tourTicketBookingRoutes = require('./routes/booking/tourTicket/tourTicketBookingRoutes');
 
 const path = require('path');
 const cookieParser = require('cookie-parser');

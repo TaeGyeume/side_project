@@ -23,6 +23,7 @@ const bookingSchema = new mongoose.Schema(
     endDate: {type: Date}, // 이용 종료일
     adults: {type: Number, default: 0}, // 성인 인원
     children: {type: Number, default: 0}, // 소아 인원
+    merchant_uid: {type: String, required: true},
     totalPrice: {type: Number, required: true}, // 총 결제 금액
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -30,13 +31,15 @@ const bookingSchema = new mongoose.Schema(
       ref: 'User' // User 컬렉션 참조
     },
     reservationInfo: {
-      // 기본적으로는 userId를 참조하여 정보를 채우지만, 수정된 경우 저장
-      name: {type: String}, // 수정된 이름
-      email: {type: String}, // 수정된 이메일
-      phone: {type: String} // 수정된 전화번호
+      name: {type: String},
+      email: {type: String},
+      phone: {type: String}
     },
-    paymentMethod: {type: String, required: true}, // 결제 방법
-    paymentStatus: {type: String, default: 'COMPLETED'}, // 결제 상태
+    paymentStatus: {
+      type: String,
+      enum: ['PENDING', 'COMPLETED', 'CANCELED'],
+      default: 'PENDING'
+    }, // 결제 상태
     createdAt: {
       type: Date,
       default: () => new Date(Date.now() + 9 * 60 * 60 * 1000) // KST

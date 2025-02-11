@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import React, {useEffect, useState} from 'react';
 import api from './api/axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {BrowserRouter as Router, Route, Routes, Navigate} from 'react-router-dom';
