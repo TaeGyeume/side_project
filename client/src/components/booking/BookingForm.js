@@ -1,4 +1,5 @@
 // 예약 및 결제 파라미터 입력 폼
+// 항공, 숙소 파라미터 아직 미입력
 
 import React, {useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
@@ -9,7 +10,7 @@ import {
 } from '../../api/booking/bookingService';
 import {authAPI} from '../../api/auth/index';
 
-const TourTicketBookingForm = () => {
+const BookingForm = () => {
   const {id} = useParams();
   const [ticket, setTicket] = useState(null);
   const [user, setUser] = useState(null);
@@ -207,4 +208,4 @@ const TourTicketBookingForm = () => {
   );
 };
 
-export default TourTicketBookingForm;
+export default BookingForm;
