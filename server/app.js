@@ -20,7 +20,7 @@ const userTourTicketRoutes = require('./routes/tourTicket/userTourTicketRoutes')
 const travelItemRoutes = require('./routes/travelItemRoutes');
 const authMiddleware = require('./middleware/authMiddleware'); // ✅ JWT 인증 미들웨어 추가
 const authorizeRoles = require('./middleware/authorizeRoles'); // ✅ 역할 기반 접근 제어 추가
-const tourTicketBookingRoutes = require('./routes/booking/tourTicket/tourTicketBookingRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
 
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -59,7 +59,7 @@ app.use('/api/travelItems', travelItemRoutes);
 app.use('/product', productRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/tourTicket', userTourTicketRoutes);
-app.use('/booking/tourTicket', tourTicketBookingRoutes);
+app.use('/booking/', bookingRoutes);
 
 //테스트용
 app.post('/api/admin', authMiddleware, authorizeRoles('admin'), (req, res) => {
