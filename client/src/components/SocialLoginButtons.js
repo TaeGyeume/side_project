@@ -2,9 +2,9 @@ import React from 'react';
 
 const SocialLoginButtons = () => {
   // 페이스북 로그인 핸들러
-  const handleFacebookLogin = () => {
-    window.location.href = 'http://localhost:5000/api/auth/facebook';
-  };
+  // const handleFacebookLogin = () => {
+  //   window.location.href = 'http://localhost:5000/api/auth/facebook';
+  // };
 
   // 네이버 로그인 핸들러
   const handleNaverLogin = () => {

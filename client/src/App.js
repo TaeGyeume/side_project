@@ -40,7 +40,9 @@ import TourTicketModify from './components/product/tourTicket/TourTicketModify';
 import CategoryPage from './pages/product/travelItems/CategoryPage';
 import TravelItemPage from './pages/product/travelItems/TravelItemPage';
 import TravelItemListPage from './pages/product/travelItems/TravelItemListPage';
+import TravelItemEditPage from './pages/product/travelItems/TravelItemEditPage';
 import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
+import TourTicketBookingPage from './pages/booking/BookingPage';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -113,6 +115,7 @@ const App = () => {
             {/* <Route path="/reservation/:flightId" element={<Reservation />} /> */}
             <Route path="/profile" element={<UserPages.Profile />} />
             <Route path="/profile/update" element={<EditProfile />} />
+            <Route path="/tourTicket/booking/:id" element={<TourTicketBookingPage />} />
           </Route>
           {/* 🔒 어드민 전용 페이지 */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>
@@ -141,6 +144,10 @@ const App = () => {
             <Route path="/product/travelItems/newCategory" element={<CategoryPage />} />
             <Route path="/product/travelItems/new" element={<TravelItemPage />} />
             <Route path="/product/travelItems/list" element={<TravelItemListPage />} />
+            <Route
+              path="/product/travelItems/edit/:itemId"
+              element={<TravelItemEditPage />}
+            />
           </Route>
           {/* ❌ 권한 없음 페이지 */}
           <Route path="/unauthorized" element={<Unauthorized />} />

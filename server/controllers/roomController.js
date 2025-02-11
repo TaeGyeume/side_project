@@ -3,7 +3,7 @@ const Room = require('../models/Room'); // Room 모델 불러오기
 const path = require('path');
 const fs = require('fs');
 
-// ✅ 객실 생성 컨트롤러 (이미지 업로드 지원)
+//  객실 생성 컨트롤러 (이미지 업로드 지원)
 exports.createRoom = async (req, res) => {
   try {
     const roomData = req.body;
