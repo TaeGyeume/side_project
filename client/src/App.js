@@ -21,6 +21,10 @@ import AccommodationResults from './pages/accommodations/AccommodationResults';
 import AccommodationDetail from './pages/accommodations/AccommodationDetail';
 import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이지 추가
 import FlightResults from './pages/flights/FlightResults';
+import RoundTripResults from './pages/flights/RoundTripResults';
+import RoundTripDeparture from './pages/flights/RoundTripDeparture'; // ✅ 추가
+import RoundTripReturn from './pages/flights/RoundTripReturn'; // ✅ 추가
+import RoundTripConfirm from './pages/flights/RoundTripConfirm'; // ✅ 추가
 import ProductPage from './pages/product/ProductPage';
 import AccommodationList from './pages/product/accommodations/AccommodationList';
 import AccommodationCreate from './pages/product/accommodations/AccommodationCreate';
@@ -96,6 +100,10 @@ const App = () => {
           {/* ✈️ 항공편 목록 페이지 추가 */}
           <Route path="/flights" element={<Flights />} />
           <Route path="/flights/results" element={<FlightResults />} />
+          <Route path="/flights/roundtrip-results" element={<RoundTripResults />} />
+          <Route path="/flights/roundtrip-departure" element={<RoundTripDeparture />} />
+          <Route path="/flights/roundtrip-return" element={<RoundTripReturn />} />
+          <Route path="/flights/roundtrip-confirm" element={<RoundTripConfirm />} />
 
           <Route path="/tourTicket/*" element={<UserTourTicketPage />} />
 

@@ -1,12 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import FlightSearch from '../../components/flights/FlightSearch';
+import RoundTripSearch from '../../components/flights/RoundTripSearch';
 import FlightList from '../../components/flights/FlightList';
 import {fetchFlights} from '../../api/flight/flights';
 import moment from 'moment-timezone';
 
 const Flights = () => {
   const [flights, setFlights] = useState([]); // 전체 항공편 데이터
+  const [isRoundTrip, setIsRoundTrip] = useState(false); // ✅ 왕복 여부 상태 추가
   const navigate = useNavigate(); // ✅ 검색 후 페이지 이동을 위한 useNavigate
 
   useEffect(() => {
@@ -45,9 +47,27 @@ const Flights = () => {
   };
 
   return (
-    <div>
-      {/* 🔍 검색 컴포넌트 추가 */}
-      <FlightSearch onSearch={handleSearch} />
+    <div className="container mt-4">
+      {/* ✈️ 편도/왕복 선택 버튼 */}
+      <div className="flex justify-center space-x-4 mb-4">
+        <button
+          onClick={() => setIsRoundTrip(false)}
+          className={`px-4 py-2 rounded-lg ${
+            !isRoundTrip ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
+          }`}>
+          편도
+        </button>
+        <button
+          onClick={() => setIsRoundTrip(true)}
+          className={`px-4 py-2 rounded-lg ${
+            isRoundTrip ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
+          }`}>
+          왕복
+        </button>
+      </div>
+
+      {/* 🔍 편도 검색 or 왕복 검색 */}
+      {isRoundTrip ? <RoundTripSearch /> : <FlightSearch onSearch={handleSearch} />}
 
       {/* 🛫 모든 항공편 표시 */}
       <FlightList flights={flights} />
