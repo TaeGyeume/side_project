@@ -1,13 +1,21 @@
 import React, {useState, useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import axios from '../../../api/axios';
 
-const TravelItemForm = ({onItemCreated}) => {
+const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated}) => {
+  // ✅ isEdit과 itemId를 props에서 받음
   const navigate = useNavigate();
+  const {itemId: paramItemId} = useParams(); // ✅ URL에서 itemId 가져오기 (수정 모드)
+
+  const finalItemId = itemId || paramItemId; // ✅ props에서 받은 itemId가 없으면 useParams 사용
+
   const [categories, setCategories] = useState([]); // 모든 카테고리
   const [topCategories, setTopCategories] = useState([]); // 최상위 카테고리
   const [subCategories, setSubCategories] = useState([]); // 선택한 최상위 카테고리의 하위 카테고리
-  const [previewImages, setPreviewImages] = useState([]); // ✅ 이미지 미리보기 목록
+  const [previewImages, setPreviewImages] = useState([]); // ✅ 기존 이미지 미리보기
+  const [newImages, setNewImages] = useState([]); // ✅ 새로 업로드된 이미지
+  const [removeImages, setRemoveImages] = useState([]); // ✅ 삭제할 기존 이미지 목록
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -18,6 +26,8 @@ const TravelItemForm = ({onItemCreated}) => {
     stock: '',
     images: []
   });
+
+  const SERVER_URL = 'http://localhost:5000';
 
   // ✅ 모든 카테고리 불러오기
   useEffect(() => {
@@ -32,8 +42,57 @@ const TravelItemForm = ({onItemCreated}) => {
         console.error('❌ 카테고리 불러오기 실패:', error);
       }
     };
+
     fetchCategories();
   }, []);
+
+  // ✅ 수정 모드일 경우 기존 상품 데이터 불러오기
+  useEffect(() => {
+    if (isEdit && finalItemId) {
+      const fetchItem = async () => {
+        try {
+          const response = await axios.get(`/travelItems/${finalItemId}`);
+          const itemData = response.data;
+
+          // ✅ 최상위 카테고리 & 하위 카테고리 설정
+          let topCategoryId = '';
+          let parentCategoryId = '';
+
+          if (itemData.parentCategory) {
+            parentCategoryId = itemData.parentCategory._id;
+            if (itemData.parentCategory.parentCategory) {
+              topCategoryId = itemData.parentCategory.parentCategory._id;
+            } else {
+              topCategoryId = itemData.parentCategory._id; // 상위 카테고리가 없으면 자신이 최상위
+            }
+          }
+
+          setFormData({
+            name: itemData.name,
+            description: itemData.description,
+            topCategory: topCategoryId, // ✅ 최상위 카테고리 자동 설정
+            category: parentCategoryId, // ✅ 직접적인 부모 카테고리
+            parentCategory: parentCategoryId,
+            price: itemData.price,
+            stock: itemData.stock,
+            images: itemData.images || []
+          });
+
+          setPreviewImages(itemData.images.map(img => `${SERVER_URL}${img}`));
+
+          if (topCategoryId) {
+            setSubCategories(
+              categories.filter(cat => cat.parentCategory?._id === topCategoryId)
+            );
+          }
+        } catch (error) {
+          console.error('❌ 기존 상품 불러오기 실패:', error);
+        }
+      };
+
+      fetchItem();
+    }
+  }, [isEdit, finalItemId, categories]);
 
   // ✅ 최상위 카테고리 변경 시, 하위 카테고리 필터링
   const handleTopCategoryChange = e => {
@@ -45,7 +104,6 @@ const TravelItemForm = ({onItemCreated}) => {
       parentCategory: ''
     });
 
-    // ✅ 하위 카테고리 필터링 (상품 제외)
     if (selectedTopCategory) {
       setSubCategories(
         categories.filter(cat => cat.parentCategory?._id === selectedTopCategory)
@@ -73,67 +131,70 @@ const TravelItemForm = ({onItemCreated}) => {
     }
   };
 
-  // ✅ 이미지 업로드 핸들러 (미리보기 추가)
+  // ✅ 이미지 업로드 핸들러
   const handleFileChange = e => {
     const files = Array.from(e.target.files);
-    setFormData({
-      ...formData,
-      images: files
-    });
+    setNewImages(files);
 
-    // ✅ 미리보기 이미지 생성
     const filePreviews = files.map(file => URL.createObjectURL(file));
-    setPreviewImages(filePreviews);
+    setPreviewImages([...previewImages, ...filePreviews]);
   };
 
-  // ✅ 개별 이미지 삭제 핸들러
+  // ✅ 기존 및 새 이미지 삭제 핸들러
   const handleRemoveImage = index => {
-    const newImages = formData.images.filter((_, i) => i !== index);
-    setFormData({...formData, images: newImages});
+    if (index < formData.images.length) {
+      const removedImage = formData.images[index];
+      setRemoveImages(prev => [...prev, removedImage]); // 삭제할 기존 이미지 추가
+      setFormData(prev => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index) // ✅ formData.images에서 삭제
+      }));
+    } else {
+      // 새로 추가된 이미지 삭제
+      const newImageIndex = index - formData.images.length;
+      setNewImages(prev => prev.filter((_, i) => i !== newImageIndex));
+    }
 
-    const newPreviews = previewImages.filter((_, i) => i !== index);
-    setPreviewImages(newPreviews);
+    // 미리보기 이미지에서도 삭제
+    setPreviewImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  // ✅ 전체 이미지 초기화 핸들러
-  const handleClearImages = () => {
-    setFormData({...formData, images: []});
-    setPreviewImages([]);
-  };
-
-  // ✅ 상품 등록 요청
+  // ✅ 상품 등록 / 수정 요청
   const handleSubmit = async e => {
     e.preventDefault();
     const data = new FormData();
 
     for (const key in formData) {
       if (key === 'images') {
-        formData.images.forEach(file => data.append('images', file));
+        newImages.forEach(file => data.append('images', file));
       } else {
         data.append(key, formData[key]);
       }
     }
 
+    if (removeImages.length > 0) {
+      data.append('removeImages', JSON.stringify(removeImages));
+    }
+
     try {
-      await axios.post('/travelItems/create', data, {
-        headers: {'Content-Type': 'multipart/form-data'}
-      });
-      console.log('✅ 상품 등록 성공');
-      setFormData({
-        name: '',
-        description: '',
-        topCategory: '',
-        category: '',
-        parentCategory: '',
-        price: '',
-        stock: '',
-        images: []
-      });
-      setPreviewImages([]); // ✅ 미리보기 초기화
-      navigate('/product/travelItem/list');
+      if (isEdit) {
+        // ✅ 수정 요청 (PATCH)
+        await axios.patch(`/travelItems/${finalItemId}`, data, {
+          headers: {'Content-Type': 'multipart/form-data'}
+        });
+        console.log('✅ 상품 수정 성공');
+      } else {
+        // ✅ 생성 요청 (POST)
+        await axios.post('/travelItems/create', data, {
+          headers: {'Content-Type': 'multipart/form-data'}
+        });
+        console.log('✅ 상품 등록 성공');
+      }
+
+      navigate('/product/travelItems/list');
       onItemCreated();
     } catch (error) {
-      console.error('❌ 상품 등록 실패:', error);
+      console.error('❌ 상품 처리 실패:', error);
     }
   };
 
@@ -243,10 +304,10 @@ const TravelItemForm = ({onItemCreated}) => {
           />
         </div>
 
-        {/* ✅ 이미지 미리보기 및 삭제 */}
+        {/* ✅ 기존 이미지 미리보기 */}
         {previewImages.length > 0 && (
           <div className="mb-3">
-            <label className="form-label">이미지 미리보기</label>
+            <label className="form-label">기존 이미지</label>
             <div className="d-flex flex-wrap gap-2">
               {previewImages.map((img, index) => (
                 <div key={index} className="position-relative">
@@ -265,12 +326,6 @@ const TravelItemForm = ({onItemCreated}) => {
                 </div>
               ))}
             </div>
-            <button
-              type="button"
-              className="btn btn-warning mt-2"
-              onClick={handleClearImages}>
-              모든 이미지 삭제
-            </button>
           </div>
         )}
 
