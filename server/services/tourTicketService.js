@@ -4,7 +4,7 @@ const path = require('path');
 
 // 모든 투어.티켓 조회
 exports.getAllTickets = async () => {
-  return await TourTicket.find();
+  return await TourTicket.find().sort({createdAt: -1});
 };
 
 // 특정 투어.티켓 조회

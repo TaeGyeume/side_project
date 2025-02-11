@@ -16,6 +16,7 @@ const flightRoutes = require('./routes/flightRoutes'); // ✈️ 항공편 라�
 const reservationRoutes = require('./routes/reservationRoutes'); // 🎫 예약 라우트 추가
 const socialAuthRoutes = require('./routes/socialAuthRoutes'); // 소셜 로그인 라우트 추가
 const userTourTicketRoutes = require('./routes/tourTicket/userTourTicketRoutes');
+const tourTicketBookingRoutes = require('./routes/booking/tourTicket/tourTicketBookingRoutes');
 
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -54,6 +55,7 @@ app.use('/api/reservations', reservationRoutes); // 🎫 예약 관련 API
 app.use('/product', productRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/tourTicket', userTourTicketRoutes);
+app.use('/booking/tourTicket', tourTicketBookingRoutes);
 
 // 리프레시 토큰 엔드포인트
 // app.post('/api/auth/refresh-token', (req, res) => {

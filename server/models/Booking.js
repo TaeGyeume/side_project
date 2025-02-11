@@ -19,8 +19,8 @@ const bookingSchema = new mongoose.Schema(
         return this.type === 'accommodation';
       } // 숙소 예약 시 필수
     },
-    startDate: {type: Date, required: true}, // 이용 시작일
-    endDate: {type: Date, required: true}, // 이용 종료일
+    startDate: {type: Date}, // 이용 시작일
+    endDate: {type: Date}, // 이용 종료일
     adults: {type: Number, default: 0}, // 성인 인원
     children: {type: Number, default: 0}, // 소아 인원
     totalPrice: {type: Number, required: true}, // 총 결제 금액
