@@ -85,7 +85,7 @@ const TourTicketBookingForm = () => {
       const bookingResponse = await createBooking({
         type: 'tourTicket',
         productId: ticket._id,
-        merchant_uid, // ✅ merchant_uid 추가
+        merchant_uid,
         startDate: formData.startDate,
         endDate: formData.endDate,
         adults: formData.adults,
@@ -143,9 +143,9 @@ const TourTicketBookingForm = () => {
 
             console.log('✅ 결제 검증 응답:', verifyResponse);
 
-            if (verifyResponse.status === 200) {
+            if (verifyResponse.message === '결제 검증 성공') {
               alert('✅ 결제 검증 성공! 예약이 완료되었습니다.');
-              navigate('/tourTicket/booking/success');
+              // navigate('/tourTicket/booking/success');
             } else {
               alert(`🚨 결제 검증 실패: ${verifyResponse.message}`);
               console.error('🚨 결제 검증 실패 상세 로그:', verifyResponse);
