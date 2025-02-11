@@ -225,29 +225,6 @@ exports.refreshToken = async (req, res) => {
   }
 };
 
-// exports.verifyCode = async (req, res) => {
-//   try {
-//     const {email, code} = req.body;
-//     console.log('🔍 [서버] 인증 코드 검증 요청:', email, code);
-
-//     const isValid = await authService.verifyCode(email, code);
-
-//     if (!isValid) {
-//       return res.status(400).json({message: '잘못된 인증 코드입니다.'});
-//     }
-
-//     const user = await User.findOne({email});
-//     if (!user) {
-//       return res.status(404).json({message: '이메일에 해당하는 사용자가 없습니다.'});
-//     }
-
-//     res.status(200).json({userId: user.userid, message: '아이디 찾기 성공'});
-//   } catch (error) {
-//     console.error('❌ [서버] 인증 코드 검증 실패:', error.message);
-//     res.status(500).json({message: '인증 코드 확인 중 오류 발생', error: error.message});
-//   }
-// };
-
 exports.verifyCode = async (req, res) => {
   try {
     const {email, code} = req.body;
