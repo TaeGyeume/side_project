@@ -143,7 +143,8 @@ const SearchBar = ({onSearch}) => {
         <div className="guest-selector">
           <button
             onClick={() => setAdults(prev => Math.max(1, prev - 1))}
-            className="button">
+            className="button"
+          >
             -
           </button>
           <span>{adults}</span>

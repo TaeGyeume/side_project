@@ -43,7 +43,14 @@ const ProductPage = () => {
 
       <div style={{padding: '20px', flex: 1}}>
         <div id="accommodations" ref={accommodationsRef} style={sectionStyle}>
-          <AccommodationList />
+          <div style={headerContainerStyle}>
+            <FontAwesomeIcon
+              icon={faSquarePlus}
+              onClick={() => navigate('/product/accommodations/list')}
+              style={plusButtonStyle}
+            />
+          </div>
+          <AccommodationList limit={3} />
         </div>
 
         <div id="tourTicket" ref={tourTicketRef} style={sectionStyle}>

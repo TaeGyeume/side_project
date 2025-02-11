@@ -22,7 +22,7 @@ const AccommodationCreate = () => {
       });
 
       alert('숙소가 성공적으로 등록되었습니다.');
-      navigate('/product/accommodations');
+      navigate('/product/accommodations/list');
     } catch (error) {
       console.error('숙소 등록 오류:', error);
       alert('숙소 등록에 실패했습니다.');

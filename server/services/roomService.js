@@ -112,18 +112,41 @@ exports.deleteRoom = async roomId => {
 
     const accommodationId = room.accommodation;
 
-    // 2️⃣ 객실 삭제
+    // 2️⃣ 객실의 모든 이미지 삭제 (서버 파일 시스템에서 제거)
+    if (room.images && room.images.length > 0) {
+      room.images.forEach(imageUrl => {
+        const absoluteFilePath = path.join(
+          __dirname,
+          '../uploads',
+          imageUrl.replace('/uploads/', '')
+        );
+
+        if (fs.existsSync(absoluteFilePath)) {
+          fs.unlink(absoluteFilePath, err => {
+            if (err) {
+              console.error(`❌ 이미지 삭제 오류 (${imageUrl}):`, err);
+            } else {
+              console.log(`✅ 이미지 삭제 성공: ${absoluteFilePath}`);
+            }
+          });
+        } else {
+          console.warn(`⚠️ 삭제할 이미지 파일이 존재하지 않음: ${absoluteFilePath}`);
+        }
+      });
+    }
+
+    // 3️⃣ 객실 삭제
     await Room.findByIdAndDelete(roomId);
 
-    // 3️⃣ 숙소에서 객실 ID 제거
+    // 4️⃣ 숙소에서 객실 ID 제거
     await Accommodation.findByIdAndUpdate(accommodationId, {
       $pull: {rooms: roomId}
     });
 
-    // 4️⃣ 숙소의 minPrice, maxPrice 업데이트
+    // 5️⃣ 숙소의 minPrice, maxPrice 업데이트
     await exports.updateAccommodationPriceRange(accommodationId);
 
-    return {message: '객실이 성공적으로 삭제되었습니다.'};
+    return {message: '객실 및 관련 이미지가 성공적으로 삭제되었습니다.'};
   } catch (error) {
     throw new Error('객실 삭제 중 오류 발생: ' + error.message);
   }
@@ -190,5 +213,63 @@ exports.deleteImage = async (roomId, imageUrl) => {
   } catch (error) {
     console.error('이미지 삭제 오류:', error);
     return {status: 500, message: '이미지 삭제 중 오류 발생'};
+  }
+};
+
+exports.getRoomById = async roomId => {
+  try {
+    const room = await Room.findById(roomId);
+    if (!room) {
+      throw new Error('객실을 찾을 수 없습니다.');
+    }
+    return room;
+  } catch (error) {
+    throw new Error('객실 조회 중 오류 발생: ' + error.message);
+  }
+};
+
+// ✅ 개별 이미지 삭제 서비스
+exports.deleteImage = async (roomId, imageUrl) => {
+  try {
+    console.log('🛠️ 삭제할 이미지:', imageUrl);
+
+    if (!imageUrl) {
+      return {status: 400, message: '삭제할 이미지 URL이 제공되지 않았습니다.'};
+    }
+
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return {status: 404, message: '객실을 찾을 수 없습니다.'};
+    }
+
+    if (!room.images.includes(imageUrl)) {
+      return {status: 404, message: '해당 이미지는 객실에 등록되어 있지 않습니다.'};
+    }
+
+    // ✅ DB에서 이미지 제거
+    room.images = room.images.filter(img => img !== imageUrl);
+    await room.save();
+
+    // ✅ 서버에서 실제 이미지 파일 삭제
+    const absoluteFilePath = path.join(
+      __dirname,
+      '../uploads',
+      imageUrl.replace('/uploads/', '')
+    );
+    console.log('🗑️ 삭제할 파일 경로:', absoluteFilePath);
+
+    if (fs.existsSync(absoluteFilePath)) {
+      fs.unlink(absoluteFilePath, err => {
+        if (err) console.error('❌ 이미지 삭제 오류:', err);
+        else console.log('✅ 이미지 삭제 성공:', absoluteFilePath);
+      });
+    } else {
+      console.warn('⚠️ 삭제할 이미지 파일이 존재하지 않음:', absoluteFilePath);
+    }
+
+    return {status: 200, message: '이미지가 삭제되었습니다.', images: room.images};
+  } catch (error) {
+    console.error('🔥 이미지 삭제 오류:', error);
+    return {status: 500, message: '서버 오류로 인해 이미지 삭제 실패'};
   }
 };

@@ -43,7 +43,7 @@ const authMiddleware = async (req, res, next) => {
           {id: decodedRefreshToken.id},
           process.env.JWT_SECRET,
           {
-            expiresIn: '15m'
+            expiresIn: '7d'
           }
         );
 

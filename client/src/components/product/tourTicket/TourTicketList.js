@@ -115,7 +115,8 @@ const TourTicketList = () => {
                 isDeleteMode
                   ? handleSelectTicket(ticket._id)
                   : navigate(`/product/tourTicket/${ticket._id}`)
-              }>
+              }
+            >
               {isDeleteMode && (
                 <input
                   type="checkbox"

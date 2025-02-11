@@ -26,14 +26,15 @@ const AccommodationModify = () => {
   const [newImages, setNewImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [countries, setCountries] = useState([]); // ✅ 국가 목록
+  const [cities, setCities] = useState([]); // ✅ 특정 국가의 도시 목록
+  const [selectedCountry, setSelectedCountry] = useState(''); // 현재 선택된 국가
 
   // ✅ 기존 숙소 데이터 가져오기
   useEffect(() => {
     const fetchAccommodation = async () => {
       try {
         const response = await axios.get(`/accommodations/${accommodationId}`);
-        console.log('📌 받은 데이터:', response.data); // ✅ 디버깅 추가
-
         const data = response.data;
 
         // ✅ `coordinates.coordinates` 배열이 없을 경우 예외처리
@@ -47,6 +48,7 @@ const AccommodationModify = () => {
             lat: coordinatesData[1] || '', // 위도
             lng: coordinatesData[0] || '' // 경도
           },
+          location: data.location?._id || '',
           images: data.images || []
         });
 
@@ -55,6 +57,8 @@ const AccommodationModify = () => {
             img.startsWith('/uploads/') ? `${SERVER_URL}${img}` : img
           )
         );
+        setSelectedCountry(data.location?.country || ''); // ✅ 국가 자동 선택
+        setCities([{_id: data.location?._id, name: data.location?.name}]); // ✅ 기존 도시 자동 선택
 
         setLoading(false);
       } catch (err) {
@@ -95,6 +99,42 @@ const AccommodationModify = () => {
     setFormData({...formData, [name]: value});
   };
 
+  // ✅ 국가 목록 가져오기
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const response = await axios.get('/locations/countries');
+        setCountries(response.data);
+      } catch (error) {
+        console.error('❌ 국가 목록 불러오기 오류:', error);
+      }
+    };
+
+    fetchCountries();
+  }, []);
+
+  // ✅ 국가 변경 핸들러
+  const handleCountryChange = async e => {
+    const country = e.target.value;
+    setSelectedCountry(country);
+    setCities([]);
+    setFormData(prev => ({...prev, location: ''})); // ✅ 국가 변경 시 도시 초기화
+
+    if (country) {
+      try {
+        const response = await axios.get(`/locations/cities?country=${country}`);
+        setCities(response.data);
+      } catch (error) {
+        console.error('❌ 도시 목록 불러오기 오류:', error);
+      }
+    }
+  };
+
+  // ✅ 도시 변경 핸들러 (location 값 업데이트)
+  const handleCityChange = e => {
+    setFormData(prev => ({...prev, location: e.target.value}));
+  };
+
   // 🔹 좌표 입력 핸들러
   const handleCoordinateChange = e => {
     const {name, value} = e.target;
@@ -110,16 +150,31 @@ const AccommodationModify = () => {
   // 🔹 파일 업로드 핸들러 (미리보기 포함)
   const handleFileChange = e => {
     const files = Array.from(e.target.files);
-    const newPreviews = files.map(file => URL.createObjectURL(file));
 
-    setPreviewImages([...previewImages, ...newPreviews]);
-    setNewImages([...newImages, ...files]); // 🆕 새 이미지 저장
+    // 새 이미지 미리보기 URL 생성
+    const newPreviews = files.map(file => ({
+      file,
+      url: URL.createObjectURL(file)
+    }));
+
+    // 상태 업데이트
+    setPreviewImages([...previewImages, ...newPreviews.map(item => item.url)]);
+    setNewImages([...newImages, ...newPreviews]); // 🆕 File 객체와 URL 저장
   };
 
-  // 🔹 이미지 삭제 핸들러 (백엔드 요청 X, UI에서만 숨김)
+  // 🔹 이미지 삭제 핸들러 (업로드된 이미지 & 새 이미지 모두 포함)
   const handleDeleteImage = imageUrl => {
-    setImagesToDelete([...imagesToDelete, imageUrl]); // 🛑 삭제할 이미지 목록에 추가
+    // 기존 이미지 삭제 목록에 추가
+    if (formData.images.includes(imageUrl.replace(SERVER_URL, ''))) {
+      setImagesToDelete([...imagesToDelete, imageUrl.replace(SERVER_URL, '')]);
+    }
+
+    // 새로 업로드한 이미지인 경우 필터링하여 제거
+    const updatedNewImages = newImages.filter(image => image.url !== imageUrl);
+
+    setNewImages(updatedNewImages); // 🆕 newImages 상태 업데이트
     setPreviewImages(previewImages.filter(img => img !== imageUrl));
+
     setFormData({
       ...formData,
       images: formData.images.filter(img => img !== imageUrl.replace(SERVER_URL, ''))
@@ -161,23 +216,42 @@ const AccommodationModify = () => {
 
     console.log('📌 변환된 좌표 데이터:', JSON.stringify(coordinates));
 
-    const updatedFormData = new FormData();
-    updatedFormData.append('name', formData.name);
-    updatedFormData.append('description', formData.description);
-    updatedFormData.append('location', formData.location);
-    updatedFormData.append('address', formData.address);
-    updatedFormData.append('category', formData.category);
-    updatedFormData.append('coordinates', JSON.stringify(coordinates));
-    updatedFormData.append('amenities', JSON.stringify(formData.amenities));
-
-    // ✅ 기존 이미지 유지 (삭제되지 않은 이미지만 추가)
-    const remainingImages = formData.images.filter(img => !imagesToDelete.includes(img));
-    updatedFormData.append('existingImages', JSON.stringify(remainingImages));
-
-    // ✅ 새로 업로드한 이미지 추가
-    newImages.forEach(image => updatedFormData.append('images', image));
-
     try {
+      // ✅ 이미지 삭제 요청을 먼저 보낸다.
+      if (imagesToDelete.length > 0) {
+        for (const image of imagesToDelete) {
+          console.log('📌 이미지 삭제 요청:', image);
+
+          await axios.delete(`/accommodations/${accommodationId}/images`, {
+            data: {imageUrl: image}, // ✅ DELETE 요청에서는 `data` 속성을 사용해야 한다.
+            headers: {'Content-Type': 'application/json'}
+          });
+
+          console.log('✅ 이미지 삭제 성공:', image);
+        }
+      }
+
+      console.log('📌 삭제된 이미지 리스트:', imagesToDelete);
+
+      // ✅ 숙소 업데이트 요청
+      const updatedFormData = new FormData();
+      updatedFormData.append('name', formData.name);
+      updatedFormData.append('description', formData.description);
+      updatedFormData.append('location', formData.location);
+      updatedFormData.append('address', formData.address);
+      updatedFormData.append('category', formData.category);
+      updatedFormData.append('coordinates', JSON.stringify(coordinates));
+      updatedFormData.append('amenities', JSON.stringify(formData.amenities));
+
+      // ✅ 기존 이미지 유지 (삭제되지 않은 이미지만 추가)
+      const remainingImages = formData.images.filter(
+        img => !imagesToDelete.includes(img)
+      );
+      updatedFormData.append('existingImages', JSON.stringify(remainingImages));
+
+      // ✅ 새로 업로드한 이미지 중 삭제되지 않은 파일만 추가
+      newImages.forEach(image => updatedFormData.append('images', image.file));
+
       console.log('📌 전송할 FormData 확인:');
       for (let pair of updatedFormData.entries()) {
         console.log(pair[0], pair[1]);
@@ -214,6 +288,41 @@ const AccommodationModify = () => {
     <div className="container mt-4">
       <h2>숙소 수정</h2>
       <form onSubmit={handleSubmit}>
+        {/* 🔹 국가 선택 */}
+        <div className="mb-3">
+          <label className="form-label">국가 선택</label>
+          <select
+            className="form-control"
+            value={selectedCountry}
+            onChange={handleCountryChange}
+          >
+            <option value="">국가를 선택하세요</option>
+            {countries.map((country, index) => (
+              <option key={index} value={country}>
+                {country}
+              </option>
+            ))}
+          </select>
+        </div>
+        {/* 🔹 도시 선택 */}
+        <div className="mb-3">
+          <label className="form-label">도시 선택</label>
+          <select
+            className="form-control"
+            name="location"
+            value={formData.location}
+            onChange={handleCityChange}
+            required
+          >
+            <option value="">도시를 선택하세요</option>
+            {cities.map(city => (
+              <option key={city._id} value={city._id}>
+                {city.name}
+              </option> // ✅ city.name 표시
+            ))}
+          </select>
+        </div>
+
         {/* 🔹 숙소명 */}
         <div className="mb-3">
           <label className="form-label">숙소명</label>
@@ -283,7 +392,8 @@ const AccommodationModify = () => {
             className="form-control"
             name="category"
             value={formData.category}
-            onChange={handleChange}>
+            onChange={handleChange}
+          >
             <option value="Hotel">호텔</option>
             <option value="Pension">펜션</option>
             <option value="Resort">리조트</option>
@@ -333,7 +443,8 @@ const AccommodationModify = () => {
                 <button
                   type="button"
                   className="btn btn-danger btn-sm"
-                  onClick={() => handleDeleteImage(image)}>
+                  onClick={() => handleDeleteImage(image)}
+                >
                   삭제
                 </button>
               </div>
@@ -344,9 +455,8 @@ const AccommodationModify = () => {
         <button
           type="button"
           className="btn btn-primary mt-2"
-          onClick={() =>
-            navigate(`/product/room/new?accommodationId=${accommodationId}`)
-          }>
+          onClick={() => navigate(`/product/room/new?accommodationId=${accommodationId}`)}
+        >
           + 객실 추가
         </button>
 

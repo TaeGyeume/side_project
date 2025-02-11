@@ -55,7 +55,8 @@ const TourTicketList = () => {
             <div
               key={ticket._id}
               className="tour-ticket-card"
-              onClick={() => navigate(`/tourTicket/list/${ticket._id}`)}>
+              onClick={() => navigate(`/tourTicket/list/${ticket._id}`)}
+            >
               <img
                 src={`http://localhost:5000${ticket.images[0]}`}
                 alt={ticket.title}

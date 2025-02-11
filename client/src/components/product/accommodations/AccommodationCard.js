@@ -1,6 +1,7 @@
 // src/components/accommodations/AccommodationCard.js
 import React from 'react';
 import {createSearchParams, useNavigate} from 'react-router-dom';
+import axios from '../../../api/axios';
 import './styles/AccommodationCard.css';
 
 // ✅ 기본 날짜 설정 함수 (오늘 + n일)
@@ -10,7 +11,11 @@ const getFormattedDate = (daysToAdd = 0) => {
   return date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
 };
 
-const AccommodationCard = ({accommodation, queryOptions = {}}) => {
+const AccommodationCard = ({
+  accommodation,
+  queryOptions = {},
+  onAccommodationDeleted
+}) => {
   const navigate = useNavigate(); // ✅ 페이지 이동을 위한 `useNavigate` 사용
 
   // ✅ 기본 필터값 설정 (queryOptions가 없을 경우 적용)
@@ -39,6 +44,31 @@ const AccommodationCard = ({accommodation, queryOptions = {}}) => {
     navigate(`/product/accommodations/modify/${accommodation._id}`);
   };
 
+  // ✅ 숙소 삭제 핸들러
+  const handleDeleteClick = async e => {
+    e.stopPropagation(); // 카드 클릭 이벤트 방지
+
+    const confirmDelete = window.confirm(
+      `"${accommodation.name}" 숙소를 삭제하시겠습니까?`
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await axios.delete(`/accommodations/${accommodation._id}`);
+
+      alert('✅ 숙소가 삭제되었습니다.');
+
+      if (onAccommodationDeleted) {
+        onAccommodationDeleted(accommodation._id); // 부모 컴포넌트에서 목록 업데이트
+      } else {
+        window.location.reload(); // 현재 페이지 새로고침
+      }
+    } catch (err) {
+      console.error('❌ 숙소 삭제 오류:', err);
+      alert('❌ 숙소 삭제에 실패했습니다.');
+    }
+  };
+
   // ✅ 이미지 URL 변환 로직 추가
   const SERVER_URL = 'http://localhost:5000';
   let imageUrl = accommodation.images?.[0] || '/default-image.jpg';
@@ -54,7 +84,8 @@ const AccommodationCard = ({accommodation, queryOptions = {}}) => {
     <div
       className="card accommodation-card mb-3"
       onClick={handleCardClick}
-      style={{cursor: 'pointer'}}>
+      style={{cursor: 'pointer'}}
+    >
       <img
         src={imageUrl}
         className="card-img-top accommodation-image"
@@ -67,9 +98,14 @@ const AccommodationCard = ({accommodation, queryOptions = {}}) => {
           <strong>최저가:</strong> {accommodation.minPrice?.toLocaleString()}원
         </p>
       </div>
-      <button className="btn btn-warning mt-2" onClick={handleModifyClick}>
-        ✏️ 수정
-      </button>
+      <div className="d-flex justify-content-between px-3 pb-3">
+        <button className="btn btn-warning" onClick={handleModifyClick}>
+          ✏️ 수정
+        </button>
+        <button className="btn btn-danger" onClick={handleDeleteClick}>
+          🗑️ 삭제
+        </button>
+      </div>
     </div>
   );
 };

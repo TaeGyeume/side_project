@@ -35,49 +35,40 @@ const AIRPORT_NAMES = {
   MWX: '무안공항'
 };
 
-// ✅ 필터링할 항공사 (대한항공, 아시아나항공)
-const ALLOWED_AIRLINES = ['KOREAN AIR', 'ASIANA AIRLINE'];
+// ✅ 필터링할 항공사
+const ALLOWED_AIRLINES = [
+  '대한항공',
+  '아시아나항공',
+  '에어서울',
+  '이스타항공',
+  '진에어',
+  '티웨이항공',
+  '제주항공'
+];
 
 // ✅ API 응답 요일 필드를 운항 요일 배열로 변환하는 함수
 const getOperatingDays = flight => {
-  const days = [];
-  if (flight.domesticSun === 'Y') days.push('일요일');
-  if (flight.domesticMon === 'Y') days.push('월요일');
-  if (flight.domesticTue === 'Y') days.push('화요일');
-  if (flight.domesticWed === 'Y') days.push('수요일');
-  if (flight.domesticThu === 'Y') days.push('목요일');
-  if (flight.domesticFri === 'Y') days.push('금요일');
-  if (flight.domesticSat === 'Y') days.push('토요일');
-  return days;
-};
-
-const formatDateTime = (dateString, timeString) => {
-  if (!dateString || !timeString || typeof timeString !== 'string') return null;
-
-  const datePart = dateString.split('T')[0];
-  if (!/^\d{4}$/.test(timeString))
-    return moment.tz(`${datePart} 00:00`, 'YYYY-MM-DD HH:mm', 'Asia/Seoul').toDate();
-
-  return moment
-    .tz(
-      `${datePart} ${timeString.slice(0, 2)}:${timeString.slice(2, 4)}`,
-      'YYYY-MM-DD HH:mm',
-      'Asia/Seoul'
-    )
-    .toDate();
+  return [
+    flight.domesticSun === 'Y' && '일요일',
+    flight.domesticMon === 'Y' && '월요일',
+    flight.domesticTue === 'Y' && '화요일',
+    flight.domesticWed === 'Y' && '수요일',
+    flight.domesticThu === 'Y' && '목요일',
+    flight.domesticFri === 'Y' && '금요일',
+    flight.domesticSat === 'Y' && '토요일'
+  ].filter(Boolean);
 };
 
 const fetchAllFlights = async () => {
   console.log('🚀 항공편 데이터 수집 시작...');
 
-  const today = new Date();
-  const futureDate = new Date();
-  futureDate.setDate(today.getDate() + 7); // ✅ 1주일 후까지만 데이터 저장
+  const today = moment().tz('Asia/Seoul').startOf('day'); // ✅ KST 기준으로 시작
+  const futureDate = moment().tz('Asia/Seoul').add(7, 'days').endOf('day'); // ✅ KST 기준으로 7일 후
 
   try {
-    let currentDate = new Date(today);
+    let currentDate = moment(today);
     while (currentDate <= futureDate) {
-      const formattedDate = currentDate.toISOString().split('T')[0].replace(/-/g, '');
+      const formattedDate = currentDate.format('YYYYMMDD'); // ✅ YYYYMMDD 형식 유지
       console.log(`📆 현재 처리 중인 날짜: ${formattedDate}`);
 
       for (const deptCode of Object.keys(AIRPORT_NAMES)) {
@@ -93,46 +84,53 @@ const fetchAllFlights = async () => {
               headers: {'User-Agent': 'Mozilla/5.0'},
               timeout: 10000
             });
-            const items = response.data?.response?.body?.items?.item;
 
+            const items = response.data?.response?.body?.items?.item;
             if (!items) continue;
 
             const flights = Array.isArray(items) ? items : [items];
 
             for (const flight of flights) {
-              const airline =
-                flight.airlineEnglish || flight.airlineKorean || 'Unknown Airline';
+              const airline = flight.airlineKorean || 'Unknown Airline';
               if (!ALLOWED_AIRLINES.includes(airline)) continue;
 
               const flightNumber =
-                flight.domesticFlightNumber ||
-                `FL-${Math.random().toString(36).substr(2, 5)}`;
-              const departureTime = formatDateTime(
-                flight.domesticStdate,
-                flight.domesticStartTime
-              );
-              const arrivalTime = formatDateTime(
-                flight.domesticEddate,
-                flight.domesticArrivalTime
-              );
+                flight.domesticNum || `FL-${Math.random().toString(36).substr(2, 5)}`;
 
-              if (!departureTime || !arrivalTime) continue;
+              // ✅ KST(한국 시간) 기준으로 변환 후 Date 객체 저장
+              let departureDate = moment(`${formattedDate} 00:00`, 'YYYYMMDD HH:mm')
+                .utcOffset(540) // ✅ KST (UTC+9) 적용
+                .toDate(); // ✅ Date 객체 저장
+
+              let arrivalDate = moment(`${formattedDate} 00:00`, 'YYYYMMDD HH:mm')
+                .utcOffset(540) // ✅ KST (UTC+9) 적용
+                .toDate(); // ✅ Date 객체 저장
+
+              if (!departureDate || !arrivalDate) {
+                console.warn(`⚠️ 유효하지 않은 날짜: ${formattedDate}`);
+                continue;
+              }
+
+              // ✅ 출발 & 도착 시간 (HHmm 형식 그대로 유지)
+              const departureTime = flight.domesticStartTime || '0000';
+              const arrivalTime = flight.domesticArrivalTime || '0000';
 
               // ✅ 운항 요일 저장
               const operatingDays = getOperatingDays(flight);
 
-              // ✅ 가격 조정 (3만 원 이하, 3만 원 이상 10만 원 미만, 10만 원 이상)
+              // ✅ 좌석 정보 및 가격 설정
+              const seatsAvailable = Math.floor(Math.random() * 10) + 1;
               let price;
               const random = Math.random();
+
               if (random < 0.2) {
-                price = Math.floor(Math.random() * (30000 - 10000) + 10000); // ✅ 특가석 (10,000 ~ 30,000)
+                price = Math.floor(Math.random() * (30000 - 10000) + 10000); // 1만 원 ~ 3만 원 미만
               } else if (random < 0.8) {
-                price = Math.floor(Math.random() * (100000 - 30000) + 30000); // ✅ 일반석 (30,000 ~ 100,000)
+                price = Math.floor(Math.random() * (100000 - 30000) + 30000); // 3만 원 ~ 10만 원 미만
               } else {
-                price = Math.floor(Math.random() * (200000 - 100000) + 100000); // ✅ 비즈니스석 (100,000 ~ 200,000)
+                price = Math.floor(Math.random() * (150000 - 100000) + 100000); // 10만 원 ~ 15만 원 미만
               }
 
-              // ✅ 좌석 등급 설정
               let seatClass;
               if (price < 30000) {
                 seatClass = '특가석';
@@ -143,32 +141,36 @@ const fetchAllFlights = async () => {
               }
 
               await Flight.updateOne(
-                {flightNumber, 'departure.time': departureTime},
+                {flightNumber, 'departure.date': departureDate},
                 {
                   airline,
                   flightNumber,
                   departure: {
                     airport: deptCode,
                     city: AIRPORT_NAMES[deptCode],
+                    date: departureDate, // ✅ KST 변환된 Date 객체 저장
                     time: departureTime
                   },
                   arrival: {
                     airport: arrCode,
                     city: AIRPORT_NAMES[arrCode],
+                    date: arrivalDate, // ✅ KST 변환된 Date 객체 저장
                     time: arrivalTime
                   },
                   operatingDays,
                   price,
-                  seatsAvailable: Math.floor(Math.random() * 10) + 1, // ✅ 좌석 정보 필드 추가
-                  seatClass // ✅ 좌석 등급 필드 추가
+                  seatsAvailable,
+                  seatClass
                 },
                 {upsert: true}
               );
 
               console.log(
-                `✅ 저장 완료: ${flightNumber} (${airline}), 운항 요일: ${operatingDays.join(
-                  ', '
-                )}, 가격: ${price.toLocaleString()}원, 좌석 등급: ${seatClass}`
+                `✅ 저장 완료: ${flightNumber} (${airline}), 날짜: ${moment(departureDate)
+                  .tz('Asia/Seoul')
+                  .format(
+                    'YYYY-MM-DD HH:mm'
+                  )}, 좌석: ${seatsAvailable}, 가격: ${price.toLocaleString()}원, 등급: ${seatClass}`
               );
             }
           } catch (error) {
@@ -177,7 +179,7 @@ const fetchAllFlights = async () => {
         }
       }
 
-      currentDate.setDate(currentDate.getDate() + 1);
+      currentDate.add(1, 'days'); // ✅ 하루씩 증가
     }
   } finally {
     mongoose.connection.close();

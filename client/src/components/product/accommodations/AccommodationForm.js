@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import axios from '../../../api/axios';
 import './styles/AccommodationForm.css';
+import {useNavigate} from 'react-router-dom';
 
 const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
   const [formData, setFormData] = useState({
@@ -19,6 +20,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
   const [countries, setCountries] = useState([]); // 국가 목록
   const [cities, setCities] = useState([]); // 선택한 국가의 도시 목록
   const [selectedCountry, setSelectedCountry] = useState(''); // 현재 선택된 국가
+  const navigate = useNavigate();
 
   // 국가 선택 핸들러
   const handleCountryChange = async e => {
@@ -145,7 +147,14 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
       const response = await axios.post('/accommodations/new', requestData, {
         headers: {'Content-Type': 'multipart/form-data'}
       });
-      console.log('✅ 숙소 등록 성공:', response.data);
+      if (
+        window.confirm(
+          '✅ 숙소가 성공적으로 등록되었습니다. 목록으로 이동할까요?',
+          response.data
+        )
+      ) {
+        navigate('/product/accommodations/list');
+      }
     } catch (error) {
       console.error('❌ 숙소 등록 오류:', error.response?.data || error);
     }
@@ -226,7 +235,8 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
           name="location"
           value={formData.location}
           onChange={handleCityChange}
-          required>
+          required
+        >
           <option value="">도시를 선택하세요</option>
           {cities.map(city => (
             <option key={city._id} value={city._id}>

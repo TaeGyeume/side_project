@@ -55,19 +55,10 @@ exports.autocompleteSearch = async (req, res) => {
   }
 };
 
-// ✅ 날짜 및 인원수에 맞는 숙소 검색 API
+// ✅ 날짜 및 인원수에 맞는 숙소 검색 API (무한 스크롤)
 exports.getAccommodationsBySearch = async (req, res) => {
   try {
-    const {city, startDate, endDate, adults, minPrice, maxPrice, category, sortBy} =
-      req.query;
-
-    if (!city || !startDate || !endDate || !adults) {
-      return res
-        .status(400)
-        .json({message: '검색 조건(city, startDate, endDate, adults)을 입력해주세요.'});
-    }
-
-    const accommodations = await accommodationService.getAccommodationsBySearch({
+    const {
       city,
       startDate,
       endDate,
@@ -75,10 +66,32 @@ exports.getAccommodationsBySearch = async (req, res) => {
       minPrice,
       maxPrice,
       category,
-      sortBy
-    });
+      sortBy,
+      page = 1,
+      limit = 10
+    } = req.query;
 
-    res.status(200).json(accommodations);
+    if (!city || !startDate || !endDate || !adults) {
+      return res
+        .status(400)
+        .json({message: '검색 조건(city, startDate, endDate, adults)을 입력해주세요.'});
+    }
+
+    const {accommodations, totalCount, currentPage, totalPages} =
+      await accommodationService.getAccommodationsBySearch({
+        city,
+        startDate,
+        endDate,
+        adults,
+        minPrice,
+        maxPrice,
+        category,
+        sortBy,
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10)
+      });
+
+    res.status(200).json({accommodations, totalCount, currentPage, totalPages});
   } catch (error) {
     res.status(500).json({message: '숙소 검색 중 오류 발생', error: error.message});
   }
@@ -150,23 +163,38 @@ exports.deleteAccommodation = async (req, res) => {
 
 exports.getAllAccommodations = async (req, res) => {
   try {
-    const accommodations = await accommodationService.getAllAccommodations();
-    res.status(200).json(accommodations);
+    const {page = 1, limit = 6} = req.query; // 기본 페이지 1, 기본 개수 6개
+    const accommodationsData = await accommodationService.getAllAccommodations(
+      page,
+      limit
+    );
+
+    res.json(accommodationsData);
   } catch (error) {
-    res.status(500).json({message: error.message});
+    res.status(500).json({error: error.message});
   }
 };
 
-// ✅ 숙소 이름으로 검색하는 컨트롤러
+// ✅ 숙소 이름으로 검색하는 컨트롤러 (페이지네이션 추가)
 exports.searchAccommodationsByName = async (req, res) => {
   try {
-    const {name} = req.query;
+    const {name, page = 1, limit = 6} = req.query;
+
+    console.log('🔍 검색어:', name, '페이지:', page, '개수:', limit);
+
     if (!name) {
       return res.status(400).json({message: '검색할 숙소 이름을 입력해주세요.'});
     }
 
-    const accommodations = await accommodationService.getAccommodationsByName(name);
-    res.status(200).json(accommodations);
+    console.log('✅ 검색 요청 수행');
+    const accommodationsData = await accommodationService.getAccommodationsByName(
+      name,
+      page,
+      limit
+    );
+
+    console.log('✅ 검색 결과:', accommodationsData);
+    res.status(200).json(accommodationsData);
   } catch (error) {
     res.status(500).json({message: '숙소 이름 검색 중 오류 발생', error: error.message});
   }

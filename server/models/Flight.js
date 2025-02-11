@@ -10,17 +10,20 @@ const flightSchema = new mongoose.Schema(
     departure: {
       airport: {type: String, required: true},
       city: {type: String, required: true},
-      time: {type: String, required: true},
+      date: {type: Date, required: true}, // ✅ 날짜 추가 (YYYYMMDD 형식)
+      time: {type: String, required: true}, // ✅ 원본 그대로 유지 (HHmm 형식)
       weekday: {type: String, required: true}
     },
 
     arrival: {
       airport: {type: String, required: true},
       city: {type: String, required: true},
-      time: {type: String, required: true}
+      date: {type: Date, required: true}, // ✅ 날짜 추가 (YYYYMMDD 형식)
+      time: {type: String, required: true}, // ✅ 원본 그대로 유지 (HHmm 형식)
+      weekday: {type: String, required: true}
     },
 
-    flightNumber: {type: String, required: true, unique: true},
+    flightNumber: {type: String, required: true, unique: false},
     operatingDays: {type: [String], required: true},
 
     price: {type: Number, required: true}, // ✅ 가격 필드 추가
