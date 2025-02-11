@@ -235,7 +235,8 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
           name="location"
           value={formData.location}
           onChange={handleCityChange}
-          required>
+          required
+        >
           <option value="">도시를 선택하세요</option>
           {cities.map(city => (
             <option key={city._id} value={city._id}>

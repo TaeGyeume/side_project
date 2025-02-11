@@ -35,7 +35,8 @@ const LocationEdit = () => {
       <LocationForm locationData={locationData} isEdit={true} />
       <button
         className="btn btn-secondary mt-3"
-        onClick={() => navigate('/product/locations/list')}>
+        onClick={() => navigate('/product/locations/list')}
+      >
         ↩ 목록으로
       </button>
     </div>

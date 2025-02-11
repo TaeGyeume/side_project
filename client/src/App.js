@@ -11,11 +11,10 @@ import NaverLoginCallback from './components/SocialLogin/NaverLoginCallback';
 import FacebookLoginCallback from './components/SocialLogin/FacebookLoginCallback';
 import KakaoLoginCallback from './components/SocialLogin/KakaoLoginCallback';
 import GoogleLoginCallback from './components/SocialLogin/GoogleLoginCallback';
+import FindUserId from './pages/auth/FindUserId';
 import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
 import Unauthorized from './pages/Unauthorized'; // 권한 없음 페이지 추가
-// import AdminDashboard from './pages/admin/AdminDashboard'; // 어드민 대시보드 추가
-// import AdminSettings from './pages/admin/AdminSettings'; // 어드민 설정 추가
 import AccommodationSearch from './pages/accommodations/AccommodationSearch';
 import AccommodationResults from './pages/accommodations/AccommodationResults';
 import AccommodationDetail from './pages/accommodations/AccommodationDetail';
@@ -38,6 +37,9 @@ import TourTicketList from './components/product/tourTicket/TourTicketList';
 import TourTicketForm from './components/product/tourTicket/TourTicketForm';
 import TourTicketDetail from './components/product/tourTicket/TourTicketDetail';
 import TourTicketModify from './components/product/tourTicket/TourTicketModify';
+import CategoryPage from './pages/product/travelItems/CategoryPage';
+import TravelItemPage from './pages/product/travelItems/TravelItemPage';
+import TravelItemListPage from './pages/product/travelItems/TravelItemListPage';
 import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
 
 const App = () => {
@@ -84,6 +86,7 @@ const App = () => {
             path="/login"
             element={isAuthenticated ? <Navigate to="/profile" /> : <AuthPages.Login />}
           />
+          <Route path="/find-userid" element={<FindUserId />} />
           <Route path="/google/callback" element={<GoogleLoginCallback />} />
           <Route path="/kakao/callback" element={<KakaoLoginCallback />} />
           <Route path="/naver/callback" element={<NaverLoginCallback />} />
@@ -96,7 +99,6 @@ const App = () => {
             path="/accommodations/:accommodationId/detail"
             element={<AccommodationDetail />}
           />
-
           {/* ✈️ 항공편 목록 페이지 추가 */}
           <Route path="/flights" element={<Flights />} />
           <Route path="/flights/results" element={<FlightResults />} />
@@ -106,14 +108,12 @@ const App = () => {
           <Route path="/flights/roundtrip-confirm" element={<RoundTripConfirm />} />
 
           <Route path="/tourTicket/*" element={<UserTourTicketPage />} />
-
           {/* 🔐 인증된 사용자만 접근 가능 */}
           <Route element={<PrivateRoute />}>
             {/* <Route path="/reservation/:flightId" element={<Reservation />} /> */}
             <Route path="/profile" element={<UserPages.Profile />} />
             <Route path="/profile/update" element={<EditProfile />} />
           </Route>
-
           {/* 🔒 어드민 전용 페이지 */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>
             <Route path="/product" element={<ProductPage />} />
@@ -133,18 +133,17 @@ const App = () => {
               path="/product/locations/Edit/:locationId"
               element={<LocationEdit />}
             />
-            {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
-            {/* <Route path="/admin/settings" element={<AdminSettings />} /> */}
             <Route path="/product" element={<ProductPage />} />
             <Route path="/product/tourTicket/list" element={<TourTicketList />} />
             <Route path="/product/tourTicket/:id" element={<TourTicketDetail />} />
             <Route path="/product/tourTicket/modify/:id" element={<TourTicketModify />} />
             <Route path="/product/tourTicket/new" element={<TourTicketForm />} />
+            <Route path="/product/travelItems/newCategory" element={<CategoryPage />} />
+            <Route path="/product/travelItems/new" element={<TravelItemPage />} />
+            <Route path="/product/travelItems/list" element={<TravelItemListPage />} />
           </Route>
-
           {/* ❌ 권한 없음 페이지 */}
           <Route path="/unauthorized" element={<Unauthorized />} />
-
           {/* 404 처리 */}
           <Route path="*" element={<div>페이지를 찾을 수 없습니다.</div>} />
         </Routes>

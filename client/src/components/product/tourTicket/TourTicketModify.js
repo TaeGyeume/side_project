@@ -140,7 +140,8 @@ const TourTicketModify = () => {
               <button
                 type="button"
                 onClick={() => handleRemoveImage(image)}
-                style={{marginLeft: '10px', cursor: 'pointer', color: 'red'}}>
+                style={{marginLeft: '10px', cursor: 'pointer', color: 'red'}}
+              >
                 삭제
               </button>
             </div>

@@ -67,14 +67,16 @@ const RoomCard = ({room, onRoomDeleted}) => {
             <button
               type="button"
               className="btn btn-warning mt-2"
-              onClick={() => navigate(`/product/room/modify/${room._id}`)}>
+              onClick={() => navigate(`/product/room/modify/${room._id}`)}
+            >
               ✏️ 객실 수정
             </button>
 
             <button
               type="button"
               className="btn btn-danger mt-2"
-              onClick={handleDeleteRoom}>
+              onClick={handleDeleteRoom}
+            >
               🗑️ 객실 삭제
             </button>
           </>

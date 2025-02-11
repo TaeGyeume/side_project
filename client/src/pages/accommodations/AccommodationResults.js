@@ -1,5 +1,4 @@
-// src/pages/accommodation/AccommodationResults.js
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import axios from '../../api/axios';
 import {SearchBar, FilterPanel, AccommodationCard} from '../../components/accommodations';
@@ -14,37 +13,67 @@ const getFormattedDate = (daysToAdd = 0) => {
 const AccommodationResults = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [accommodations, setAccommodations] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const observerRef = useRef(null);
+  const loadingRef = useRef(false); // ✅ 중복 요청 방지
+
+  // ✅ 필터 상태 (초기값 설정 + URL 인코딩 해결)
   const [filters, setFilters] = useState(() => ({
-    city: searchParams.get('city') || '서울',
+    city: decodeURIComponent(searchParams.get('city') || '서울'), // ✅ URL 인코딩 해제
     startDate: searchParams.get('startDate') || getFormattedDate(1),
     endDate: searchParams.get('endDate') || getFormattedDate(2),
-    adults: searchParams.get('adults') || 1,
-    minPrice: searchParams.get('minPrice') || 0,
-    maxPrice: searchParams.get('maxPrice') || 500000,
+    adults: Number(searchParams.get('adults')) || 1, // ✅ 숫자로 변환
+    minPrice: Number(searchParams.get('minPrice')) || 0,
+    maxPrice: Number(searchParams.get('maxPrice')) || 500000,
     category: searchParams.get('category') || 'all',
     sortBy: searchParams.get('sortBy') || 'default'
   }));
 
-  // ✅ 첫 렌더링 또는 URL 파라미터 변경 시 실행
-  useEffect(() => {
-    fetchAccommodations(filters);
-  }, [searchParams, filters]); // `searchParams`가 변경될 때만 실행하여 무한 루프 방지
+  // ✅ 숙소 데이터 불러오기 함수
+  const fetchAccommodations = useCallback(
+    async (updatedFilters, newPage = 1, reset = false) => {
+      if (loadingRef.current || newPage > totalPages) return;
 
-  const fetchAccommodations = async updatedFilters => {
-    try {
-      console.log('📌 검색 요청 params:', updatedFilters);
-      const response = await axios.get('/accommodations/search', {
-        params: updatedFilters
-      });
-      console.log('🌍 요청된 URL:', response.config.url);
-      console.log('🔍 응답 데이터:', response.data);
-      setAccommodations(response.data);
-    } catch (error) {
-      console.error('❌ 숙소 검색 오류:', error);
-    }
-  };
+      loadingRef.current = true;
+      setLoading(true);
 
-  // ✅ 검색 실행 함수 (SearchBar에서 호출)
+      try {
+        console.log('📌 검색 요청 params:', {...updatedFilters, page: newPage});
+        const response = await axios.get('/accommodations/search', {
+          params: {...updatedFilters, page: newPage}
+        });
+
+        console.log('🌍 요청된 URL:', response.config.url);
+        console.log('🔍 응답 데이터:', response.data);
+
+        setAccommodations(prev => {
+          const newData = response.data.accommodations;
+          const uniqueAccommodations = new Map();
+
+          // ✅ 중복 제거: _id 기준으로 Map에 저장
+          [...(reset ? [] : prev), ...newData].forEach(acc =>
+            uniqueAccommodations.set(acc._id, acc)
+          );
+
+          return Array.from(uniqueAccommodations.values()); // ✅ 중복 제거된 배열 반환
+        });
+
+        setTotalPages(response.data.totalPages);
+        if (reset) setPage(1);
+        else setPage(newPage);
+      } catch (error) {
+        console.error('❌ 숙소 검색 오류:', error);
+      } finally {
+        setLoading(false);
+        loadingRef.current = false;
+      }
+    },
+    [totalPages]
+  );
+
+  // ✅ 검색 실행 (SearchBar에서 호출)
   const handleSearch = ({searchTerm, startDate, endDate, adults}) => {
     console.log('🔎 검색 입력값:', {searchTerm, startDate, endDate, adults});
 
@@ -58,45 +87,63 @@ const AccommodationResults = () => {
     const newFilters = {...filters, city: searchTerm, startDate, endDate, adults};
     setFilters(newFilters);
     setSearchParams(newFilters);
-    fetchAccommodations(newFilters); // ✅ 검색 요청 실행
+    fetchAccommodations(newFilters, 1, true); // ✅ 검색 요청 실행 (데이터 초기화)
   };
 
   // ✅ 필터 변경 시 API 요청 실행
-  const handleFilterChange = newFilters => {
-    setFilters(prev => {
-      const updatedFilters = {...prev, ...newFilters};
-      setSearchParams(updatedFilters);
-      fetchAccommodations(updatedFilters); // ✅ 필터 변경 시 API 요청 실행
-      return updatedFilters;
-    });
-  };
+  const handleFilterChange = useCallback(
+    newFilters => {
+      setFilters(prev => {
+        const updatedFilters = {...prev, ...newFilters};
+        setSearchParams(updatedFilters);
+        fetchAccommodations(updatedFilters, 1, true);
+        return updatedFilters;
+      });
+    },
+    [setSearchParams, fetchAccommodations]
+  );
+
+  // ✅ 페이지 및 필터 변경 시 숙소 데이터를 불러옴
+  useEffect(() => {
+    fetchAccommodations(filters, 1, true);
+  }, [filters, fetchAccommodations]);
+
+  // ✅ totalPages가 변경될 때 무한스크롤 감지를 새로 적용
+  useEffect(() => {
+    if (!observerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && !loadingRef.current && page < totalPages) {
+          console.log('✅ 마지막 요소 감지 → 다음 페이지 불러오기!', {page, totalPages});
+          fetchAccommodations(filters, page + 1); // ✅ 다음 페이지 데이터 요청
+        }
+      },
+      {threshold: 1.0}
+    );
+
+    observer.observe(observerRef.current);
+
+    return () => observer.disconnect(); // ✅ 컴포넌트 언마운트 시 observer 해제
+  }, [page, totalPages, filters, fetchAccommodations]); // ✅ totalPages가 변경되면 무한스크롤 다시 감지
 
   return (
     <div className="container mt-3">
       <h2>숙소 검색 결과</h2>
 
-      {/* ✅ `onSearch`를 SearchBar에 전달 */}
       <SearchBar onSearch={handleSearch} />
 
       <div className="row mt-3">
-        {/* 필터 패널 */}
         <div className="col-md-3">
-          <FilterPanel onFilterChange={handleFilterChange} /> {/* ✅ 필터 변경 적용 */}
+          <FilterPanel onFilterChange={handleFilterChange} />
         </div>
 
-        {/* 검색 결과 */}
         <div className="col-md-9">
-          {accommodations.length > 0 ? (
-            accommodations.map(acc => (
-              <AccommodationCard
-                key={acc._id}
-                accommodation={acc}
-                queryOptions={filters}
-              />
-            ))
-          ) : (
-            <p className="mt-3">검색 결과가 없습니다.</p>
-          )}
+          {accommodations.map(acc => (
+            <AccommodationCard key={acc._id} accommodation={acc} queryOptions={filters} />
+          ))}
+          <div ref={observerRef} style={{height: '50px', background: 'transparent'}} />
+          {loading && <p className="text-center mt-2">로딩 중...</p>}
         </div>
       </div>
     </div>
