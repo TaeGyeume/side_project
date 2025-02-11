@@ -1,4 +1,6 @@
 const TravelItem = require('../models/TravelItem');
+const fs = require('fs');
+const path = require('path');
 
 // ✅ 상품 생성 서비스
 exports.createTravelItem = async data => {
@@ -49,5 +51,153 @@ exports.getAllCategories = async () => {
     return categories;
   } catch (error) {
     throw new Error('❌ 모든 카테고리를 불러오는 중 오류 발생: ' + error.message);
+  }
+};
+
+// ✅ 최하위 카테고리 상품 조회 (모든 상품 중 subCategories가 없는 항목)
+exports.getAllItems = async () => {
+  try {
+    const items = await TravelItem.find({
+      subCategories: {$size: 0}, // ✅ 하위 카테고리가 없는 항목만 필터링
+      price: {$exists: true} // ✅ 상품(카테고리 X)만 포함
+    });
+
+    return items;
+  } catch (error) {
+    throw new Error('모든 상품을 가져오는 중 오류 발생: ' + error.message);
+  }
+};
+
+// ✅ 상품 수정 서비스 (PATCH)
+exports.updateTravelItem = async (itemId, updateData, newImages) => {
+  try {
+    const item = await TravelItem.findById(itemId);
+    if (!item) {
+      throw new Error('해당 상품을 찾을 수 없습니다.');
+    }
+
+    console.log('🔍 기존 이미지 목록:', item.images);
+    console.log('🗑 삭제 요청된 이미지 목록 (원본):', updateData.removeImages);
+
+    // ✅ removeImages가 문자열로 전달될 경우 JSON 배열로 변환
+    let imagesToRemove = [];
+    if (typeof updateData.removeImages === 'string') {
+      try {
+        imagesToRemove = JSON.parse(updateData.removeImages); // JSON 배열 변환
+      } catch (error) {
+        imagesToRemove = [updateData.removeImages.trim().replace(/^"|"$/g, '')]; // 수동으로 변환
+      }
+    } else if (Array.isArray(updateData.removeImages)) {
+      imagesToRemove = updateData.removeImages.map(img =>
+        img.trim().replace(/^"|"$/g, '')
+      );
+    }
+
+    console.log('🗑 최종 삭제할 이미지 목록:', imagesToRemove);
+
+    // ✅ 기존 이미지 삭제 (updateData에 removeImages 배열이 있을 경우)
+    if (imagesToRemove.length > 0) {
+      imagesToRemove.forEach(imagePath => {
+        const fileName = path.basename(imagePath); // 파일명만 추출
+        const filePath = path.join(__dirname, '../uploads', fileName); // 업로드 폴더의 실제 경로
+
+        console.log(`🗑 삭제 시도: ${filePath}`);
+
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+          console.log(`✅ 파일 삭제 완료: ${filePath}`);
+        } else {
+          console.log(`❌ 파일을 찾을 수 없음: ${filePath}`);
+        }
+      });
+
+      // ✅ DB에서도 삭제 (이미지 URL 리스트에서 해당 파일 제거)
+      item.images = item.images.filter(
+        img => !imagesToRemove.includes(img.trim().replace(/^"|"$/g, ''))
+      );
+      console.log('🔄 업데이트된 이미지 목록:', item.images);
+    }
+
+    // ✅ 새로운 이미지 추가
+    if (newImages && newImages.length > 0) {
+      const newImagePaths = newImages.map(file => `/uploads/${file.filename}`);
+      item.images.push(...newImagePaths);
+      console.log('📸 추가된 이미지 목록:', newImagePaths);
+    }
+
+    // ✅ 나머지 상품 정보 업데이트
+    Object.assign(item, updateData);
+
+    // ✅ 변경사항 저장
+    await item.save();
+    console.log('✅ 상품 정보 업데이트 완료:', item);
+
+    return item;
+  } catch (error) {
+    console.error('❌ 상품 수정 중 오류 발생:', error.message);
+    throw new Error('상품 수정 중 오류 발생: ' + error.message);
+  }
+};
+
+// ✅ 특정 상품 조회 (ID 기준)
+exports.getTravelItemById = async itemId => {
+  try {
+    const travelItem = await TravelItem.findById(itemId).populate({
+      path: 'parentCategory', // ✅ `parentCategory` 필드 가져오기
+      select: 'name parentCategory', // ✅ `name`과 `parentCategory` 필드 포함
+      populate: {
+        // ✅ `parentCategory`의 `parentCategory`도 가져오기
+        path: 'parentCategory',
+        select: 'name'
+      }
+    });
+
+    if (!travelItem) {
+      throw new Error('해당 상품을 찾을 수 없습니다.');
+    }
+
+    console.log('✅ 불러온 상품 데이터:', travelItem); // ✅ 로그 출력
+
+    return travelItem;
+  } catch (error) {
+    throw new Error('상품을 가져오는 중 오류 발생: ' + error.message);
+  }
+};
+
+// ✅ 상품 삭제 서비스 (DELETE)
+exports.deleteTravelItem = async itemId => {
+  try {
+    const item = await TravelItem.findById(itemId);
+    if (!item) {
+      throw new Error('해당 상품을 찾을 수 없습니다.');
+    }
+
+    console.log('🗑 삭제할 상품 정보:', item);
+
+    // ✅ 상품에 포함된 이미지 삭제
+    if (item.images && item.images.length > 0) {
+      item.images.forEach(imagePath => {
+        const fileName = path.basename(imagePath);
+        const filePath = path.join(__dirname, '../uploads', fileName);
+
+        console.log(`🗑 이미지 삭제 시도: ${filePath}`);
+
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+          console.log(`✅ 이미지 삭제 완료: ${filePath}`);
+        } else {
+          console.log(`❌ 이미지 파일을 찾을 수 없음: ${filePath}`);
+        }
+      });
+    }
+
+    // ✅ DB에서 해당 상품 삭제
+    await TravelItem.findByIdAndDelete(itemId);
+    console.log(`✅ 상품 삭제 완료 (ID: ${itemId})`);
+
+    return {message: '상품 삭제 성공'};
+  } catch (error) {
+    console.error('❌ 상품 삭제 중 오류 발생:', error.message);
+    throw new Error('상품 삭제 중 오류 발생: ' + error.message);
   }
 };

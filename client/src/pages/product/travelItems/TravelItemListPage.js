@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import axios from '../../../api/axios';
 import CategorySelector from '../../../components/product/travelItems/CategorySelector';
-import TravelItemList from '../../../components/product/travelItems/TravelItemList';
+import TravelItemCard from '../../../components/product/travelItems/TravelItemCard';
 
 const TravelItemListPage = () => {
   const navigate = useNavigate();
@@ -13,75 +13,77 @@ const TravelItemListPage = () => {
   const [selectedSubCategory, setSelectedSubCategory] = useState('');
   const [items, setItems] = useState([]);
 
-  // ✅ 모든 카테고리 불러오기
+  // ✅ 모든 카테고리 및 전체 상품 불러오기 (최초 실행)
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchCategoriesAndItems = async () => {
       try {
-        const response = await axios.get('/travelItems/allCategories');
-        const allCategories = response.data.categories || [];
+        const categoryResponse = await axios.get('/travelItems/allCategories');
+        const allCategories = categoryResponse.data.categories || [];
 
         setCategories(allCategories);
-        setTopCategories(allCategories.filter(cat => !cat.parentCategory)); // 최상위 카테고리 필터링
+        setTopCategories(allCategories.filter(cat => !cat.parentCategory));
+
+        // ✅ 처음에는 모든 상품을 불러옴
+        fetchItemsByCategory('all'); // 모든 상품 조회
       } catch (error) {
         console.error('❌ 카테고리 불러오기 실패:', error);
       }
     };
-    fetchCategories();
+
+    fetchCategoriesAndItems();
   }, []);
 
-  // ✅ 최상위 카테고리 선택 시, 하위 카테고리 필터링 (상품은 제외)
+  // ✅ 특정 카테고리에 속한 상품 불러오기
+  const fetchItemsByCategory = async (categoryId = 'all') => {
+    try {
+      // ✅ categoryId가 'all'이면 모든 상품 조회 API 호출
+      const endpoint =
+        categoryId === 'all'
+          ? '/travelItems/allItems'
+          : `/travelItems/byCategory/${categoryId}`;
+      const response = await axios.get(endpoint);
+      const allItems = response.data.items || [];
+
+      console.log('✅ 불러온 상품 목록:', allItems);
+      setItems(allItems);
+    } catch (error) {
+      console.error('❌ 상품 불러오기 실패:', error);
+    }
+  };
+
+  // ✅ 최상위 카테고리 선택 시, 해당 카테고리와 모든 하위 카테고리 상품 표시
   const handleTopCategoryChange = topCategoryId => {
     setSelectedTopCategory(topCategoryId);
     setSelectedSubCategory('');
-    setItems([]); // 초기화
+    setItems([]);
 
     if (!topCategoryId) {
-      setSubCategories([]); // ✅ 최상위 카테고리가 선택되지 않았을 경우 초기화
+      setSubCategories([]);
+      fetchItemsByCategory('all'); // ✅ 최상위 선택 해제 시 모든 상품 표시
       return;
     }
 
-    // ✅ 하위 카테고리만 필터링 (상품 제외)
+    // ✅ 하위 카테고리 필터링 (상품 제외)
     const filteredSubCategories = categories.filter(
-      cat => cat.parentCategory?._id === topCategoryId //&& cat.subCategories !== undefined
+      cat => cat.parentCategory?._id === topCategoryId
     );
-
-    console.log('✅ 필터링된 하위 카테고리:', filteredSubCategories);
     setSubCategories(filteredSubCategories);
 
-    // ✅ 최상위 카테고리 내 상품 가져오기 (필요 없다면 제거 가능)
-    if (topCategoryId && topCategoryId !== '') {
-      fetchItemsByCategory(topCategoryId);
-    }
+    // ✅ 최상위 카테고리 및 해당 하위 카테고리에 속한 모든 상품 불러오기
+    fetchItemsByCategory(topCategoryId);
   };
 
   // ✅ 하위 카테고리 선택 시, 해당 하위 카테고리에 속한 상품들만 가져오기
   const handleSubCategoryChange = async subCategoryId => {
     setSelectedSubCategory(subCategoryId);
-    setItems([]); // 초기화
+    setItems([]);
 
-    if (!subCategoryId || subCategoryId === '') {
-      return; // ✅ 올바른 값이 아닐 경우 API 요청 방지
+    if (!subCategoryId) {
+      fetchItemsByCategory(selectedTopCategory); // ✅ 하위 카테고리 선택 해제 시 상위 카테고리 상품 다시 표시
+      return;
     }
 
     fetchItemsByCategory(subCategoryId);
-  };
-
-  // ✅ 특정 카테고리에 속한 상품 불러오기 (상품만 가져오기)
-  const fetchItemsByCategory = async categoryId => {
-    try {
-      const response = await axios.get(`/travelItems/byCategory/${categoryId}`);
-      const allItems = response.data.items || [];
-
-      // ✅ "상품"만 필터링 (하위 카테고리는 제외)
-      const filteredItems = allItems.filter(
-        item => !item.subCategories || item.subCategories.length === 0
-      );
-
-      console.log('✅ 불러온 상품 목록:', filteredItems);
-      setItems(filteredItems);
-    } catch (error) {
-      console.error('❌ 상품 불러오기 실패:', error);
-    }
   };
 
   return (
@@ -113,7 +115,17 @@ const TravelItemListPage = () => {
       />
 
       {/* ✅ 선택한 카테고리의 상품 리스트 */}
-      <TravelItemList items={items} />
+      <div className="row">
+        {items.length > 0 ? (
+          items.map(item => (
+            <div key={item._id} className="col-md-4 mb-4">
+              <TravelItemCard travelItem={item} />
+            </div>
+          ))
+        ) : (
+          <p>등록된 상품이 없습니다.</p>
+        )}
+      </div>
     </div>
   );
 };

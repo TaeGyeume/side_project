@@ -3,7 +3,8 @@ import {useNavigate} from 'react-router-dom';
 
 import Sidebar from '../../components/Sidebar';
 import TourTicketList from '../../components/product/tourTicket/TourTicketList';
-import AccommodationList from '../../pages/product/accommodations/AccommodationList';
+import AccommodationList from '../../components/product/accommodations/AccommodationList';
+import TravelItemListPage from '../../components/product/travelItems/TravelItemList';
 
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSquarePlus} from '@fortawesome/free-solid-svg-icons';
@@ -15,11 +16,13 @@ const ProductPage = () => {
 
   const accommodationsRef = useRef(null);
   const tourTicketRef = useRef(null);
+  const travelItemRef = useRef(null);
 
   const scrollToSection = section => {
     const sectionRefs = {
       accommodations: accommodationsRef,
-      tourTicket: tourTicketRef
+      tourTicket: tourTicketRef,
+      travelItem: travelItemRef
     };
 
     setActiveSection(section);
@@ -62,6 +65,17 @@ const ProductPage = () => {
             />
           </div>
           <TourTicketList />
+        </div>
+
+        <div id="travelItem" ref={travelItemRef} style={sectionStyle}>
+          <div style={headerContainerStyle}>
+            <FontAwesomeIcon
+              icon={faSquarePlus}
+              onClick={() => navigate('/product/travelItems/list')}
+              style={plusButtonStyle}
+            />
+          </div>
+          <TravelItemListPage limit={3} />
         </div>
       </div>
     </div>

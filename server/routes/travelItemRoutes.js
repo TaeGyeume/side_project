@@ -13,5 +13,13 @@ router.get('/subCategories/:categoryId', travelItemController.getSubCategories);
 router.get('/byCategory/:categoryId', travelItemController.getItemsByCategory);
 // 🔹 모든 카테고리 조회 API
 router.get('/allCategories', travelItemController.getAllCategories);
+// ✅ 모든 최하위 상품 조회 API
+router.get('/allItems', travelItemController.getAllItemsController);
+// ✅ 특정 상품 수정 (PATCH 요청)
+router.patch('/:itemId', upload, travelItemController.updateTravelItemController);
+// ✅ 특정 상품 조회 라우트 추가
+router.get('/:itemId', travelItemController.getTravelItemByIdController);
+// ✅ 상품 삭제 라우트
+router.delete('/:itemId', travelItemController.deleteTravelItemController);
 
 module.exports = router;
