@@ -41,7 +41,7 @@ exports.createBooking = async bookingData => {
   }
 };
 
-exports.verifyTourTicketPayment = async ({imp_uid, merchant_uid}) => {
+exports.verifyPayment = async ({imp_uid, merchant_uid}) => {
   try {
     const accessToken = await getPortOneToken();
 

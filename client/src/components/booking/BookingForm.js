@@ -21,7 +21,7 @@ const TourTicketBookingForm = () => {
   });
 
   useEffect(() => {
-    // 상품 정보 가져오기
+    // 투어.티켓 정보 가져오기
     const fetchTicket = async () => {
       try {
         const data = await getTourTicketById(id);

@@ -9,6 +9,6 @@ router.post('/create', bookingController.createBooking);
 router.post('/cancel/:bookingId', bookingController.cancelBooking);
 
 // 결제 검증
-router.post('/verify-payment', bookingController.verifyTourTicketPayment);
+router.post('/verify-payment', bookingController.verifyPayment);
 
 module.exports = router;
