@@ -117,11 +117,40 @@ const FlightBookingForm = () => {
   return (
     <div className="booking-form">
       <h3>🛫 항공편 예약</h3>
-      <p>📌 항공사: {selectedDeparture?.airline || selectedFlight?.airline}</p>
-      <p>📌 항공편: {selectedDeparture?.flightNumber || selectedFlight?.flightNumber}</p>
-      <p>
-        📅 날짜: {selectedDeparture?.departure.date || selectedFlight?.departure.date}
-      </p>
+
+      <div className="flight-info-container">
+        {/* ✅ 편도/왕복 상관없이 출발 항공편 정보 표시 */}
+        <div className="flight-card">
+          <h4>🚀 출발 항공편</h4>
+          <p>📌 항공사: {selectedDeparture?.airline || selectedFlight?.airline}</p>
+          <p>
+            📌 항공편: {selectedDeparture?.flightNumber || selectedFlight?.flightNumber}
+          </p>
+          <p>
+            📅 출발 날짜:{' '}
+            {selectedDeparture?.departure.date || selectedFlight?.departure.date}
+          </p>
+          <p>
+            🛫 {selectedDeparture?.departure.city || selectedFlight?.departure.city} → 🛬{' '}
+            {selectedDeparture?.arrival.city || selectedFlight?.arrival.city}
+          </p>
+        </div>
+
+        {/* ✅ 왕복일 경우 도착 항공편 정보 표시 */}
+        {isRoundTrip && selectedReturn && (
+          <div className="flight-card">
+            <h4>🔄 돌아오는 항공편</h4>
+            <p>📌 항공사: {selectedReturn?.airline}</p>
+            <p>📌 항공편: {selectedReturn?.flightNumber}</p>
+            <p>📅 출발 날짜: {selectedReturn?.departure.date}</p>
+            <p>
+              🛫 {selectedReturn?.departure.city} → 🛬 {selectedReturn?.arrival.city}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* ✅ 가격 정보 */}
       <p>👥 인원수: {passengers}명</p>
       <p>💰 총 가격: {totalPrice.toLocaleString()} 원</p>
 
