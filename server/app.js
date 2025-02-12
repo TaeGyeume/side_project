@@ -7,8 +7,6 @@ const passport = require('passport'); // Passport 불러오기
 require('./config/passport'); // Passport 설정 파일 불러오기
 require('dotenv').config();
 
-console.log('✅ passport.js 파일이 정상적으로 로드됨'); // ✅ 확인용 로그 추가
-
 const authRoutes = require('./routes/authRoutes');
 const locationRoutes = require('./routes/locationRoutes');
 const accommodationRoutes = require('./routes/accommodationRoutes');

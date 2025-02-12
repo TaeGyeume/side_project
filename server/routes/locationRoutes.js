@@ -16,7 +16,7 @@ const authorizeRoles = require('../middleware/authorizeRoles'); // ✅ 역할 �
 //   }
 // );
 
-// ✅ 여행지 추가 (POST /api/locations) - 관리자만 가능
+// 여행지 추가 (POST /api/locations) - 관리자만 가능
 router.post(
   '/',
   authMiddleware, // ✅ 먼저 인증 확인
