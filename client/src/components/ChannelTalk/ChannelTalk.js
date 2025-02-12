@@ -75,6 +75,7 @@ const ChannelTalk = () => {
   }, []); // 한 번만 실행되도록 변경
 
   useEffect(() => {
+    // 0.5초마다 `window.ChannelIO`가 로드되었는지 확인
     if (isChannelLoaded && userProfile.id !== 'guest') {
       const checkChannelIOInterval = setInterval(() => {
         if (window.ChannelIO) {
@@ -104,3 +105,4 @@ const ChannelTalk = () => {
 };
 
 export default ChannelTalk;
+// 이제 ChannelTalk 컴포넌트를 App.js에 추가하겠습니다.
