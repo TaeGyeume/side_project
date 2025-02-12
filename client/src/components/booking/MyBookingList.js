@@ -33,7 +33,7 @@ const MyBookingList = () => {
         <ul>
           {bookings.map(booking => (
             <li key={booking._id}>
-              <strong>상품명:</strong> {booking.productId?.title || '상품 정보 없음'}{' '}
+              <strong>상품명:</strong> {booking.productId?.title || booking.productId?.name || '상품 정보 없음'}{' '}
               <br />
               <strong>예약 상태:</strong> {booking.paymentStatus} <br />
               <strong>총 가격:</strong> {booking.totalPrice}원 <br />

@@ -71,4 +71,4 @@ const AccommodationSchema = new mongoose.Schema({
 AccommodationSchema.index({coordinates: '2dsphere'});
 AccommodationSchema.index({name: 'text', description: 'text', location: 'text'});
 
-module.exports = mongoose.model('Accommodation', AccommodationSchema);
+module.exports = mongoose.model('accommodation', AccommodationSchema);

@@ -262,7 +262,7 @@ exports.getUserBookings = async userId => {
     // 예약 목록 조회
     const bookings = await Booking.find({userId}).populate({
       path: 'productId',
-      select: 'title' // productId에서 title 필드만 가져오기
+      select: 'title name' // productId에서 title 필드만 가져오기
     });
 
     console.log('예약 데이터 조회 결과:', bookings);
