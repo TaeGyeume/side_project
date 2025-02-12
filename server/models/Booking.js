@@ -21,8 +21,7 @@ const bookingSchema = new mongoose.Schema(
     },
     startDate: {type: Date}, // 이용 시작일
     endDate: {type: Date}, // 이용 종료일
-    adults: {type: Number, default: 0}, // 성인 인원
-    children: {type: Number, default: 0}, // 소아 인원
+    count: {type: Number, default: 0, required: true}, // 개수
     merchant_uid: {type: String, required: true},
     totalPrice: {type: Number, required: true}, // 총 결제 금액
     userId: {
