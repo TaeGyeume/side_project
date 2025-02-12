@@ -1,5 +1,7 @@
 import React, {useState, useEffect} from 'react';
-import axios from '../../../api/axios';
+import {createAccommodation} from '../../../api/accommodation/accommodationService';
+import {fetchCountries, fetchCities} from '../../../api/location/locationService';
+import {authAPI} from '../../../api/auth';
 import './styles/AccommodationForm.css';
 import {useNavigate} from 'react-router-dom';
 
@@ -31,7 +33,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
 
     if (country) {
       try {
-        const response = await axios.get(`/locations/cities?country=${country}`);
+        const response = await fetchCities(country);
         setCities(response.data);
       } catch (error) {
         console.error('도시 목록 불러오기 오류:', error);
@@ -144,19 +146,12 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
     }
 
     try {
-      const response = await axios.post('/accommodations/new', requestData, {
-        headers: {'Content-Type': 'multipart/form-data'}
-      });
-      if (
-        window.confirm(
-          '✅ 숙소가 성공적으로 등록되었습니다. 목록으로 이동할까요?',
-          response.data
-        )
-      ) {
+      await createAccommodation(requestData);
+      if (window.confirm('✅ 숙소가 성공적으로 등록되었습니다. 목록으로 이동할까요?')) {
         navigate('/product/accommodations/list');
       }
     } catch (error) {
-      console.error('❌ 숙소 등록 오류:', error.response?.data || error);
+      console.error('❌ 숙소 등록 오류');
     }
   };
 
@@ -164,9 +159,8 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get('/auth/profile'); // 백엔드에서 로그인한 사용자 정보 가져오기
-        console.log('✅ 로그인한 사용자 정보:', response.data);
-        setFormData(prev => ({...prev, host: response.data._id})); // host 필드에 사용자 ID 저장
+        const userData = await authAPI.getUserProfile();
+        setFormData(prev => ({...prev, host: userData._id})); // host 필드에 사용자 ID 저장
       } catch (error) {
         console.error('❌ 사용자 프로필 불러오기 오류:', error);
       }
@@ -174,12 +168,11 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
     fetchUserProfile();
   }, []);
 
+  // ✅ 국가 목록 가져오기
   useEffect(() => {
-    const fetchCountries = async () => {
+    const fetchCountryList = async () => {
       try {
-        const response = await axios.get('/locations/countries');
-        console.log('✅ 받아온 국가 리스트:', response.data);
-
+        const response = await fetchCountries();
         if (Array.isArray(response.data) && response.data.length > 0) {
           setCountries(response.data);
         } else {
@@ -189,7 +182,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
         console.error('❌ 국가 목록 불러오기 오류:', error);
       }
     };
-    fetchCountries();
+    fetchCountryList();
   }, []);
 
   return (
@@ -235,8 +228,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
           name="location"
           value={formData.location}
           onChange={handleCityChange}
-          required
-        >
+          required>
           <option value="">도시를 선택하세요</option>
           {cities.map(city => (
             <option key={city._id} value={city._id}>

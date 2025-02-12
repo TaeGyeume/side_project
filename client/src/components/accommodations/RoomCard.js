@@ -2,7 +2,7 @@
 import React from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useAuthStore} from '../../store/authStore';
-import axios from '../../api/axios';
+import {deleteRoom} from '../../api/room/roomService';
 
 const RoomCard = ({room, onRoomDeleted}) => {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ const RoomCard = ({room, onRoomDeleted}) => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`/rooms/${room._id}`);
+      await deleteRoom(room._id);
 
       alert('✅ 객실이 삭제되었습니다.');
 
@@ -36,6 +36,11 @@ const RoomCard = ({room, onRoomDeleted}) => {
       console.error('❌ 객실 삭제 오류:', err);
       alert('❌ 객실 삭제에 실패했습니다.');
     }
+  };
+
+  // ✅ 예약 버튼 클릭 시, 예약 페이지로 이동
+  const handleBooking = () => {
+    navigate(`/accommodation/booking/${room._id}`);
   };
 
   return (
@@ -61,22 +66,24 @@ const RoomCard = ({room, onRoomDeleted}) => {
             <strong>편의시설:</strong> {room.amenities.join(', ')}
           </p>
         )}
+        {/* ✅ 예약 버튼 */}
+        <button type="button" className="btn btn-primary mt-2" onClick={handleBooking}>
+          🏨 객실 예약하기
+        </button>
         {/* ✅ 관리자인 경우에만 객실 수정 버튼 표시 */}
         {isAuthenticated && user?.roles.includes('admin') && (
           <>
             <button
               type="button"
               className="btn btn-warning mt-2"
-              onClick={() => navigate(`/product/room/modify/${room._id}`)}
-            >
+              onClick={() => navigate(`/product/room/modify/${room._id}`)}>
               ✏️ 객실 수정
             </button>
 
             <button
               type="button"
               className="btn btn-danger mt-2"
-              onClick={handleDeleteRoom}
-            >
+              onClick={handleDeleteRoom}>
               🗑️ 객실 삭제
             </button>
           </>

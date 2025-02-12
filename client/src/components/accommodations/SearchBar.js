@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import axios from '../../api/axios';
+import {fetchSuggestions} from '../../api/accommodation/accommodationService';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './styles/SearchBar.css';
@@ -33,21 +33,13 @@ const SearchBar = ({onSearch}) => {
       return;
     }
 
-    const delayDebounceFn = setTimeout(() => {
-      fetchSuggestions(searchTerm);
+    const delayDebounceFn = setTimeout(async () => {
+      const results = await fetchSuggestions(searchTerm);
+      setSuggestions(results);
     }, 300); // ⏳ 300ms 후 실행
 
     return () => clearTimeout(delayDebounceFn); // 이전 요청 취소
   }, [searchTerm]);
-
-  const fetchSuggestions = async query => {
-    try {
-      const response = await axios.get('/accommodations/autocomplete', {params: {query}});
-      setSuggestions([...response.data.locations, ...response.data.accommodations]);
-    } catch (error) {
-      console.error('❌ 자동완성 오류:', error);
-    }
-  };
 
   // 🔹 자동완성 항목을 클릭하면 검색창에 반영
   const handleSelectSuggestion = suggestion => {
@@ -143,8 +135,7 @@ const SearchBar = ({onSearch}) => {
         <div className="guest-selector">
           <button
             onClick={() => setAdults(prev => Math.max(1, prev - 1))}
-            className="button"
-          >
+            className="button">
             -
           </button>
           <span>{adults}</span>

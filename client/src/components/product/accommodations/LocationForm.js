@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
-import axios from '../../../api/axios';
+import {createLocation, updateLocation} from '../../../api/location/locationService';
 
 const LocationForm = ({locationData = null, isEdit = false}) => {
   const [formData, setFormData] = useState({
@@ -63,10 +63,10 @@ const LocationForm = ({locationData = null, isEdit = false}) => {
       };
 
       if (isEdit) {
-        await axios.patch(`/locations/${locationData._id}`, formattedData);
+        await updateLocation(locationData._id, formattedData);
         alert('✅ 위치가 수정되었습니다.');
       } else {
-        await axios.post('/locations', formattedData);
+        await createLocation(formattedData);
         alert('✅ 위치가 추가되었습니다.');
       }
 
@@ -143,8 +143,7 @@ const LocationForm = ({locationData = null, isEdit = false}) => {
             <button
               type="button"
               className="btn btn-danger"
-              onClick={() => handleRemovePopularPlace(index)}
-            >
+              onClick={() => handleRemovePopularPlace(index)}>
               삭제
             </button>
           </div>
@@ -152,8 +151,7 @@ const LocationForm = ({locationData = null, isEdit = false}) => {
         <button
           type="button"
           className="btn btn-secondary mt-2"
-          onClick={handleAddPopularPlace}
-        >
+          onClick={handleAddPopularPlace}>
           + 추가
         </button>
       </div>
