@@ -42,6 +42,20 @@ const BookingPage = () => {
   const totalPrice = Math.max(0, basePrice - discount);
   const rewardPoints = Math.max(0, Math.floor(totalPrice * 0.003)); // 포인트 적립 (0.3%)
 
+  // ✅ `handleProceedToBooking()`에서 state 전달 확인
+  const handleProceedToBooking = () => {
+    navigate('/flights/booking', {
+      state: {
+        selectedDeparture,
+        selectedReturn,
+        passengers,
+        isRoundTrip,
+        selectedFlight,
+        totalPrice
+      }
+    });
+  };
+
   return (
     <div className="container mt-5" style={{maxWidth: '1100px'}}>
       <h2 className="fw-bold mb-4 text-center text-dark">✈️ 항공권 예약</h2>
@@ -107,7 +121,7 @@ const BookingPage = () => {
             <button
               className="btn btn-primary btn-lg w-100 fw-bold mt-3"
               style={{borderRadius: '10px'}}
-              onClick={() => alert('예약이 완료되었습니다!')}>
+              onClick={handleProceedToBooking}>
               항공권 예약하기 🛫
             </button>
           </div>

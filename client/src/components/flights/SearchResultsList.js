@@ -25,7 +25,9 @@ const SearchResultsList = ({flights}) => {
   const navigate = useNavigate();
 
   const handleSelectFlight = flight => {
-    navigate('/flights/booking', {state: {selectedFlight: flight, isRoundTrip: false}});
+    navigate('/flights/before/booking', {
+      state: {selectedFlight: flight, isRoundTrip: false}
+    });
   };
 
   return (

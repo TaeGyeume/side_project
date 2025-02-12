@@ -25,6 +25,7 @@ import RoundTripDeparture from './pages/flights/RoundTripDeparture';
 import RoundTripReturn from './pages/flights/RoundTripReturn';
 import RoundTripConfirm from './pages/flights/RoundTripConfirm';
 import BookingPage from './pages/flights/BookingPage';
+import FlightBookingPage from './pages/booking/FlightBookingPage';
 import ProductPage from './pages/product/ProductPage';
 import AccommodationList from './pages/product/accommodations/AccommodationList';
 import AccommodationCreate from './pages/product/accommodations/AccommodationCreate';
@@ -110,7 +111,7 @@ const App = () => {
           <Route path="/flights/roundtrip-departure" element={<RoundTripDeparture />} />
           <Route path="/flights/roundtrip-return" element={<RoundTripReturn />} />
           <Route path="/flights/roundtrip-confirm" element={<RoundTripConfirm />} />
-          <Route path="/flights/booking" element={<BookingPage />} />
+          <Route path="/flights/before/booking" element={<BookingPage />} />
 
           <Route path="/tourTicket/*" element={<UserTourTicketPage />} />
           {/* 🔐 인증된 사용자만 접근 가능 */}
@@ -123,6 +124,7 @@ const App = () => {
               path="/accommodation/booking/:roomId"
               element={<AccommodationBookingPage />}
             />
+            <Route path="/flights/booking" element={<FlightBookingPage />} />
           </Route>
           {/* 🔒 어드민 전용 페이지 */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>
