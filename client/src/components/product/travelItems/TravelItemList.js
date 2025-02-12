@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import axios from '../../../api/axios';
+import {fetchAllTravelItems} from '../../../api/travelItem/travelItemService';
 import TravelItemCard from './TravelItemCard';
 
 const TravelItemList = ({limit = null}) => {
@@ -12,8 +12,8 @@ const TravelItemList = ({limit = null}) => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const response = await axios.get('/travelItems/allItems'); // ✅ API 요청
-        setItems(response.data.items);
+        const data = await fetchAllTravelItems();
+        setItems(data);
       } catch (error) {
         console.error('❌ 상품 리스트 불러오기 실패:', error);
         setError('상품 데이터를 불러오는 중 오류가 발생했습니다.');

@@ -1,7 +1,7 @@
 // src/components/accommodations/AccommodationCard.js
 import React from 'react';
 import {createSearchParams, useNavigate} from 'react-router-dom';
-import axios from '../../../api/axios';
+import {deleteAccommodation} from '../../../api/accommodation/accommodationService';
 import './styles/AccommodationCard.css';
 
 // ✅ 기본 날짜 설정 함수 (오늘 + n일)
@@ -54,7 +54,7 @@ const AccommodationCard = ({
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`/accommodations/${accommodation._id}`);
+      await deleteAccommodation(accommodation._id);
 
       alert('✅ 숙소가 삭제되었습니다.');
 
@@ -84,8 +84,7 @@ const AccommodationCard = ({
     <div
       className="card accommodation-card mb-3"
       onClick={handleCardClick}
-      style={{cursor: 'pointer'}}
-    >
+      style={{cursor: 'pointer'}}>
       <img
         src={imageUrl}
         className="card-img-top accommodation-image"

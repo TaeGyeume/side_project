@@ -1,7 +1,7 @@
 // src/pages/accommodation/AccommodationDetail.js
 import React, {useState, useEffect} from 'react';
 import {useParams, useSearchParams} from 'react-router-dom';
-import axios from '../../api/axios';
+import {fetchAccommodationDetail} from '../../api/accommodation/accommodationService';
 import RoomCard from '../../components/accommodations/RoomCard';
 import MapComponent from '../../components/accommodations/GoogleMapComponent';
 import Slider from 'react-slick'; // ✅ React Slick 추가
@@ -36,25 +36,21 @@ const AccommodationDetail = () => {
   const maxPrice = searchParams.get('maxPrice') || 500000;
 
   useEffect(() => {
-    const fetchAccommodationDetail = async () => {
+    const loadAccommodationDetail = async () => {
       try {
         const params = {startDate, endDate, adults, minPrice, maxPrice};
         console.log('🔍 숙소 상세 요청 params:', params);
 
-        const response = await axios.get(`/accommodations/${accommodationId}/rooms`, {
-          params
-        });
-
-        setAccommodationData(response.data);
-        setLoading(false);
+        const data = await fetchAccommodationDetail(accommodationId, params);
+        setAccommodationData(data);
       } catch (err) {
-        console.error('❌ 숙소 상세 정보 오류:', err);
-        setError('숙소 정보를 불러오는 중 오류 발생');
+        setError(err.message);
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchAccommodationDetail();
+    loadAccommodationDetail();
   }, [accommodationId, startDate, endDate, adults, minPrice, maxPrice]);
 
   if (loading) return <div>로딩 중...</div>;

@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {useSearchParams} from 'react-router-dom';
-import axios from '../../api/axios';
+import {searchAccommodations} from '../../api/accommodation/accommodationService';
 import {SearchBar, FilterPanel, AccommodationCard} from '../../components/accommodations';
 
 // ✅ 오늘 날짜를 YYYY-MM-DD 포맷으로 반환하는 함수
@@ -41,30 +41,21 @@ const AccommodationResults = () => {
 
       try {
         console.log('📌 검색 요청 params:', {...updatedFilters, page: newPage});
-        const response = await axios.get('/accommodations/search', {
-          params: {...updatedFilters, page: newPage}
-        });
-
-        console.log('🌍 요청된 URL:', response.config.url);
-        console.log('🔍 응답 데이터:', response.data);
+        const {accommodations: newData, totalPages: newTotalPages} =
+          await searchAccommodations(updatedFilters, newPage);
 
         setAccommodations(prev => {
-          const newData = response.data.accommodations;
           const uniqueAccommodations = new Map();
-
-          // ✅ 중복 제거: _id 기준으로 Map에 저장
           [...(reset ? [] : prev), ...newData].forEach(acc =>
             uniqueAccommodations.set(acc._id, acc)
           );
-
-          return Array.from(uniqueAccommodations.values()); // ✅ 중복 제거된 배열 반환
+          return Array.from(uniqueAccommodations.values());
         });
 
-        setTotalPages(response.data.totalPages);
-        if (reset) setPage(1);
-        else setPage(newPage);
+        setTotalPages(newTotalPages);
+        setPage(reset ? 1 : newPage);
       } catch (error) {
-        console.error('❌ 숙소 검색 오류:', error);
+        console.error(error.message);
       } finally {
         setLoading(false);
         loadingRef.current = false;
