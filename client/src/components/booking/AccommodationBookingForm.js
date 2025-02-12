@@ -11,7 +11,7 @@ const BookingForm = () => {
   const [formData, setFormData] = useState({
     startDate: '',
     endDate: '',
-    adults: 1
+    count: 1 // ✅ adults → count로 변경 (예약할 객실 개수)
   });
 
   useEffect(() => {
@@ -63,9 +63,9 @@ const BookingForm = () => {
       return;
     }
 
-    // ✅ 총 결제 금액 계산 (숙박일수 * 1박 요금)
+    // ✅ 총 결제 금액 계산 (숙박일수 * 1박 요금 * 객실 개수)
     const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-    const totalPrice = room.pricePerNight * nights;
+    const totalPrice = room.pricePerNight * nights * formData.count;
     const merchant_uid = `accommodation_${Date.now()}`; // 고유 주문 번호 생성
 
     try {
@@ -75,7 +75,7 @@ const BookingForm = () => {
         merchant_uid,
         startDate: formData.startDate,
         endDate: formData.endDate,
-        adults: formData.adults,
+        count: formData.count, // ✅ adults → count로 변경
         totalPrice,
         userId: user._id,
         reservationInfo: {
@@ -92,7 +92,7 @@ const BookingForm = () => {
         merchant_uid,
         startDate: formData.startDate,
         endDate: formData.endDate,
-        adults: formData.adults,
+        count: formData.count, // ✅ adults 제거 → count 추가
         totalPrice,
         userId: user._id,
         reservationInfo: {
@@ -181,12 +181,13 @@ const BookingForm = () => {
         onChange={handleChange}
       />
 
-      <label>👥 성인 인원</label>
+      <label>🏨 예약할 객실 개수</label>
       <input
         type="number"
-        name="adults"
-        value={formData.adults}
+        name="count"
+        value={formData.count}
         min="1"
+        max={room.availableCount} // ✅ 남은 객실 개수 반영
         onChange={handleChange}
       />
 
