@@ -36,7 +36,7 @@ const MyBookingList = () => {
             <div className="booking-card" key={booking._id}>
               <div className="booking-header">
                 <span className="booking-date">
-                  {new Date(booking.startDate).toLocaleDateString('ko-KR', {
+                  {new Date(booking.createdAt).toLocaleDateString('ko-KR', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
@@ -57,7 +57,9 @@ const MyBookingList = () => {
                     ? '✈️ 항공권 예약'
                     : booking.type === 'accommodation'
                       ? '🏨 숙소 예약'
-                      : '🎫 투어 티켓'}
+                      : booking.type === 'travelItem'
+                        ? '🛍️ 여행용품 구매'
+                        : '🎫 투어 티켓'}
                 </p>
                 <p>
                   예약 상태:{' '}
