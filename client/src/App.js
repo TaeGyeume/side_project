@@ -43,7 +43,7 @@ import TravelItemListPage from './pages/product/travelItems/TravelItemListPage';
 import TravelItemEditPage from './pages/product/travelItems/TravelItemEditPage';
 import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
 import TourTicketBookingPage from './pages/booking/BookingPage';
-import AccommodationBookingPage from './components/booking/AccommodationBookingForm';
+import AccommodationBookingPage from './pages/booking/AccommodationBookingPage';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -118,7 +118,7 @@ const App = () => {
             <Route path="/profile/update" element={<EditProfile />} />
             <Route path="/tourTicket/booking/:id" element={<TourTicketBookingPage />} />
             <Route
-              path="/booking/accommodation/:roomId"
+              path="/accommodation/booking/:roomId"
               element={<AccommodationBookingPage />}
             />
           </Route>
