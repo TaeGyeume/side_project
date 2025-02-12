@@ -3,6 +3,7 @@ const Booking = require('../models/Booking');
 const Payment = require('../models/Payment');
 const TourTicket = require('../models/TourTicket');
 const Room = require('../models/Room');
+const TravelItem = require('../models/TravelItem');
 
 const getPortOneToken = async () => {
   try {
@@ -117,14 +118,58 @@ exports.verifyPayment = async ({imp_uid, merchant_uid}) => {
       }
 
       case 'accommodation': {
-        product = await Accommodation.findById(booking.productId);
+        product = await Room.findById(booking.roomId);
+        if (!product) return {status: 404, message: '객실 정보를 찾을 수 없습니다.'};
 
-        if (!product) return {status: 404, message: '숙박 상품 정보를 찾을 수 없습니다.'};
+        const {startDate, endDate, count} = booking;
+        let currentDate = new Date(startDate);
 
-        if (product.availableCount < booking.count)
-          return {status: 400, message: '객실이 부족합니다.'};
+        while (currentDate < new Date(endDate)) {
+          const dateStr = currentDate.toISOString().split('T')[0];
 
-        product.availableRooms -= booking.count;
+          // ✅ 해당 날짜의 예약 개수 가져오기
+          let reservedIndex = product.reservedDates.findIndex(
+            d => d.date.toISOString().split('T')[0] === dateStr
+          );
+          let reservedCountOnDate =
+            reservedIndex !== -1 ? product.reservedDates[reservedIndex].count : 0;
+
+          // ✅ 예약 가능 여부 체크
+          if (reservedCountOnDate + count > product.availableCount) {
+            console.error(`❌ ${dateStr} 날짜에 예약 가능한 객실 부족!`);
+            return {
+              status: 400,
+              message: `${dateStr} 날짜에 예약 가능한 객실이 부족합니다.`
+            };
+          }
+
+          // ✅ 예약 반영
+          if (reservedIndex !== -1) {
+            product.reservedDates[reservedIndex].count += count;
+          } else {
+            product.reservedDates.push({date: new Date(dateStr), count});
+          }
+
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        // ✅ 객실 가용 여부 업데이트 (availableCount 반영)
+        const totalReserved = product.reservedDates.reduce((acc, d) => acc + d.count, 0);
+        product.available = totalReserved < product.availableCount;
+
+        await product.save();
+        break;
+      }
+
+      case 'travelItem': {
+        product = await TravelItem.findById(booking.productId);
+
+        if (!product) return {status: 404, message: '여행용품 정보를 찾을 수 없습니다.'};
+        if (product.stock < booking.count)
+          return {status: 400, message: '재고가 부족합니다.'};
+
+        product.stock -= booking.count; // ✅ 재고 감소
+        product.soldOut = product.stock === 0; // ✅ 품절 여부 업데이트
         break;
       }
 

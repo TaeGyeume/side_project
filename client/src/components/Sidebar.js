@@ -19,8 +19,7 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
 
   return (
     <div
-      style={{position: 'absolute', top: `${sidebarTop}px`, transition: 'top 0.3s ease'}}
-    >
+      style={{position: 'absolute', top: `${sidebarTop}px`, transition: 'top 0.3s ease'}}>
       <Tab.Container id="left-tabs-example" activeKey={activeSection || null}>
         <Row>
           <Col sm={3}>
@@ -32,8 +31,7 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
                     activeSection === 'accommodations' ? activeTabStyle : defaultTabStyle
                   }
                   eventKey="accommodations"
-                  onClick={() => onSelectCategory('accommodations')}
-                >
+                  onClick={() => onSelectCategory('accommodations')}>
                   🏨 숙소
                 </Nav.Link>
               </Nav.Item>
@@ -45,9 +43,20 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
                     activeSection === 'tourTicket' ? activeTabStyle : defaultTabStyle
                   }
                   eventKey="tourTicket"
-                  onClick={() => onSelectCategory('tourTicket')}
-                >
+                  onClick={() => onSelectCategory('tourTicket')}>
                   🎟 투어.티켓
+                </Nav.Link>
+              </Nav.Item>
+
+              {/* 여행용품 탭 */}
+              <Nav.Item style={{whiteSpace: 'nowrap'}}>
+                <Nav.Link
+                  style={
+                    activeSection === 'travelItem' ? activeTabStyle : defaultTabStyle
+                  }
+                  eventKey="travelItem"
+                  onClick={() => onSelectCategory('travelItem')}>
+                  🛍️ 여행용품
                 </Nav.Link>
               </Nav.Item>
             </Nav>

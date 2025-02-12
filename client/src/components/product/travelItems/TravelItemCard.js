@@ -1,10 +1,12 @@
 import React from 'react';
 import {useNavigate} from 'react-router-dom';
+import {useAuthStore} from '../../../store/authStore';
 import {deleteTravelItem} from '../../../api/travelItem/travelItemService';
 import './styles/TravelItemCard.css';
 
 const TravelItemCard = ({travelItem, onItemDeleted}) => {
   const navigate = useNavigate();
+  const {user, isAuthenticated} = useAuthStore();
   const SERVER_URL = 'http://localhost:5000';
 
   // ✅ 기본 이미지 설정
@@ -20,7 +22,7 @@ const TravelItemCard = ({travelItem, onItemDeleted}) => {
 
   // ✅ 카드 클릭 시 상세 페이지로 이동
   const handleCardClick = () => {
-    navigate(`/product/travelItems/${travelItem._id}/detail`);
+    navigate(`/travelItems/${travelItem._id}`);
   };
 
   const handleModifyClick = e => {
@@ -75,14 +77,16 @@ const TravelItemCard = ({travelItem, onItemDeleted}) => {
           {travelItem?.stock > 0 ? '✅ 재고 있음' : '❌ 품절'}
         </p>
       </div>
-      <div className="card-footer d-flex justify-content-between">
-        <button className="btn btn-warning" onClick={handleModifyClick}>
-          ✏️ 수정
-        </button>
-        <button className="btn btn-danger" onClick={handleDeleteClick}>
-          ❌ 삭제
-        </button>
-      </div>
+      {isAuthenticated && user?.roles.includes('admin') && (
+        <div className="card-footer d-flex justify-content-between">
+          <button className="btn btn-warning" onClick={handleModifyClick}>
+            ✏️ 수정
+          </button>
+          <button className="btn btn-danger" onClick={handleDeleteClick}>
+            ❌ 삭제
+          </button>
+        </div>
+      )}
     </div>
   );
 };
