@@ -1,4 +1,5 @@
 import React from 'react';
+import {useNavigate} from 'react-router-dom';
 // import moment from 'moment-timezone';
 
 // ✅ 항공사별 로고 파일 매핑
@@ -21,6 +22,12 @@ const formatTime = timeString => {
 };
 
 const SearchResultsList = ({flights}) => {
+  const navigate = useNavigate();
+
+  const handleSelectFlight = flight => {
+    navigate('/flights/booking', {state: {selectedFlight: flight, isRoundTrip: false}});
+  };
+
   return (
     <div className="container-md mt-4" style={{maxWidth: '900px'}}>
       <h2 className="fw-bold mb-4 text-center">📋 검색된 항공편 리스트</h2>
@@ -35,13 +42,11 @@ const SearchResultsList = ({flights}) => {
               <div key={flight?._id} className="col-12 mb-3">
                 <div
                   className="card p-3 shadow-sm d-flex flex-row align-items-center"
-                  style={{minHeight: '80px'}}
-                >
+                  style={{minHeight: '80px'}}>
                   {/* 항공사 로고 및 정보 */}
                   <div
                     className="d-flex align-items-center me-3"
-                    style={{flexBasis: '200px'}}
-                  >
+                    style={{flexBasis: '200px'}}>
                     <img
                       src={`/images/logos/${logoFile}`}
                       alt={flight.airline}
@@ -86,11 +91,19 @@ const SearchResultsList = ({flights}) => {
                   {/* 가격 */}
                   <div
                     className="text-end ms-auto"
-                    style={{flexBasis: '130px', whiteSpace: 'nowrap'}}
-                  >
+                    style={{flexBasis: '130px', whiteSpace: 'nowrap'}}>
                     <p className="fs-5 fw-bold text-primary mb-0">
                       {flight?.price ? flight.price.toLocaleString() : '0'}원
                     </p>
+                  </div>
+
+                  {/* ✅ 선택 버튼 */}
+                  <div className="ms-3">
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => handleSelectFlight(flight)}>
+                      선택
+                    </button>
                   </div>
                 </div>
               </div>
