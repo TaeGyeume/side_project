@@ -69,6 +69,11 @@ const Header = () => {
               </Link>
             </li>
             <li className="nav-item">
+              <Link className="nav-link" to="/travelItems">
+                여행용품
+              </Link>
+            </li>
+            <li className="nav-item">
               <Link className="nav-link" to="/notification">
                 알림
               </Link>

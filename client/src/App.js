@@ -24,6 +24,8 @@ import RoundTripResults from './pages/flights/RoundTripResults';
 import RoundTripDeparture from './pages/flights/RoundTripDeparture'; // ✅ 추가
 import RoundTripReturn from './pages/flights/RoundTripReturn'; // ✅ 추가
 import RoundTripConfirm from './pages/flights/RoundTripConfirm'; // ✅ 추가
+import TravelItemList from './pages/travelItem/TravelItemListPage';
+import TravelItemDetail from './pages/travelItem/TravelItemDetailPage';
 import ProductPage from './pages/product/ProductPage';
 import AccommodationList from './pages/product/accommodations/AccommodationList';
 import AccommodationCreate from './pages/product/accommodations/AccommodationCreate';
@@ -44,6 +46,7 @@ import TravelItemEditPage from './pages/product/travelItems/TravelItemEditPage';
 import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
 import TourTicketBookingPage from './pages/booking/TourTicketBookingPage';
 import AccommodationBookingPage from './pages/booking/AccommodationBookingPage';
+import TravelItemPurchaseForm from './components/booking/TravelItemPurchasePage';
 import MyBookingPage from './pages/user/MyBookingPage';
 
 const App = () => {
@@ -110,6 +113,8 @@ const App = () => {
           <Route path="/flights/roundtrip-departure" element={<RoundTripDeparture />} />
           <Route path="/flights/roundtrip-return" element={<RoundTripReturn />} />
           <Route path="/flights/roundtrip-confirm" element={<RoundTripConfirm />} />
+          <Route path="/travelItems" element={<TravelItemList />} />
+          <Route path="/travelItems/:itemId" element={<TravelItemDetail />} />
 
           <Route path="/tourTicket/*" element={<UserTourTicketPage />} />
           {/* 🔐 인증된 사용자만 접근 가능 */}
@@ -122,6 +127,10 @@ const App = () => {
             <Route
               path="/accommodation/booking/:roomId"
               element={<AccommodationBookingPage />}
+            />
+            <Route
+              path="/travelItems/purchase/:itemId"
+              element={<TravelItemPurchaseForm />}
             />
             <Route path="/booking/my" element={<MyBookingPage />} />
           </Route>
