@@ -40,7 +40,7 @@ const RoomCard = ({room, onRoomDeleted}) => {
 
   // ✅ 예약 버튼 클릭 시, 예약 페이지로 이동
   const handleBooking = () => {
-    navigate(`/booking/accommodation/${room._id}`);
+    navigate(`/accommodation/booking/${room._id}`);
   };
 
   return (
