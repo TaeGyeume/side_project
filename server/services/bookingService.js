@@ -1,6 +1,7 @@
 const axios = require('axios');
 const Booking = require('../models/Booking');
 const Payment = require('../models/Payment');
+const TourTicket = require('../models/TourTicket');
 
 const getPortOneToken = async () => {
   try {
@@ -70,6 +71,53 @@ exports.verifyPayment = async ({imp_uid, merchant_uid}) => {
       );
       return {status: 400, message: '결제 금액 불일치'};
     }
+
+    // 상품별 재고 감소 처리
+    let product;
+
+    switch (booking.type) {
+      case 'tourTicket': {
+        product = await TourTicket.findById(booking.productId);
+
+        if (!product)
+          return {status: 404, message: '투어.티켓 상품 정보를 찾을 수 없습니다.'};
+
+        if (product.stock < booking.count)
+          return {status: 400, message: '재고가 부족합니다.'};
+
+        product.stock -= booking.count;
+        break;
+      }
+
+      case 'flight': {
+        product = await Flight.findById(booking.productId);
+
+        if (!product) return {status: 404, message: '항공 상품 정보를 찾을 수 없습니다.'};
+
+        if (product.availableSeats < booking.count)
+          return {status: 400, message: '좌석이 부족합니다.'};
+
+        product.availableSeats -= booking.count;
+        break;
+      }
+
+      case 'accommodation': {
+        product = await Accommodation.findById(booking.productId);
+
+        if (!product) return {status: 404, message: '숙박 상품 정보를 찾을 수 없습니다.'};
+
+        if (product.availableCount < booking.count)
+          return {status: 400, message: '객실이 부족합니다.'};
+
+        product.availableRooms -= booking.count;
+        break;
+      }
+
+      default:
+        return {status: 400, message: '유효하지 않은 상품 유형입니다.'};
+    }
+
+    await product.save(); // 재고 저장
 
     // 결제 정보 저장
     try {

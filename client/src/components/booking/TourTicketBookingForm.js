@@ -7,13 +7,11 @@ import {getTourTicketById} from '../../api/tourTicket/tourTicketService';
 import {createBooking, verifyPayment} from '../../api/booking/bookingService';
 import {authAPI} from '../../api/auth/index';
 
-const BookingForm = () => {
+const TourTicketBookingForm = () => {
   const {id} = useParams();
   const [ticket, setTicket] = useState(null);
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
-    // startDate: '',
-    // endDate: '',
     count: 1
   });
 
@@ -53,13 +51,8 @@ const BookingForm = () => {
 
   /*예약 생성 및 결제 요청 */
   const handlePayment = async () => {
-    // if (!formData.startDate || !formData.endDate) {
-    //   alert('이용 시작일과 종료일을 입력하세요.');
-    //   return;
-    // }
-
     const totalPrice = ticket.price * formData.count;
-    const merchant_uid = `tourTicket_${Date.now()}`; // 예약 단계에서 미리 생성
+    const merchant_uid = `tourTicket_${Date.now() + 9 * 60 * 60 * 1000}`; // 예약 단계에서 미리 생성
 
     try {
       // 예약 생성 요청 (merchant_uid 포함)
@@ -67,8 +60,6 @@ const BookingForm = () => {
         type: 'tourTicket',
         productId: ticket._id,
         merchant_uid, // 미리 생성한 merchant_uid 사용
-        // startDate: formData.startDate,
-        // endDate: formData.endDate,
         count: formData.count,
         totalPrice,
         userId: user._id,
@@ -83,8 +74,6 @@ const BookingForm = () => {
         type: 'tourTicket',
         productId: ticket._id,
         merchant_uid,
-        // startDate: formData.startDate,
-        // endDate: formData.endDate,
         count: formData.count,
         totalPrice,
         userId: user._id,
@@ -123,21 +112,12 @@ const BookingForm = () => {
       },
       async rsp => {
         if (rsp.success) {
-          // alert(`결제 성공! 결제 번호: ${rsp.imp_uid}`);
-
           // 결제 검증 요청
           try {
-            // console.log('결제 검증 요청 데이터:', {
-            //   imp_uid: rsp.imp_uid,
-            //   merchant_uid
-            // });
-
             const verifyResponse = await verifyPayment({
               imp_uid: rsp.imp_uid,
               merchant_uid
             });
-
-            // console.log('결제 검증 응답:', verifyResponse);
 
             if (verifyResponse.message === '결제 검증 성공') {
               alert('예약이 완료되었습니다.');
@@ -161,22 +141,6 @@ const BookingForm = () => {
       <h3>상품명: {ticket.title}</h3>
       <p>가격: {ticket.price.toLocaleString()} 원</p>
 
-      {/* <label>이용 시작일</label>
-      <input
-        type="date"
-        name="startDate"
-        value={formData.startDate}
-        onChange={handleChange}
-      />
-
-      <label>이용 종료일</label>
-      <input
-        type="date"
-        name="endDate"
-        value={formData.endDate}
-        onChange={handleChange}
-      /> */}
-
       <label>총 개수</label>
       <input
         type="number"
@@ -194,4 +158,4 @@ const BookingForm = () => {
   );
 };
 
-export default BookingForm;
+export default TourTicketBookingForm;
