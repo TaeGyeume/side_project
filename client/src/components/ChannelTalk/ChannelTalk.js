@@ -1,11 +1,9 @@
 import {useEffect, useState} from 'react';
 import {authAPI} from '../../api/auth/auth'; // auth.js로부터 API 호출
 
-<<<<<<< HEAD
 // 쿠키에서 accessToken을 가져오는 함수 // 깃허브 vscode 시간되돌리기
-=======
 // 쿠키에서 accessToken을 가져오는 함수
->>>>>>> 121dd29 (채널톡 컴포넌트 추가 및 초기화 로직 구현)
+
 const getCookie = name => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
