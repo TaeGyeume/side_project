@@ -174,6 +174,8 @@ exports.deleteTravelItem = async itemId => {
 
     console.log('🗑 삭제할 상품 정보:', item);
 
+    const categoryId = item.parentCategory; // ✅ 상위 카테고리 ID
+
     // ✅ 상품에 포함된 이미지 삭제
     if (item.images && item.images.length > 0) {
       item.images.forEach(imagePath => {
@@ -184,9 +186,9 @@ exports.deleteTravelItem = async itemId => {
 
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
-          console.log(`✅ 이미지 삭제 완료: ${filePath}`);
+          console.log(`✅ 파일 삭제 완료: ${filePath}`);
         } else {
-          console.log(`❌ 이미지 파일을 찾을 수 없음: ${filePath}`);
+          console.log(`❌ 파일을 찾을 수 없음: ${filePath}`);
         }
       });
     }
@@ -194,6 +196,24 @@ exports.deleteTravelItem = async itemId => {
     // ✅ DB에서 해당 상품 삭제
     await TravelItem.findByIdAndDelete(itemId);
     console.log(`✅ 상품 삭제 완료 (ID: ${itemId})`);
+
+    // ✅ 부모 카테고리에서 해당 상품 제거
+    if (categoryId) {
+      await TravelItem.findByIdAndUpdate(
+        categoryId,
+        {$pull: {subCategories: itemId}}, // ✅ `subCategories` 배열에서 제거
+        {new: true}
+      );
+
+      console.log(`✅ 부모 카테고리에서 삭제된 상품 제거: ${itemId}`);
+
+      // ✅ 부모 카테고리에 더 이상 서브카테고리가 없으면 삭제
+      const parentCategory = await TravelItem.findById(categoryId);
+      if (parentCategory && parentCategory.subCategories.length === 0) {
+        await TravelItem.findByIdAndDelete(categoryId);
+        console.log(`🗑 부모 카테고리 삭제됨: ${categoryId}`);
+      }
+    }
 
     return {message: '상품 삭제 성공'};
   } catch (error) {

@@ -70,6 +70,26 @@ TravelItemSchema.post('save', async function (doc, next) {
   next();
 });
 
+// ✅ 상품이 삭제될 때 부모 카테고리에서도 자동 제거
+TravelItemSchema.post('findOneAndDelete', async function (doc) {
+  if (doc.parentCategory) {
+    await mongoose.model('TravelItem').findByIdAndUpdate(
+      doc.parentCategory,
+      {$pull: {subCategories: doc._id}}, // ✅ `subCategories` 배열에서 제거
+      {new: true}
+    );
+
+    // ✅ 부모 카테고리에 더 이상 서브카테고리가 없으면 삭제
+    const parentCategory = await mongoose
+      .model('TravelItem')
+      .findById(doc.parentCategory);
+    if (parentCategory && parentCategory.subCategories.length === 0) {
+      await mongoose.model('TravelItem').findByIdAndDelete(parentCategory._id);
+      console.log(`🗑 부모 카테고리 자동 삭제됨: ${parentCategory._id}`);
+    }
+  }
+});
+
 // ✅ 상품이 저장될 때 재고(stock) 확인 후 품절(soldOut) 처리
 TravelItemSchema.pre('save', function (next) {
   this.soldOut = this.stock === 0;

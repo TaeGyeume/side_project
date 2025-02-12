@@ -39,6 +39,12 @@ const RoomSchema = new mongoose.Schema({
     type: Number, // 남은 객실 개수 (예약 시 감소, 취소 시 증가)
     required: true
   },
+  reservedDates: [
+    {
+      date: {type: Date, required: true}, // 예약된 날짜
+      count: {type: Number, required: true, default: 0} // 해당 날짜의 예약 개수
+    }
+  ],
   createdAt: {
     type: Date,
     default: () => new Date(Date.now() + 9 * 60 * 60 * 1000) // KST

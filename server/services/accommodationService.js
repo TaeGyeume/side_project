@@ -67,7 +67,7 @@ exports.autocompleteSearch = async query => {
   }
 };
 
-// ✅ 숙소 검색 함수 (무한 스크롤 + 정렬 기능 추가)
+// ✅ 숙소 검색 함수 (무한 스크롤 + 정렬 기능 수정)
 exports.getAccommodationsBySearch = async ({
   city,
   startDate,
@@ -91,9 +91,9 @@ exports.getAccommodationsBySearch = async ({
     // 1️⃣ **도시 검색 (`text index` & `regex`)**
     let locations = await Location.find(
       {$text: {$search: city}},
-      {score: {$meta: 'textScore'}} // ✅ `textScore` 추가
+      {score: {$meta: 'textScore'}}
     )
-      .sort({score: {$meta: 'textScore'}}) // ✅ 정렬 추가
+      .sort({score: {$meta: 'textScore'}})
       .limit(10);
 
     let regexLocations = await Location.find({name: {$regex: regexCity}}).limit(10);
@@ -132,53 +132,24 @@ exports.getAccommodationsBySearch = async ({
     });
 
     // 6️⃣ **숙소 검색 (`text index` & `regex`)**
-    let accommodations = await Accommodation.find(
-      {
-        $text: {$search: city},
-        ...(category !== 'all' && {category}),
-        _id: {$in: availableAccommodationIds}
-      },
-      {score: {$meta: 'textScore'}} // ✅ `textScore` 명시적 요청
-    )
-      .sort({score: {$meta: 'textScore'}}) // ✅ 정렬 적용
-      .limit(limit)
-      .skip((page - 1) * limit);
-
-    let regexAccommodations = await Accommodation.find({
-      $and: [
-        {
-          $or: [{location: {$in: locationIds}}, {name: {$regex: regexCity}}]
-        },
-        {_id: {$in: availableAccommodationIds}},
-        ...(category !== 'all' ? [{category}] : [])
-      ]
-    })
-      .limit(limit)
-      .skip((page - 1) * limit);
-
-    accommodations = [...accommodations, ...regexAccommodations].filter(
-      (v, i, a) => a.findIndex(t => t._id.toString() === v._id.toString()) === i
-    );
-
-    // 6️⃣ **정렬 순서 유지 (`textScore` 없으면 0으로 설정)**
-    accommodations.forEach(acc => {
-      if (acc.score === undefined) acc.score = 0;
-    });
+    let accommodations = await Accommodation.find({
+      $or: [{location: {$in: locationIds}}, {name: {$regex: regexCity}}],
+      _id: {$in: availableAccommodationIds},
+      ...(category !== 'all' ? {category} : {})
+    }).lean(); // `lean()`을 사용하여 JSON 데이터로 변환
 
     // 6️⃣ **방 가격을 기준으로 minPrice 적용**
-    accommodations = accommodations.filter(accommodation => {
+    accommodations = accommodations.map(accommodation => {
       accommodation.rooms = availableRooms.filter(
         room => room.accommodation.toString() === accommodation._id.toString()
       );
 
       // ✅ 숙소의 `minPrice`를 실제 방의 최소 가격으로 설정
-      if (accommodation.rooms.length > 0) {
-        accommodation.minPrice = Math.min(
-          ...accommodation.rooms.map(r => r.pricePerNight)
-        );
-      }
+      accommodation.minPrice = accommodation.rooms.length
+        ? Math.min(...accommodation.rooms.map(r => r.pricePerNight))
+        : Infinity; // 방이 없으면 가장 높은 가격으로 설정
 
-      return accommodation.minPrice >= minPrice; // ✅ minPrice 조건 만족하는 숙소만 유지
+      return accommodation;
     });
 
     // ✅ **정렬 적용 (가격 / 평점 / 기본 관련성)**
@@ -192,7 +163,16 @@ exports.getAccommodationsBySearch = async ({
       accommodations.sort((a, b) => (b.score || 0) - (a.score || 0));
     }
 
-    return {accommodations, totalPages: Math.ceil(totalCount / limit)};
+    // 7️⃣ **페이징 처리**
+    const paginatedAccommodations = accommodations.slice(
+      (page - 1) * limit,
+      page * limit
+    );
+
+    return {
+      accommodations: paginatedAccommodations,
+      totalPages: Math.ceil(totalCount / limit)
+    };
   } catch (error) {
     console.error('❌ 숙소 검색 중 오류 발생:', error);
     throw new Error('숙소 검색 중 오류 발생: ' + error.message);
@@ -221,16 +201,15 @@ exports.getAvailableRoomsByAccommodation = async ({
     if (!startDate || !endDate || !adults) {
       console.log('📌 검색 조건이 없으므로 모든 객실 반환');
       const allRooms = await Room.find({accommodation: accommodationId}).select(
-        'name pricePerNight images maxGuests amenities'
+        'name pricePerNight images maxGuests amenities availableCount reservedDates'
       );
       return {accommodation, availableRooms: allRooms};
     }
 
-    // ✅ 기존 검색 로직 유지
     const checkInDate = new Date(startDate);
     const checkOutDate = new Date(endDate);
 
-    // 3️⃣ **예약된 방 조회**
+    // 3️⃣ **예약된 방 조회 (해당 날짜 범위에서 예약된 방 제외)**
     const bookedRooms = await Booking.find({
       accommodation: accommodationId,
       $or: [{startDate: {$lt: checkOutDate}, endDate: {$gt: checkInDate}}]
@@ -240,12 +219,37 @@ exports.getAvailableRoomsByAccommodation = async ({
     const priceFilter =
       maxPrice >= 500000 ? {$gte: minPrice} : {$gte: minPrice, $lte: maxPrice};
 
-    const availableRooms = await Room.find({
+    let availableRooms = await Room.find({
       accommodation: accommodationId, // 특정 숙소 ID 필터
       maxGuests: {$gte: adults}, // 최소 인원 조건 충족
       _id: {$nin: bookedRooms}, // 예약된 방 제외
       pricePerNight: priceFilter // 가격 필터 적용
-    }).select('name pricePerNight images maxGuests amenities');
+    }).select(
+      'name pricePerNight images maxGuests amenities availableCount reservedDates'
+    );
+
+    // ✅ 5️⃣ 특정 날짜에 예약이 꽉 찬 객실 제외
+    availableRooms = availableRooms.filter(room => {
+      let currentDate = new Date(startDate);
+
+      while (currentDate < new Date(endDate)) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+
+        // ✅ `reservedDates`가 없는 경우 빈 배열로 설정
+        const reservedDates = room.reservedDates || [];
+
+        // ✅ 해당 날짜의 예약 개수 확인
+        const reservedCountOnDate =
+          reservedDates.find(d => d.date.toISOString().split('T')[0] === dateStr)
+            ?.count || 0;
+
+        // ✅ 가용 객실 개수보다 예약 개수가 많으면 제외
+        if (reservedCountOnDate >= room.availableCount) return false;
+
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      return true;
+    });
 
     return {accommodation, availableRooms};
   } catch (error) {
