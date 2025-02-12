@@ -1,0 +1,110 @@
+.booking-list-container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.booking-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.booking-card {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.booking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.booking-date {
+  font-size: 14px;
+  font-weight: bold;
+  color: #555;
+}
+
+.cancel-button {
+  background: #ff4d4f;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cancel-button:hover {
+  background: #e63946;
+}
+
+.product-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.type-label {
+  font-size: 14px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.type-label.flight {
+  background-color: #d4eaf7;
+  color: #007bff;
+}
+
+.type-label.accommodation {
+  background-color: #ffe6b3;
+  color: #ff9800;
+}
+
+.type-label.tourTicket {
+  background-color: #d9f7d9;
+  color: #4caf50;
+}
+
+.booking-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.detail-button,
+.inquiry-button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.detail-button:hover,
+.inquiry-button:hover {
+  background: #0056b3;
+}
+
+.no-bookings {
+  font-size: 16px;
+  color: #777;
+  text-align: center;
+}
