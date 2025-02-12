@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import axios from '../../../api/axios';
+import {fetchAccommodations} from '../../../api/accommodation/accommodationService';
 import AccommodationCard from './AccommodationCard';
 
 const AccommodationList = ({limit = null}) => {
@@ -10,19 +10,18 @@ const AccommodationList = ({limit = null}) => {
 
   // ✅ 모든 숙소 불러오기
   useEffect(() => {
-    const fetchAccommodations = async () => {
+    const loadAccommodations = async () => {
       try {
-        const response = await axios.get('/accommodations/list'); // ✅ API 요청
-        setAccommodations(response.data.accommodations);
+        const data = await fetchAccommodations();
+        setAccommodations(data);
       } catch (error) {
-        console.error('❌ 숙소 리스트 불러오기 실패:', error);
-        setError('숙소 데이터를 불러오는 중 오류가 발생했습니다.');
+        setError(error.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAccommodations();
+    loadAccommodations();
   }, []);
 
   // ✅ 삭제 시 숙소 리스트에서 제거

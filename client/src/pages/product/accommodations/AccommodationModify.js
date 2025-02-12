@@ -1,5 +1,11 @@
 import React, {useState, useEffect} from 'react';
 import {useParams, useNavigate} from 'react-router-dom';
+import {
+  fetchAccommodationDetail,
+  updateAccommodation,
+  deleteAccommodationImage,
+  fetchRoomList
+} from '../../../api/accommodation/accommodationService';
 import axios from '../../../api/axios';
 import RoomCard from '../../../components/accommodations/RoomCard';
 
@@ -74,24 +80,12 @@ const AccommodationModify = () => {
   // ✅ 객실 데이터 가져오기
   useEffect(() => {
     const fetchRooms = async () => {
-      try {
-        if (formData.rooms.length > 0) {
-          const roomsResponse = await axios.get(
-            `/accommodations/${accommodationId}/rooms`
-          );
-          console.log('📌 객실 데이터:', roomsResponse.data);
-          setAvailableRooms(roomsResponse.data.availableRooms || []);
-        }
-      } catch (err) {
-        console.error('❌ 객실 정보 불러오기 오류:', err);
-        setError('객실 정보를 불러오는 중 오류 발생');
-      }
+      const rooms = await fetchRoomList(accommodationId);
+      setAvailableRooms(rooms);
     };
 
-    if (formData.rooms.length > 0) {
-      fetchRooms();
-    }
-  }, [accommodationId, formData.rooms]);
+    fetchRooms();
+  }, [accommodationId]);
 
   // 🔹 입력값 변경 핸들러
   const handleChange = e => {
@@ -203,8 +197,6 @@ const AccommodationModify = () => {
   const handleSubmit = async e => {
     e.preventDefault();
 
-    console.log('📌 제출 직전 좌표 값:', formData.coordinates);
-
     // ✅ 최신 좌표 값을 가져와서 저장
     const coordinates = {
       type: 'Point',
@@ -294,8 +286,7 @@ const AccommodationModify = () => {
           <select
             className="form-control"
             value={selectedCountry}
-            onChange={handleCountryChange}
-          >
+            onChange={handleCountryChange}>
             <option value="">국가를 선택하세요</option>
             {countries.map((country, index) => (
               <option key={index} value={country}>
@@ -312,8 +303,7 @@ const AccommodationModify = () => {
             name="location"
             value={formData.location}
             onChange={handleCityChange}
-            required
-          >
+            required>
             <option value="">도시를 선택하세요</option>
             {cities.map(city => (
               <option key={city._id} value={city._id}>
@@ -392,8 +382,7 @@ const AccommodationModify = () => {
             className="form-control"
             name="category"
             value={formData.category}
-            onChange={handleChange}
-          >
+            onChange={handleChange}>
             <option value="Hotel">호텔</option>
             <option value="Pension">펜션</option>
             <option value="Resort">리조트</option>
@@ -443,8 +432,7 @@ const AccommodationModify = () => {
                 <button
                   type="button"
                   className="btn btn-danger btn-sm"
-                  onClick={() => handleDeleteImage(image)}
-                >
+                  onClick={() => handleDeleteImage(image)}>
                   삭제
                 </button>
               </div>
@@ -455,8 +443,9 @@ const AccommodationModify = () => {
         <button
           type="button"
           className="btn btn-primary mt-2"
-          onClick={() => navigate(`/product/room/new?accommodationId=${accommodationId}`)}
-        >
+          onClick={() =>
+            navigate(`/product/room/new?accommodationId=${accommodationId}`)
+          }>
           + 객실 추가
         </button>
 

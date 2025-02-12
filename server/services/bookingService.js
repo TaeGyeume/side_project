@@ -2,6 +2,7 @@ const axios = require('axios');
 const Booking = require('../models/Booking');
 const Payment = require('../models/Payment');
 const TourTicket = require('../models/TourTicket');
+const Room = require('../models/Room');
 
 const getPortOneToken = async () => {
   try {
@@ -25,6 +26,20 @@ const getPortOneToken = async () => {
 exports.createBooking = async bookingData => {
   try {
     console.log('예약 데이터 저장 요청:', bookingData);
+
+    if (
+      bookingData.type === 'accommodation' &&
+      bookingData.roomId &&
+      !bookingData.productId
+    ) {
+      const room = await Room.findById(bookingData.roomId);
+      if (room) {
+        bookingData.productId = room.accommodation; // 숙소 ID 자동 설정
+        console.log('✅ 수동 설정된 숙소 ID (productId):', bookingData.productId);
+      } else {
+        throw new Error('해당 roomId에 해당하는 숙소가 존재하지 않습니다.');
+      }
+    }
 
     const newBooking = new Booking({
       ...bookingData,
