@@ -21,6 +21,6 @@ const tourTicketSchema = new mongoose.Schema(
   {timestamps: false}
 );
 
-const TourTicket = mongoose.model('TourTicket', tourTicketSchema);
+const TourTicket = mongoose.model('tourTicket', tourTicketSchema);
 
 module.exports = TourTicket;

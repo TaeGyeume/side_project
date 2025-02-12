@@ -47,6 +47,7 @@ import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
 import TourTicketBookingPage from './pages/booking/TourTicketBookingPage';
 import AccommodationBookingPage from './pages/booking/AccommodationBookingPage';
 import TravelItemPurchaseForm from './components/booking/TravelItemPurchasePage';
+import MyBookingPage from './pages/user/MyBookingPage';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -131,6 +132,7 @@ const App = () => {
               path="/travelItems/purchase/:itemId"
               element={<TravelItemPurchaseForm />}
             />
+            <Route path="/booking/my" element={<MyBookingPage />} />
           </Route>
           {/* 🔒 어드민 전용 페이지 */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>
