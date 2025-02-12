@@ -4,10 +4,7 @@
 import React, {useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {getTourTicketById} from '../../api/tourTicket/tourTicketService';
-import {
-  createBooking,
-  verifyPayment
-} from '../../api/booking/bookingService';
+import {createBooking, verifyPayment} from '../../api/booking/bookingService';
 import {authAPI} from '../../api/auth/index';
 
 const BookingForm = () => {
@@ -15,10 +12,9 @@ const BookingForm = () => {
   const [ticket, setTicket] = useState(null);
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
-    startDate: '',
-    endDate: '',
-    adults: 1,
-    children: 0
+    // startDate: '',
+    // endDate: '',
+    count: 1
   });
 
   useEffect(() => {
@@ -57,12 +53,12 @@ const BookingForm = () => {
 
   /*예약 생성 및 결제 요청 */
   const handlePayment = async () => {
-    if (!formData.startDate || !formData.endDate) {
-      alert('이용 시작일과 종료일을 입력하세요.');
-      return;
-    }
+    // if (!formData.startDate || !formData.endDate) {
+    //   alert('이용 시작일과 종료일을 입력하세요.');
+    //   return;
+    // }
 
-    const totalPrice = ticket.price * (formData.adults + formData.children);
+    const totalPrice = ticket.price * formData.count;
     const merchant_uid = `tourTicket_${Date.now()}`; // 예약 단계에서 미리 생성
 
     try {
@@ -71,10 +67,9 @@ const BookingForm = () => {
         type: 'tourTicket',
         productId: ticket._id,
         merchant_uid, // 미리 생성한 merchant_uid 사용
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        adults: formData.adults,
-        children: formData.children,
+        // startDate: formData.startDate,
+        // endDate: formData.endDate,
+        count: formData.count,
         totalPrice,
         userId: user._id,
         reservationInfo: {
@@ -88,10 +83,9 @@ const BookingForm = () => {
         type: 'tourTicket',
         productId: ticket._id,
         merchant_uid,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        adults: formData.adults,
-        children: formData.children,
+        // startDate: formData.startDate,
+        // endDate: formData.endDate,
+        count: formData.count,
         totalPrice,
         userId: user._id,
         reservationInfo: {
@@ -167,7 +161,7 @@ const BookingForm = () => {
       <h3>상품명: {ticket.title}</h3>
       <p>가격: {ticket.price.toLocaleString()} 원</p>
 
-      <label>이용 시작일</label>
+      {/* <label>이용 시작일</label>
       <input
         type="date"
         name="startDate"
@@ -181,23 +175,15 @@ const BookingForm = () => {
         name="endDate"
         value={formData.endDate}
         onChange={handleChange}
-      />
+      /> */}
 
-      <label>성인 인원</label>
+      <label>총 개수</label>
       <input
         type="number"
-        name="adults"
-        value={formData.adults}
+        name="count"
+        value={formData.count}
         min="1"
-        onChange={handleChange}
-      />
-
-      <label>소아 인원</label>
-      <input
-        type="number"
-        name="children"
-        value={formData.children}
-        min="0"
+        max="50"
         onChange={handleChange}
       />
 
