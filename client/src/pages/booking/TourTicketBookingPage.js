@@ -1,15 +1,15 @@
 // 예약 및 결제창 출력 페이지
 
 import React from 'react';
-import BookingForm from '../../components/booking/BookingForm';
+import TourTicketBookingForm from '../../components/booking/TourTicketBookingForm';
 
-const BookingPage = () => {
+const TourTicketBookingPage = () => {
   return (
     <div className="tour-ticket-booking-container">
       <h1>📌 투어.티켓 예약</h1>
-      <BookingForm />
+      <TourTicketBookingForm />
     </div>
   );
 };
 
-export default BookingPage;
+export default TourTicketBookingPage;

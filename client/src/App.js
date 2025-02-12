@@ -42,7 +42,7 @@ import TravelItemPage from './pages/product/travelItems/TravelItemPage';
 import TravelItemListPage from './pages/product/travelItems/TravelItemListPage';
 import TravelItemEditPage from './pages/product/travelItems/TravelItemEditPage';
 import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
-import TourTicketBookingPage from './pages/booking/BookingPage';
+import TourTicketBookingPage from './pages/booking/TourTicketBookingPage';
 import AccommodationBookingPage from './pages/booking/AccommodationBookingPage';
 
 const App = () => {
@@ -116,6 +116,7 @@ const App = () => {
             {/* <Route path="/reservation/:flightId" element={<Reservation />} /> */}
             <Route path="/profile" element={<UserPages.Profile />} />
             <Route path="/profile/update" element={<EditProfile />} />
+            {/* <Route path="/:type/booking/:id" element={<TourTicektBookingPage />} /> */}
             <Route path="/tourTicket/booking/:id" element={<TourTicketBookingPage />} />
             <Route
               path="/accommodation/booking/:roomId"
