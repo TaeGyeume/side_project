@@ -14,9 +14,7 @@ exports.createBooking = async (req, res) => {
 exports.verifyPayment = async (req, res) => {
   try {
     const {imp_uid, merchant_uid} = req.body;
-    const result = await bookingService.verifyPayment({
-      verifyPaymenthant_uid
-    });
+    const result = await bookingService.verifyPayment({imp_uid, merchant_uid});
 
     res.status(result.status).json({message: result.message, booking: result.booking});
   } catch (error) {
