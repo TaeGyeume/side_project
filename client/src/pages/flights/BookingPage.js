@@ -3,7 +3,7 @@ import {useLocation, useNavigate} from 'react-router-dom';
 import OneWayBooking from '../../components/flights/OneWayBooking';
 import RoundTripBooking from '../../components/flights/RoundTripBooking';
 
-// ✅ 요금 계산 함수
+// ✅ 요금 계산 함수 커밋 돌아가기 테스트
 const calculateTotalPrice = (
   selectedDeparture,
   selectedReturn,
