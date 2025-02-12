@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {authAPI} from '../../api/auth/auth'; // auth.js로부터 API 호출
 
-// 쿠키에서 accessToken을 가져오는 함수
+// 쿠키에서 accessToken을 가져오는 함수 // 깃허브 vscode 시간되돌리기
 const getCookie = name => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
