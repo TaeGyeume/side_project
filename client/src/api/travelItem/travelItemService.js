@@ -96,3 +96,22 @@ export const deleteTravelItem = async itemId => {
     throw new Error('상품 삭제 실패');
   }
 };
+
+/**
+ * 🆕 여행용품 상세정보 가져오기
+ * @param {string} itemId - 상세정보를 가져올 여행용품 ID
+ * @returns {Promise<Object>} 여행용품 상세정보
+ */
+export const fetchTravelItemDetail = async itemId => {
+  try {
+    if (!itemId || itemId === 'undefined') {
+      console.error('❌ 잘못된 itemId:', itemId);
+      throw new Error('유효하지 않은 itemId입니다.');
+    }
+    const response = await axios.get(`/travelItems/${itemId}`);
+    return response.data;
+  } catch (error) {
+    console.error('❌ 여행용품 상세정보 불러오기 실패:', error);
+    throw new Error('상품 상세정보를 불러오는 중 오류가 발생했습니다.');
+  }
+};

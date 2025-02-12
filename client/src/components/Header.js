@@ -37,8 +37,7 @@ const Header = () => {
           data-bs-target="#navbarNav"
           aria-controls="navbarNav"
           aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
+          aria-label="Toggle navigation">
           <span className="navbar-toggler-icon"></span>
         </button>
 
@@ -62,6 +61,11 @@ const Header = () => {
             <li className="nav-item">
               <Link className="nav-link" to="/tourTicket/list">
                 투어/티켓
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/travelItems">
+                여행용품
               </Link>
             </li>
 
