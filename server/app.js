@@ -6,6 +6,9 @@ const connectDB = require('./config/db');
 const passport = require('passport'); // Passport 불러오기
 require('./config/passport'); // Passport 설정 파일 불러오기
 require('dotenv').config();
+require('./models/TourTicket');
+require('./models/Accommodation');
+require('./models/Flight');
 
 console.log('✅ passport.js 파일이 정상적으로 로드됨'); // ✅ 확인용 로그 추가
 
@@ -59,7 +62,7 @@ app.use('/api/travelItems', travelItemRoutes);
 app.use('/product', productRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/tourTicket', userTourTicketRoutes);
-app.use('/booking/', bookingRoutes);
+app.use('/booking', bookingRoutes);
 
 //테스트용
 app.post('/api/admin', authMiddleware, authorizeRoles('admin'), (req, res) => {

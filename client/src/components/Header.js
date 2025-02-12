@@ -1,10 +1,11 @@
-import React, {useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import {useAuthStore} from '../store/authStore';
 
 const Header = () => {
   const {user, isAuthenticated, fetchUserProfile, logout} = useAuthStore();
   const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   //  로그인된 경우에만 프로필 불러오기 (401 방지)
   useEffect(() => {
@@ -23,6 +24,10 @@ const Header = () => {
     }
   };
 
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
       <div className="container">
@@ -37,8 +42,7 @@ const Header = () => {
           data-bs-target="#navbarNav"
           aria-controls="navbarNav"
           aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
+          aria-label="Toggle navigation">
           <span className="navbar-toggler-icon"></span>
         </button>
 
@@ -64,6 +68,11 @@ const Header = () => {
                 투어/티켓
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/notification">
+                알림
+              </Link>
+            </li>
 
             {isAuthenticated && user ? (
               <>
@@ -78,10 +87,29 @@ const Header = () => {
                 )}
 
                 {/* 다른 사용자들도 접근 가능한 메뉴 */}
-                <li className="nav-item">
-                  <Link className="nav-link" to="/profile">
+                <li className="nav-item dropdown">
+                  <button
+                    className="nav-link dropdown-toggle"
+                    onClick={toggleDropdown}
+                    style={{background: 'none', border: 'none', cursor: 'pointer'}}>
                     프로필
-                  </Link>
+                  </button>
+
+                  {/* 드롭다운 메뉴 */}
+                  {isDropdownOpen && (
+                    <ul className="dropdown-menu show">
+                      <li>
+                        <Link className="dropdown-item" to="/profile">
+                          내 프로필
+                        </Link>
+                      </li>
+                      <li>
+                        <Link className="dropdown-item" to="/booking/my">
+                          내 예약 목록
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
                 </li>
 
                 {/* 사용자 이름 표시 */}
