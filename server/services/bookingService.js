@@ -212,28 +212,27 @@ exports.cancelBooking = async bookingId => {
 // };
 exports.getUserBookings = async userId => {
   try {
-    console.log('📌 예약 조회 요청: 사용자 ID:', userId);
+    console.log('예약 조회 요청: 사용자 ID:', userId);
 
-    // ✅ 예약 목록 조회
+    // 예약 목록 조회
     const bookings = await Booking.find({userId}).populate({
       path: 'productId',
-      select: 'title' // ✅ productId에서 title 필드만 가져오기
+      select: 'title' // productId에서 title 필드만 가져오기
     });
 
-    console.log('🛠️ 예약 데이터 조회 결과:', bookings);
+    console.log('예약 데이터 조회 결과:', bookings);
 
     if (!bookings.length) {
       return {status: 404, message: '예약 내역이 없습니다.'};
     }
 
-    // ✅ `type` 값 확인 (정상적인 값인지 로그 출력)
     bookings.forEach((booking, index) => {
       console.log(`📌 ${index + 1}번째 예약 type:`, booking.type);
     });
 
     return {status: 200, data: bookings};
   } catch (error) {
-    console.error('🚨 예약 내역 조회 오류:', error);
+    console.error('예약 내역 조회 오류:', error);
     return {status: 500, message: '서버 오류 발생'};
   }
 };
