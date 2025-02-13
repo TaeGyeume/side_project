@@ -104,7 +104,9 @@ const MyBookingList = ({status}) => {
                     ? '✈️ 항공권 예약'
                     : booking.type === 'accommodation'
                       ? '🏨 숙소 예약'
-                      : '🎫 투어 티켓'}
+                      : booking.type === 'travelItem'
+                        ? '🛍️ 여행용품 구매'
+                        : '🎫 투어 티켓'}
                 </p>
                 <p>
                   예약 상태:{' '}

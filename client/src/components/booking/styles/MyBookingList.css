@@ -81,6 +81,11 @@ h2 {
   color: #4caf50;
 }
 
+.type-label.travelItem {
+  background-color: #f1d9f7;
+  color: #9d4caf;
+}
+
 .booking-footer {
   display: flex;
   justify-content: space-between;
