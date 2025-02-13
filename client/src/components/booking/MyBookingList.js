@@ -53,14 +53,14 @@ const MyBookingList = ({status}) => {
   if (loading) return <p className="loading-text">로딩 중...</p>;
   if (error) return <p className="error-text">{error}</p>;
 
-  // ✅ 상태에 따라 예약 필터링
+  // 상태에 따라 예약 필터링
   const filteredBookings = bookings
     .filter(booking => {
       if (status === 'completed') return booking.paymentStatus === 'COMPLETED';
       if (status === 'canceled') return booking.paymentStatus === 'CANCELED';
       return false;
     })
-    // ✅ `createdAt` 기준 내림차순 정렬 (최신 예약이 위에 출력됨)
+    // `createdAt` 기준 내림차순 정렬 (최신 예약이 위에 출력됨)
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   return (
