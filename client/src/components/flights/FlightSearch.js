@@ -77,7 +77,7 @@ const FlightSearch = () => {
         console.log('✅ 검색된 데이터:', searchData);
         setTimeout(() => {
           navigate('/flights/results', {state: {flights: searchData}});
-        }, 5000);
+        }, 500);
       }
     } catch (error) {
       console.error('🚨 검색 실패:', error);
