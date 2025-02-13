@@ -298,6 +298,28 @@ exports.getUserBookings = async userId => {
   }
 };
 
+// exports.cancelBooking = async bookingId => {
+//   try {
+//     const booking = await Booking.findById(bookingId);
+
+//     if (!booking) return {status: 404, message: '예약 정보를 찾을 수 없습니다.'};
+
+//     if (booking.paymentStatus === 'CANCELED') {
+//       return {status: 400, message: '이미 취소된 예약입니다.'};
+//     }
+
+//     // 예약 상태 변경
+//     booking.paymentStatus = 'CANCELED';
+//     booking.updatedAt = new Date(Date.now() + 9 * 60 * 60 * 1000);
+//     await booking.save();
+
+//     return {status: 200, message: '결제가 취소되었습니다.'};
+//   } catch (error) {
+//     console.error('예약 취소 오류:', error);
+//     return {status: 500, message: '서버 오류 발생'};
+//   }
+// };
+
 exports.cancelBooking = async bookingId => {
   try {
     const booking = await Booking.findById(bookingId);
@@ -308,11 +330,78 @@ exports.cancelBooking = async bookingId => {
       return {status: 400, message: '이미 취소된 예약입니다.'};
     }
 
-    // 예약 상태 변경
+    let product;
+
+    switch (booking.type) {
+      case 'tourTicket': {
+        product = await TourTicket.findById(booking.productId);
+        
+        if (!product)
+          return {status: 404, message: '투어 티켓 상품 정보를 찾을 수 없습니다.'};
+
+        product.stock += booking.count;
+        await product.save();
+        break;
+      }
+
+      case 'flight': {
+        product = await Flight.findById(booking.productId);
+        if (!product) return {status: 404, message: '항공권 정보를 찾을 수 없습니다.'};
+
+        product.availableSeats += booking.count;
+        await product.save();
+        break;
+      }
+
+      case 'accommodation': {
+        product = await Room.findById(booking.roomId);
+        if (!product) return {status: 404, message: '객실 정보를 찾을 수 없습니다.'};
+
+        const {startDate, endDate, count} = booking;
+        let currentDate = new Date(startDate);
+
+        while (currentDate < new Date(endDate)) {
+          const dateStr = currentDate.toISOString().split('T')[0];
+
+          let reservedIndex = product.reservedDates.findIndex(
+            d => d.date.toISOString().split('T')[0] === dateStr
+          );
+
+          if (reservedIndex !== -1) {
+            product.reservedDates[reservedIndex].count -= count;
+
+            if (product.reservedDates[reservedIndex].count <= 0) {
+              product.reservedDates.splice(reservedIndex, 1); // 개수가 0이면 배열에서 제거
+            }
+          }
+
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        await product.save();
+        break;
+      }
+
+      case 'travelItem': {
+        product = await TravelItem.findById(booking.productId);
+        if (!product) return {status: 404, message: '여행용품 정보를 찾을 수 없습니다.'};
+
+        product.stock += booking.count;
+        product.soldOut = false;
+        await product.save();
+        break;
+      }
+
+      default:
+        return {status: 400, message: '유효하지 않은 상품 유형입니다.'};
+    }
+
     booking.paymentStatus = 'CANCELED';
+    booking.updatedAt = new Date(Date.now() + 9 * 60 * 60 * 1000);
     await booking.save();
 
-    return {status: 200, message: '결제가 취소되었습니다.'};
+    console.log(`예약 취소 처리 완료! 상품 재고 복구됨 (예약 ID: ${booking._id})`);
+    return {status: 200, message: '결제가 취소되었습니다. 상품 재고가 복구되었습니다.'};
   } catch (error) {
     console.error('예약 취소 오류:', error);
     return {status: 500, message: '서버 오류 발생'};

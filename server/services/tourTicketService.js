@@ -66,6 +66,7 @@ exports.updateTourTicket = async (
     ticket.price = price || ticket.price;
     ticket.stock = stock || ticket.stock;
 
+    ticket.updatedAt = new Date(Date.now() + 9 * 60 * 60 * 1000);
     await ticket.save();
     return ticket;
   } catch (error) {
