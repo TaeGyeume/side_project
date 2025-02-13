@@ -1,6 +1,9 @@
 const axios = require('axios');
 const Booking = require('../models/Booking');
 const Payment = require('../models/Payment');
+const TourTicket = require('../models/TourTicket');
+const Room = require('../models/Room');
+const TravelItem = require('../models/TravelItem');
 
 const getPortOneToken = async () => {
   try {
@@ -24,6 +27,20 @@ const getPortOneToken = async () => {
 exports.createBooking = async bookingData => {
   try {
     console.log('예약 데이터 저장 요청:', bookingData);
+
+    if (
+      bookingData.type === 'accommodation' &&
+      bookingData.roomId &&
+      !bookingData.productId
+    ) {
+      const room = await Room.findById(bookingData.roomId);
+      if (room) {
+        bookingData.productId = room.accommodation; // 숙소 ID 자동 설정
+        console.log('✅ 수동 설정된 숙소 ID (productId):', bookingData.productId);
+      } else {
+        throw new Error('해당 roomId에 해당하는 숙소가 존재하지 않습니다.');
+      }
+    }
 
     const newBooking = new Booking({
       ...bookingData,
@@ -70,6 +87,97 @@ exports.verifyPayment = async ({imp_uid, merchant_uid}) => {
       );
       return {status: 400, message: '결제 금액 불일치'};
     }
+
+    // 상품별 재고 감소 처리
+    let product;
+
+    switch (booking.type) {
+      case 'tourTicket': {
+        product = await TourTicket.findById(booking.productId);
+
+        if (!product)
+          return {status: 404, message: '투어.티켓 상품 정보를 찾을 수 없습니다.'};
+
+        if (product.stock < booking.count)
+          return {status: 400, message: '재고가 부족합니다.'};
+
+        product.stock -= booking.count;
+        break;
+      }
+
+      case 'flight': {
+        product = await Flight.findById(booking.productId);
+
+        if (!product) return {status: 404, message: '항공 상품 정보를 찾을 수 없습니다.'};
+
+        if (product.availableSeats < booking.count)
+          return {status: 400, message: '좌석이 부족합니다.'};
+
+        product.availableSeats -= booking.count;
+        break;
+      }
+
+      case 'accommodation': {
+        product = await Room.findById(booking.roomId);
+        if (!product) return {status: 404, message: '객실 정보를 찾을 수 없습니다.'};
+
+        const {startDate, endDate, count} = booking;
+        let currentDate = new Date(startDate);
+
+        while (currentDate < new Date(endDate)) {
+          const dateStr = currentDate.toISOString().split('T')[0];
+
+          // ✅ 해당 날짜의 예약 개수 가져오기
+          let reservedIndex = product.reservedDates.findIndex(
+            d => d.date.toISOString().split('T')[0] === dateStr
+          );
+          let reservedCountOnDate =
+            reservedIndex !== -1 ? product.reservedDates[reservedIndex].count : 0;
+
+          // ✅ 예약 가능 여부 체크
+          if (reservedCountOnDate + count > product.availableCount) {
+            console.error(`❌ ${dateStr} 날짜에 예약 가능한 객실 부족!`);
+            return {
+              status: 400,
+              message: `${dateStr} 날짜에 예약 가능한 객실이 부족합니다.`
+            };
+          }
+
+          // ✅ 예약 반영
+          if (reservedIndex !== -1) {
+            product.reservedDates[reservedIndex].count += count;
+          } else {
+            product.reservedDates.push({date: new Date(dateStr), count});
+          }
+
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        // ✅ 객실 가용 여부 업데이트 (availableCount 반영)
+        const totalReserved = product.reservedDates.reduce((acc, d) => acc + d.count, 0);
+        product.available = totalReserved < product.availableCount;
+
+        await product.save();
+        break;
+      }
+
+      case 'travelItem': {
+        product = await TravelItem.findById(booking.productId);
+
+        if (!product) return {status: 404, message: '여행용품 정보를 찾을 수 없습니다.'};
+        if (product.stock < booking.count)
+          return {status: 400, message: '재고가 부족합니다.'};
+
+        product.stock -= booking.count; // ✅ 재고 감소
+        product.soldOut = product.stock === 0; // ✅ 품절 여부 업데이트
+        break;
+      }
+
+      default:
+        return {status: 400, message: '유효하지 않은 상품 유형입니다.'};
+    }
+
+    await product.save(); // 재고 저장
 
     // 결제 정보 저장
     try {
@@ -119,5 +227,57 @@ exports.cancelBooking = async bookingId => {
   } catch (error) {
     console.error('예약 취소 오류:', error);
     return {status: 500, message: '예약 취소 중 서버 오류 발생'};
+  }
+};
+
+// 이렇게 하니까 예약 조회됨
+// exports.getUserBookings = async userId => {
+//   try {
+//     console.log('📌 예약 조회 요청: 사용자 ID:', userId);
+
+//     // ✅ 예약 목록 조회
+//     const bookings = await Booking.find({userId});
+
+//     console.log('🛠️ 예약 데이터 조회 결과:', bookings);
+
+//     if (!bookings.length) {
+//       return {status: 404, message: '예약 내역이 없습니다.'};
+//     }
+
+//     // ✅ `type` 값 확인 (정상적인 값인지 로그 출력)
+//     bookings.forEach((booking, index) => {
+//       console.log(`📌 ${index + 1}번째 예약 type:`, booking.type);
+//     });
+
+//     return {status: 200, data: bookings};
+//   } catch (error) {
+//     console.error('🚨 예약 내역 조회 오류:', error);
+//     return {status: 500, message: '서버 오류 발생'};
+//   }
+// };
+exports.getUserBookings = async userId => {
+  try {
+    console.log('예약 조회 요청: 사용자 ID:', userId);
+
+    // 예약 목록 조회
+    const bookings = await Booking.find({userId}).populate({
+      path: 'productId',
+      select: 'title name' // productId에서 title 필드만 가져오기
+    });
+
+    console.log('예약 데이터 조회 결과:', bookings);
+
+    if (!bookings.length) {
+      return {status: 404, message: '예약 내역이 없습니다.'};
+    }
+
+    bookings.forEach((booking, index) => {
+      console.log(`📌 ${index + 1}번째 예약 type:`, booking.type);
+    });
+
+    return {status: 200, data: bookings};
+  } catch (error) {
+    console.error('예약 내역 조회 오류:', error);
+    return {status: 500, message: '서버 오류 발생'};
   }
 };

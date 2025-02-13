@@ -1,6 +1,9 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
-import axios from '../../../api/axios';
+import {
+  fetchTopCategories,
+  createCategory
+} from '../../../api/travelItem/travelItemService';
 
 const CategoryForm = ({onCategoryCreated}) => {
   const navigate = useNavigate();
@@ -13,23 +16,11 @@ const CategoryForm = ({onCategoryCreated}) => {
 
   // ✅ 최상위 카테고리 불러오기
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get('/travelItems/topCategories');
-        console.log('✅ API 응답 데이터:', response.data); // API 응답 구조 확인
-
-        // API 응답이 { topLevelCategories: [...] } 형태이므로 해당 필드 참조
-        if (response.data && Array.isArray(response.data.topLevelCategories)) {
-          setCategories(response.data.topLevelCategories);
-        } else {
-          setCategories([]); // 데이터가 없을 경우 빈 배열로 설정
-        }
-      } catch (error) {
-        console.error('❌ 카테고리 불러오기 실패:', error);
-        setCategories([]); // 오류 발생 시 빈 배열 설정
-      }
+    const loadCategories = async () => {
+      const data = await fetchTopCategories();
+      setCategories(data);
     };
-    fetchCategories();
+    loadCategories();
   }, []);
 
   // ✅ 하위 카테고리를 선택하면 `parentCategory` 자동 설정
@@ -58,8 +49,8 @@ const CategoryForm = ({onCategoryCreated}) => {
     try {
       const categoryData = {...formData, category: formData.name};
 
-      const response = await axios.post('/travelItems/create', categoryData);
-      console.log('✅ 카테고리 등록 성공:', response.data);
+      await createCategory(categoryData);
+      alert('✅ 카테고리가 추가되었습니다.');
       setFormData({name: '', category: '', parentCategory: null});
       onCategoryCreated();
       navigate('/product/travelItems/list');

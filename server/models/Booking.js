@@ -5,7 +5,7 @@ const bookingSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ['flight', 'accommodation', 'tourTicket'] // 상품 유형
+      enum: ['flight', 'accommodation', 'tourTicket', 'travelItem'] // 상품 유형
     },
     productId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -32,7 +32,8 @@ const bookingSchema = new mongoose.Schema(
     reservationInfo: {
       name: {type: String},
       email: {type: String},
-      phone: {type: String}
+      phone: {type: String},
+      address: {type: String}
     },
     paymentStatus: {
       type: String,

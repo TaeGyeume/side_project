@@ -1,6 +1,11 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
-import axios from '../../../api/axios';
+import {
+  fetchAllCategories,
+  fetchTravelItem,
+  createTravelItem,
+  updateTravelItem
+} from '../../../api/travelItem/travelItemService';
 
 const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated}) => {
   // ✅ isEdit과 itemId를 props에서 받음
@@ -31,19 +36,13 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated}) => {
 
   // ✅ 모든 카테고리 불러오기
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get('/travelItems/allCategories');
-        setCategories(response.data.categories || []);
-
-        // 최상위 카테고리만 필터링
-        setTopCategories(response.data.categories.filter(cat => !cat.parentCategory));
-      } catch (error) {
-        console.error('❌ 카테고리 불러오기 실패:', error);
-      }
+    const loadCategories = async () => {
+      const data = await fetchAllCategories();
+      setCategories(data);
+      setTopCategories(data.filter(cat => !cat.parentCategory));
     };
 
-    fetchCategories();
+    loadCategories();
   }, []);
 
   // ✅ 수정 모드일 경우 기존 상품 데이터 불러오기
@@ -51,7 +50,7 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated}) => {
     if (isEdit && finalItemId) {
       const fetchItem = async () => {
         try {
-          const response = await axios.get(`/travelItems/${finalItemId}`);
+          const response = await fetchTravelItem(finalItemId);
           const itemData = response.data;
 
           // ✅ 최상위 카테고리 & 하위 카테고리 설정
@@ -179,15 +178,11 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated}) => {
     try {
       if (isEdit) {
         // ✅ 수정 요청 (PATCH)
-        await axios.patch(`/travelItems/${finalItemId}`, data, {
-          headers: {'Content-Type': 'multipart/form-data'}
-        });
+        await updateTravelItem(finalItemId, data);
         console.log('✅ 상품 수정 성공');
       } else {
         // ✅ 생성 요청 (POST)
-        await axios.post('/travelItems/create', data, {
-          headers: {'Content-Type': 'multipart/form-data'}
-        });
+        await createTravelItem(data);
         console.log('✅ 상품 등록 성공');
       }
 

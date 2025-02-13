@@ -1,7 +1,5 @@
-// 예약 및 결제창 출력 페이지
-
 import React from 'react';
-import BookingForm from '../../components/booking/BookingForm';
+import BookingForm from '../../components/booking/AccommodationBookingForm';
 
 const BookingPage = () => {
   return (
