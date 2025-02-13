@@ -1,0 +1,39 @@
+/* ✅ 메인 레이아웃 (Flexbox 적용) */
+.main-layout {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* ✅ 메인 컨텐츠 스타일 */
+.main-content {
+  flex: 1;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+/* ✅ 사이드바 스타일 */
+.sidebar {
+  width: 280px;
+  position: sticky;
+  top: 80px;
+  height: auto;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ✅ 반응형 설정 (768px 이하에서 사이드바가 아래로 이동) */
+@media (max-width: 768px) {
+  .main-layout {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    position: relative;
+  }
+}

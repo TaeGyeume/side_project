@@ -43,6 +43,8 @@ import CategoryPage from './pages/product/travelItems/CategoryPage';
 import TravelItemPage from './pages/product/travelItems/TravelItemPage';
 import TravelItemListPage from './pages/product/travelItems/TravelItemListPage';
 import TravelItemEditPage from './pages/product/travelItems/TravelItemEditPage';
+import CouponCreatePage from './pages/product/coupons/CouponCreatePage';
+import CouponListPage from './pages/product/coupons/CouponListPage';
 import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
 import TourTicketBookingPage from './pages/booking/TourTicketBookingPage';
 import AccommodationBookingPage from './pages/booking/AccommodationBookingPage';
@@ -161,6 +163,8 @@ const App = () => {
             <Route path="/product/travelItems/newCategory" element={<CategoryPage />} />
             <Route path="/product/travelItems/new" element={<TravelItemPage />} />
             <Route path="/product/travelItems/list" element={<TravelItemListPage />} />
+            <Route path="/product/coupon/new" element={<CouponCreatePage />} />
+            <Route path="/product/coupon/list" element={<CouponListPage />} />
             <Route
               path="/product/travelItems/edit/:itemId"
               element={<TravelItemEditPage />}
