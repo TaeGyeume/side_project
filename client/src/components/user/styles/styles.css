@@ -2,13 +2,13 @@
   background: none;
   border: none;
   cursor: pointer;
+  font-size: 20px;
 }
 
 .favorite-button i {
-  font-size: 24px;
-  color: gray; /* 기본은 회색 */
+  color: black; /* 기본값 */
 }
 
-.favorite-button.favorite i {
-  color: yellow; /* 즐겨찾기 활성화 시 노란색 */
+.favorite-button i.favorite {
+  color: gold; /* 즐겨찾기 상태일 때 노란색 */
 }
