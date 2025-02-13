@@ -17,7 +17,7 @@ const authMiddleware = async (req, res, next) => {
     req.user = decodedToken; // decodedToken에서 user 정보 추출 후 req.user에 설정
 
     // 인증된 사용자 정보 확인
-    console.log('✅ 인증된 사용자:', req.user);
+    // console.log('✅ 인증된 사용자:', req.user);
 
     next(); // 인증 성공 시 다음 미들웨어 실행
   } catch (error) {
