@@ -22,6 +22,8 @@ const travelItemRoutes = require('./routes/travelItemRoutes');
 const authMiddleware = require('./middleware/authMiddleware'); // ✅ JWT 인증 미들웨어 추가
 const authorizeRoles = require('./middleware/authorizeRoles'); // ✅ 역할 기반 접근 제어 추가
 const bookingRoutes = require('./routes/bookingRoutes');
+const couponRoutes = require('./routes/couponRoutes');
+const userCouponRoutes = require('./routes/userCouponRoutes');
 
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -57,6 +59,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/auth', socialAuthRoutes); // 소셜 로그인 라우트 추가
 app.use('/api/flights', flightRoutes); // ✈️ 항공편 관련 API
 app.use('/api/travelItems', travelItemRoutes);
+app.use('/api/coupons', couponRoutes);
+app.use('/api/user-coupons', userCouponRoutes);
 app.use('/product', productRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/tourTicket', userTourTicketRoutes);
