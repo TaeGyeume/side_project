@@ -1,0 +1,8 @@
+.booking-page {
+  display: flex;
+  gap: 20px;
+}
+
+.booking-content {
+  flex: 1;
+}
