@@ -11,7 +11,6 @@ const {
   resetPassword,
   checkDuplicate
 } = require('../controllers/authController');
-const authController = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -37,11 +36,5 @@ router.post('/check-duplicate', checkDuplicate);
 // 비밀번호 재설정 관련
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
-
-// ✅ 아이디 찾기 엔드포인트 추가
-router.post('/find-userid', authController.findUserId);
-
-// ✅ 인증 코드 검증 엔드포인트 추가
-router.post('/verify-code', authController.verifyCode);
 
 module.exports = router;
