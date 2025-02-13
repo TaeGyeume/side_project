@@ -26,6 +26,7 @@ import RoundTripReturn from './pages/flights/RoundTripReturn'; // ✅ 추가
 import RoundTripConfirm from './pages/flights/RoundTripConfirm'; // ✅ 추가
 import TravelItemList from './pages/travelItem/TravelItemListPage';
 import TravelItemDetail from './pages/travelItem/TravelItemDetailPage';
+import MyCouponsPage from './pages/coupons/MyCouponsPage';
 import ProductPage from './pages/product/ProductPage';
 import AccommodationList from './pages/product/accommodations/AccommodationList';
 import AccommodationCreate from './pages/product/accommodations/AccommodationCreate';
@@ -137,6 +138,7 @@ const App = () => {
               element={<TravelItemPurchaseForm />}
             />
             <Route path="/booking/my" element={<MyBookingPage />} />
+            <Route path="/coupons/my" element={<MyCouponsPage />} />
           </Route>
           {/* 🔒 어드민 전용 페이지 */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>

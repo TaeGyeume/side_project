@@ -65,3 +65,17 @@ export const deleteCoupon = async couponId => {
     throw error.response?.data || {message: '쿠폰 삭제 중 오류 발생'};
   }
 };
+
+/**
+ * ✅ 내가 받은 쿠폰 조회
+ * @param {string} userId - 현재 로그인한 유저 ID
+ * @returns {Promise<Array>} - 받은 쿠폰 목록
+ */
+export const fetchUserCoupons = async userId => {
+  try {
+    const response = await axios.get(`/user-coupons/${userId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || {message: '내 쿠폰 목록 조회 중 오류 발생'};
+  }
+};

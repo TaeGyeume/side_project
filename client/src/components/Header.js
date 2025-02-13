@@ -113,6 +113,11 @@ const Header = () => {
                           내 예약 목록
                         </Link>
                       </li>
+                      <li>
+                        <Link className="dropdown-item" to="/coupons/my">
+                          내 쿠폰함
+                        </Link>
+                      </li>
                     </ul>
                   )}
                 </li>

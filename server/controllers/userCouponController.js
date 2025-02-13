@@ -20,3 +20,18 @@ exports.claimCoupon = async (req, res) => {
     res.status(400).json({message: '쿠폰 지급 중 오류 발생', error: error.message});
   }
 };
+
+// ✅ 사용자가 받은 쿠폰 조회 API (GET /api/user-coupons/:userId)
+exports.getUserCoupons = async (req, res) => {
+  try {
+    const {userId} = req.params;
+    const userCoupons = await userCouponService.fetchUserCoupons(userId);
+
+    res.status(200).json(userCoupons);
+  } catch (error) {
+    res.status(500).json({
+      message: '사용자 쿠폰 조회 중 오류 발생',
+      error: error.message
+    });
+  }
+};
