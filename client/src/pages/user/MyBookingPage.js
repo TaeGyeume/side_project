@@ -1,13 +1,22 @@
 // 내 여행 목록
-// 현재 일자 기준으로 [예정된 여행], [지난 여행], [취소된 여행]으로 구분
 
 import React from 'react';
+import {useLocation} from 'react-router-dom';
 import MyBookingList from '../../components/booking/MyBookingList';
+import BookingSidebar from '../../components/booking/BookingSidebar';
+import './styles/MyBookingPage.css';
 
 const MyBookingPage = () => {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const status = searchParams.get('status');
+
   return (
-    <div className="my-bookings">
-      <MyBookingList />
+    <div className="booking-page">
+      <BookingSidebar />
+      <div className="booking-content">
+        <MyBookingList status={status} />
+      </div>
     </div>
   );
 };

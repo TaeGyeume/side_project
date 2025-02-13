@@ -109,7 +109,7 @@ const Header = () => {
                         </Link>
                       </li>
                       <li>
-                        <Link className="dropdown-item" to="/booking/my">
+                        <Link className="dropdown-item" to="/booking/my?status=completed">
                           내 예약 목록
                         </Link>
                       </li>
