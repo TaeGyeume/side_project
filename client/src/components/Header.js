@@ -70,7 +70,7 @@ const Header = () => {
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/travelItems">
-                여행용품
+                여행 용품
               </Link>
             </li>
             <li className="nav-item">
