@@ -7,7 +7,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.post('/create', bookingController.createBooking);
 
 // 예약 취소
-router.post('/cancel/:bookingId', bookingController.cancelBooking);
+router.post('/cancel/:bookingId', authMiddleware, bookingController.cancelBooking);
 
 // 결제 검증
 router.post('/verify-payment', bookingController.verifyPayment);
