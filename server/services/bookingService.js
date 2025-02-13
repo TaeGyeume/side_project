@@ -310,6 +310,7 @@ exports.cancelBooking = async bookingId => {
 
     // 예약 상태 변경
     booking.paymentStatus = 'CANCELED';
+    booking.updatedAt = new Date(Date.now() + 9 * 60 * 60 * 1000);
     await booking.save();
 
     return {status: 200, message: '결제가 취소되었습니다.'};

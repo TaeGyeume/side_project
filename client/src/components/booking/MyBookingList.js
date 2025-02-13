@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { getMyBookings, cancelBooking } from '../../api/booking/bookingService';
+import React, {useEffect, useState} from 'react';
+import {getMyBookings, cancelBooking} from '../../api/booking/bookingService';
 import './styles/MyBookingList.css';
 
-const MyBookingList = ({ status }) => {
+const MyBookingList = ({status}) => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,12 +26,15 @@ const MyBookingList = ({ status }) => {
     try {
       const response = await cancelBooking(bookingId);
 
-      if (response.status === 200 || response.message.includes('결제가 취소되었습니다.')) {
+      if (
+        response.status === 200 ||
+        response.message.includes('결제가 취소되었습니다.')
+      ) {
         alert('예약이 정상적으로 취소되었습니다.');
 
         setBookings(prev =>
           prev.map(booking =>
-            booking._id === bookingId ? { ...booking, paymentStatus: 'CANCELED' } : booking
+            booking._id === bookingId ? {...booking, paymentStatus: 'CANCELED'} : booking
           )
         );
 
@@ -50,12 +53,15 @@ const MyBookingList = ({ status }) => {
   if (loading) return <p className="loading-text">로딩 중...</p>;
   if (error) return <p className="error-text">{error}</p>;
 
-  // 상태에 따라 예약 필터링
-  const filteredBookings = bookings.filter(booking => {
-    if (status === 'completed') return booking.paymentStatus === 'COMPLETED';
-    if (status === 'canceled') return booking.paymentStatus === 'CANCELED';
-    return false;
-  });
+  // ✅ 상태에 따라 예약 필터링
+  const filteredBookings = bookings
+    .filter(booking => {
+      if (status === 'completed') return booking.paymentStatus === 'COMPLETED';
+      if (status === 'canceled') return booking.paymentStatus === 'CANCELED';
+      return false;
+    })
+    // ✅ `createdAt` 기준 내림차순 정렬 (최신 예약이 위에 출력됨)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   return (
     <div className="booking-list-container">
@@ -66,18 +72,22 @@ const MyBookingList = ({ status }) => {
       ) : (
         <div className="booking-grid">
           {filteredBookings.map(booking => (
-            <div className={`booking-card ${status === 'canceled' ? 'canceled' : ''}`} key={booking._id}>
+            <div
+              className={`booking-card ${status === 'canceled' ? 'canceled' : ''}`}
+              key={booking._id}>
               <div className="booking-header">
                 <span className="booking-date">
-                  {new Date(booking.createdAt).toLocaleDateString('ko-KR', {
+                  {new Date(booking.updatedAt).toLocaleDateString('ko-KR', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
-                    weekday: 'long',
+                    weekday: 'long'
                   })}
                 </span>
                 {status === 'completed' && (
-                  <button className="cancel-button" onClick={() => handleCancel(booking._id)}>
+                  <button
+                    className="cancel-button"
+                    onClick={() => handleCancel(booking._id)}>
                     예약취소
                   </button>
                 )}
@@ -85,7 +95,9 @@ const MyBookingList = ({ status }) => {
 
               <div className="booking-content">
                 <h3 className="product-title">
-                  {booking.productId?.title || booking.productId?.name || '상품 정보 없음'}
+                  {booking.productId?.title ||
+                    booking.productId?.name ||
+                    '상품 정보 없음'}
                 </h3>
                 <p className={`type-label ${booking.type}`}>
                   {booking.type === 'flight'
@@ -95,7 +107,8 @@ const MyBookingList = ({ status }) => {
                       : '🎫 투어 티켓'}
                 </p>
                 <p>
-                  예약 상태: <strong>{status === 'completed' ? '✅ 완료' : '❌ 취소됨'}</strong>
+                  예약 상태:{' '}
+                  <strong>{status === 'completed' ? '✅ 완료' : '❌ 취소됨'}</strong>
                 </p>
                 <p>
                   총 가격: <strong>{booking.totalPrice.toLocaleString()} 원</strong>
