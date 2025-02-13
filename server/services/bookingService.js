@@ -6,22 +6,55 @@ const Room = require('../models/Room');
 const TravelItem = require('../models/TravelItem');
 const Flight = require('../models/Flight');
 
+// const getPortOneToken = async () => {
+//   try {
+//     const {data} = await axios({
+//       url: 'https://api.iamport.kr/users/getToken',
+//       method: 'post',
+//       headers: {'Content-Type': 'application/json'},
+//       data: {
+//         imp_key: process.env.PORTONE_API_KEY,
+//         imp_secret: process.env.PORTONE_API_SECRET
+//       }
+//     });
+
+//     return data.response.access_token;
+//   } catch (error) {
+//     console.error('포트원 토큰 요청 실패:', error);
+//     throw new Error('포트원 토큰 요청 실패');
+//   }
+// };
+
+let cachedToken = null;
+let tokenExpiration = null; // 토큰 만료 시간 저장
+
 const getPortOneToken = async () => {
   try {
-    const {data} = await axios({
-      url: 'https://api.iamport.kr/users/getToken',
-      method: 'post',
-      headers: {'Content-Type': 'application/json'},
-      data: {
-        imp_key: process.env.PORTONE_API_KEY,
-        imp_secret: process.env.PORTONE_API_SECRET
-      }
+    // 캐싱된 토큰이 있고, 아직 유효하면 그대로 사용
+    if (cachedToken && tokenExpiration && Date.now() < tokenExpiration) {
+      console.log('캐싱된 포트원 토큰 사용');
+      return cachedToken;
+    }
+
+    // 포트원 API에 토큰 요청
+    const {data} = await axios.post('https://api.iamport.kr/users/getToken', {
+      imp_key: process.env.PORTONE_API_KEY,
+      imp_secret: process.env.PORTONE_API_SECRET
     });
 
-    return data.response.access_token;
+    if (data.code !== 0) {
+      throw new Error(`포트원 토큰 요청 실패: ${data.message}`);
+    }
+
+    // 새로운 토큰 저장
+    cachedToken = data.response.access_token;
+    tokenExpiration = data.response.expired_at * 1000; // UNIX Timestamp → 밀리초 변환
+
+    console.log('새 포트원 토큰 발급:', cachedToken);
+    return cachedToken;
   } catch (error) {
-    console.error('포트원 토큰 요청 실패:', error);
-    throw new Error('포트원 토큰 요청 실패');
+    console.error('포트원 토큰 요청 오류:', error);
+    throw new Error('포트원 인증 토큰을 가져올 수 없습니다.');
   }
 };
 
@@ -234,24 +267,6 @@ exports.verifyPayment = async ({imp_uid, merchant_uid}) => {
   }
 };
 
-exports.cancelBooking = async bookingId => {
-  try {
-    const booking = await Booking.findById(bookingId);
-    if (!booking) {
-      return {status: 404, message: '예약 정보를 찾을 수 없습니다.'};
-    }
-
-    // 예약 취소 상태로 변경
-    booking.paymentStatus = 'CANCELED';
-    await booking.save();
-
-    return {status: 200, message: '예약이 성공적으로 취소되었습니다.'};
-  } catch (error) {
-    console.error('예약 취소 오류:', error);
-    return {status: 500, message: '예약 취소 중 서버 오류 발생'};
-  }
-};
-
 // 이렇게 하니까 예약 조회됨
 // exports.getUserBookings = async userId => {
 //   try {
@@ -277,6 +292,7 @@ exports.cancelBooking = async bookingId => {
 //     return {status: 500, message: '서버 오류 발생'};
 //   }
 // };
+
 exports.getUserBookings = async userId => {
   try {
     console.log('예약 조회 요청: 사용자 ID:', userId);
@@ -300,6 +316,27 @@ exports.getUserBookings = async userId => {
     return {status: 200, data: bookings};
   } catch (error) {
     console.error('예약 내역 조회 오류:', error);
+    return {status: 500, message: '서버 오류 발생'};
+  }
+};
+
+exports.cancelBooking = async bookingId => {
+  try {
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) return {status: 404, message: '예약 정보를 찾을 수 없습니다.'};
+
+    if (booking.paymentStatus === 'CANCELED') {
+      return {status: 400, message: '이미 취소된 예약입니다.'};
+    }
+
+    // 예약 상태 변경
+    booking.paymentStatus = 'CANCELED';
+    await booking.save();
+
+    return {status: 200, message: '결제가 취소되었습니다.'};
+  } catch (error) {
+    console.error('예약 취소 오류:', error);
     return {status: 500, message: '서버 오류 발생'};
   }
 };

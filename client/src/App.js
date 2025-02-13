@@ -50,6 +50,7 @@ import TourTicketBookingPage from './pages/booking/TourTicketBookingPage';
 import AccommodationBookingPage from './pages/booking/AccommodationBookingPage';
 import TravelItemPurchaseForm from './components/booking/TravelItemPurchasePage';
 import MyBookingPage from './pages/user/MyBookingPage';
+import ChannelTalk from './components/ChannelTalk/ChannelTalk';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -76,6 +77,7 @@ const App = () => {
     <Router>
       <div className="container mt-5">
         <h1 className="text-center">Our Real Trip</h1>
+        <ChannelTalk />
         {serverMessage && (
           <div
             className={`alert ${

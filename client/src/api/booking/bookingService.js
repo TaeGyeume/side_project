@@ -15,10 +15,16 @@ export const createBooking = async bookingData => {
 export const cancelBooking = async bookingId => {
   try {
     const response = await axios.post(`${BASE_URL}/cancel/${bookingId}`);
-    return response.data;
+
+    if (response.status === 200 || response.message.includes('결제가 취소되었습니다.')) {
+      return response.data; // 정상 응답 반환
+    } else {
+      console.error('예약 취소 실패:', response.data.message);
+      return {status: response.data.status, message: response.data.message}; // 오류 메시지만 반환
+    }
   } catch (error) {
-    console.error('예약 취소 실패:', error.response?.data || error);
-    throw error;
+    console.error('예약 취소 중 오류 발생:', error.response?.data || error.message);
+    return {status: 500, message: '예약 취소 중 오류 발생'};
   }
 };
 

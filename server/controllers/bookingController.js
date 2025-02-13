@@ -26,9 +26,9 @@ exports.verifyPayment = async (req, res) => {
 exports.cancelBooking = async (req, res) => {
   try {
     const {bookingId} = req.params;
-    const result = await bookingService.cancelBooking(bookingId);
+    const {status, message, booking} = await bookingService.cancelBooking(bookingId);
 
-    res.status(result.status).json({message: result.message});
+    return res.status(status).json({message, booking});
   } catch (error) {
     console.error('예약 취소 오류:', error);
     res.status(500).json({message: '예약 취소 중 오류 발생'});
@@ -43,7 +43,7 @@ exports.getMyBookings = async (req, res) => {
   }
 
   try {
-    console.log("🔍 예약 조회를 위한 사용자 ID:", req.user.id);
+    console.log('🔍 예약 조회를 위한 사용자 ID:', req.user.id);
     const {status, data, message} = await bookingService.getUserBookings(req.user.id);
 
     if (status !== 200) {
