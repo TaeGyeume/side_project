@@ -1,10 +1,9 @@
-// 일반 유저용
-
 import React, {useEffect, useState} from 'react';
 import {getTourTickets} from '../../api/tourTicket/tourTicketService';
 import {useLocation, useNavigate} from 'react-router-dom';
 import './styles/TourTicketList.css';
 import TourTicketFilter from '../tourTicket/TourTicketFilter';
+import FavoriteButton from '../../components/user/FavoriteButton'; // 즐겨찾기 버튼 임포트
 
 const TourTicketList = () => {
   const [tickets, setTickets] = useState([]);
@@ -55,8 +54,10 @@ const TourTicketList = () => {
             <div
               key={ticket._id}
               className="tour-ticket-card"
-              onClick={() => navigate(`/tourTicket/list/${ticket._id}`)}
-            >
+              onClick={e => {
+                e.stopPropagation(); // 클릭 이벤트가 상위 요소로 전파되지 않도록 방지
+                navigate(`/tourTicket/list/${ticket._id}`);
+              }}>
               <img
                 src={`http://localhost:5000${ticket.images[0]}`}
                 alt={ticket.title}
@@ -67,6 +68,13 @@ const TourTicketList = () => {
                 <p className="ticket-description">✏️ {ticket.description}</p>
                 <p className="ticket-location">지역: {ticket.location}</p>
                 <p className="ticket-price">{ticket.price.toLocaleString()}원</p>
+                {/* 즐겨찾기 버튼 클릭 이벤트 */}
+                <FavoriteButton
+                  itemId={ticket._id}
+                  itemType="TourTicket"
+                  initialFavoriteStatus={ticket.isFavorite}
+                  onClick={e => e.stopPropagation()} // 버튼 클릭 시 이벤트 전파 방지
+                />
               </div>
             </div>
           ))

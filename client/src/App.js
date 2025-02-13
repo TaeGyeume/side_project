@@ -49,6 +49,9 @@ import AccommodationBookingPage from './pages/booking/AccommodationBookingPage';
 import TravelItemPurchaseForm from './components/booking/TravelItemPurchasePage';
 import MyBookingPage from './pages/user/MyBookingPage';
 import ChannelTalk from './components/ChannelTalk/ChannelTalk';
+import FavoritesPage from './pages/user/FavoritesPage';
+import '@fortawesome/fontawesome-free/css/all.min.css'; // FontAwesome 아이콘 스타일 불러오기
+import FavoriteListPage from './pages/user/FavoriteListPage'; // 방금 만든 페이지 임포트
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -130,11 +133,13 @@ const App = () => {
               path="/accommodation/booking/:roomId"
               element={<AccommodationBookingPage />}
             />
+            <Route path="/favorites" element={<FavoriteListPage />} />
             <Route
               path="/travelItems/purchase/:itemId"
               element={<TravelItemPurchaseForm />}
             />
             <Route path="/booking/my" element={<MyBookingPage />} />
+            <Route path="/favorites" component={FavoritesPage} />
           </Route>
           {/* 🔒 어드민 전용 페이지 */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>

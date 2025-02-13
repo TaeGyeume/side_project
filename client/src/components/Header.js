@@ -117,6 +117,13 @@ const Header = () => {
                   )}
                 </li>
 
+                {/* 즐겨찾기 메뉴 추가 */}
+                <li className="nav-item">
+                  <Link className="nav-link" to="/favorite-list">
+                    즐겨찾기
+                  </Link>
+                </li>
+
                 {/* 사용자 이름 표시 */}
                 <li className="nav-item d-flex align-items-center">
                   <span className="nav-link text-primary fw-bold">

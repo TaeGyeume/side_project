@@ -1,0 +1,14 @@
+.favorite-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.favorite-button i {
+  font-size: 24px;
+  color: gray; /* 기본은 회색 */
+}
+
+.favorite-button.favorite i {
+  color: yellow; /* 즐겨찾기 활성화 시 노란색 */
+}
