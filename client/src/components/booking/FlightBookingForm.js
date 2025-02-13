@@ -90,14 +90,6 @@ const FlightBookingForm = () => {
 
             if (verifyResponse.message === '결제 검증 성공') {
               alert('🚀 항공편 예약이 완료되었습니다.');
-              navigate('/flights/confirmation', {
-                state: {
-                  selectedDeparture,
-                  selectedReturn,
-                  passengers,
-                  totalPrice
-                }
-              }); // 예약 완료 페이지로 이동
             } else {
               alert(`❌ 결제 검증 실패: ${verifyResponse.message}`);
             }

@@ -4,6 +4,7 @@ const Payment = require('../models/Payment');
 const TourTicket = require('../models/TourTicket');
 const Room = require('../models/Room');
 const TravelItem = require('../models/TravelItem');
+const Flight = require('../models/Flight');
 
 const getPortOneToken = async () => {
   try {
@@ -108,12 +109,33 @@ exports.verifyPayment = async ({imp_uid, merchant_uid}) => {
       case 'flight': {
         product = await Flight.findById(booking.productId);
 
-        if (!product) return {status: 404, message: '항공 상품 정보를 찾을 수 없습니다.'};
+        if (!product) {
+          return {status: 404, message: '항공 상품 정보를 찾을 수 없습니다.'};
+        }
 
-        if (product.availableSeats < booking.count)
+        // ✅ airlineKorean이 없으면 기본값 추가
+        if (!product.airlineKorean) {
+          product.airlineKorean = product.airline; // 기본값으로 영어 이름 사용
+        }
+
+        // ✅ 운영 요일을 `weekday`가 아니라 `operatingDays`에서 확인
+        const flightDate = new Date(product.departure.date);
+        const dayOfWeek = flightDate.toLocaleDateString('ko-KR', {weekday: 'long'});
+
+        if (!product.operatingDays.includes(dayOfWeek)) {
+          console.error(`🚫 해당 날짜(${dayOfWeek})에 운항하지 않는 항공편입니다.`);
+          return {status: 400, message: '해당 날짜에 운항하지 않는 항공편입니다.'};
+        }
+
+        // ✅ 좌석 감소 처리
+        if (product.seatsAvailable < booking.count) {
           return {status: 400, message: '좌석이 부족합니다.'};
+        }
 
-        product.availableSeats -= booking.count;
+        product.seatsAvailable -= booking.count;
+        await product.save();
+        console.log(`✅ 항공편 좌석 업데이트 완료! 남은 좌석: ${product.seatsAvailable}`);
+
         break;
       }
 
