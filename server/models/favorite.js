@@ -5,17 +5,17 @@ const FavoriteSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // 사용자 모델을 참조
+      ref: 'User', // 사용자 모델 참조
       required: true
     },
     item: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true
-      // 'Accommodation', 'TourTicket', 'TravelItem' 등 다양한 모델을 참조할 수 있도록 설정
+      required: true,
+      refPath: 'itemType' // itemType에 따라 참조할 모델을 동적으로 설정
     },
     itemType: {
       type: String,
-      enum: ['Accommodation', 'TourTicket', 'TravelItem'], // 즐겨찾기된 아이템 타입
+      enum: ['Accommodation', 'tourTicket', 'TravelItem'], // 즐겨찾기된 아이템 타입
       required: true
     },
     createdAt: {
@@ -23,7 +23,7 @@ const FavoriteSchema = new mongoose.Schema(
       default: Date.now
     }
   },
-  {timestamps: true} // 자동으로 생성일자와 업데이트일자 추가
+  {timestamps: true} // 자동 생성일/수정일 추가
 );
 
 // 모델 정의

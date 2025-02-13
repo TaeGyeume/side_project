@@ -1,47 +1,45 @@
-const Favorite = require('../models/Favorite');
+const mongoose = require('mongoose');
+const Favorite = require('../models/favorite');
 const Accommodation = require('../models/Accommodation');
 const TourTicket = require('../models/TourTicket');
 const TravelItem = require('../models/TravelItem');
+
+// 모델 매핑 (각 itemType과 mongoose 모델 연결)
+const modelMap = {
+  Accommodation,
+  tourTicket: TourTicket,
+  TravelItem
+};
 
 // 즐겨찾기 추가 또는 삭제
 const toggleFavorite = async (userId, itemId, itemType) => {
   try {
     let item;
 
-    // 아이템 타입에 따라 아이템을 처리
-    if (itemType === 'Accommodation') {
-      item = await Accommodation.findById(itemId);
-    } else if (itemType === 'TourTicket') {
-      item = await TourTicket.findById(itemId);
-    } else if (itemType === 'TravelItem') {
-      item = await TravelItem.findById(itemId);
-    } else {
+    // itemType에 맞는 모델에서 item 찾기
+    if (!modelMap[itemType]) {
       throw new Error('Invalid item type');
     }
+    item = await modelMap[itemType].findById(itemId);
 
     if (!item) {
       throw new Error('Item not found');
     }
 
-    // 즐겨찾기 아이템이 이미 존재하는지 확인
+    // 즐겨찾기 여부 확인
     const existingFavorite = await Favorite.findOne({
       user: userId,
       item: itemId,
-      itemType: itemType
+      itemType
     });
 
     if (existingFavorite) {
-      // 이미 즐겨찾기된 아이템이면 제거
+      // 즐겨찾기 삭제
       await Favorite.deleteOne({_id: existingFavorite._id});
       return {message: 'Favorite removed successfully'};
     } else {
-      // 즐겨찾기된 아이템이 아니면 추가
-      const favorite = new Favorite({
-        user: userId,
-        item: itemId,
-        itemType: itemType
-      });
-
+      // 즐겨찾기 추가
+      const favorite = new Favorite({user: userId, item: itemId, itemType});
       await favorite.save();
       return {message: 'Favorite added successfully', favorite};
     }
@@ -51,14 +49,27 @@ const toggleFavorite = async (userId, itemId, itemType) => {
   }
 };
 
-// 사용자 즐겨찾기 목록 조회
+// 사용자 즐겨찾기 목록 조회 (populate 적용)
 const getUserFavorites = async userId => {
   try {
     const favorites = await Favorite.find({user: userId})
-      .populate('item') // 아이템 정보도 함께 조회
+      .populate({
+        path: 'item',
+        select: 'title images price location'
+      })
       .exec();
 
-    return favorites;
+    // 응답 데이터 가공
+    const formattedFavorites = favorites.map(fav => ({
+      _id: fav._id,
+      itemType: fav.itemType,
+      title: fav.item?.title || 'No Title',
+      location: fav.item?.location || 'Unknown',
+      price: fav.item?.price || 0,
+      images: fav.item?.images || []
+    }));
+
+    return formattedFavorites;
   } catch (error) {
     console.error('Error fetching user favorites:', error.message);
     throw new Error('Error fetching user favorites');
@@ -67,5 +78,5 @@ const getUserFavorites = async userId => {
 
 module.exports = {
   toggleFavorite,
-  getUserFavorites // 이 부분을 추가합니다
+  getUserFavorites
 };
