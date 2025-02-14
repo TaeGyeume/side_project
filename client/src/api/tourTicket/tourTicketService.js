@@ -42,12 +42,6 @@ export const updateTourTicket = async (id, updatedData) => {
   }
 };
 
-// export const deleteTourTickets = async ticketIds => {
-//   return await axios.delete('http://localhost:5000/product/tourTicket/delete', {
-//     data: {ticketIds}
-//   });
-// };
-
 // 여러 개의 상품 삭제 요청
 export const deleteMultipleTourTickets = async ticketIds => {
   return await axios.post(`${API_URL}/remove`, {ticketIds});
