@@ -45,4 +45,4 @@ const flightSchema = new mongoose.Schema(
   {timestamps: true}
 );
 
-module.exports = mongoose.model('Flight', flightSchema);
+module.exports = mongoose.model('flight', flightSchema); // F로 하면 평탄화(populate) 때문에 예약 조회가 안 됨
