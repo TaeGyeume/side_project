@@ -28,20 +28,46 @@ const getPortOneToken = async () => {
 
 exports.createBooking = async bookingData => {
   try {
-    // 단일 상품 배열 변환 유지
+    console.log('📌 [서버] 클라이언트에서 받은 데이터:', bookingData);
+
+    // 단일 상품 배열 변환 유지 (undefined, null 방지)
     const types = Array.isArray(bookingData.types)
       ? bookingData.types
-      : [bookingData.types];
+      : bookingData.types
+        ? [bookingData.types]
+        : [];
 
     const productIds = Array.isArray(bookingData.productIds)
       ? bookingData.productIds
-      : [bookingData.productIds];
+      : bookingData.productIds
+        ? [bookingData.productIds]
+        : [];
 
     const counts = Array.isArray(bookingData.counts)
       ? bookingData.counts
-      : [bookingData.counts];
+      : bookingData.counts
+        ? [bookingData.counts]
+        : [];
 
-    const {roomIds, startDates, endDates, merchant_uid, ...rest} = bookingData;
+    const roomIds = Array.isArray(bookingData.roomIds)
+      ? bookingData.roomIds
+      : bookingData.roomIds
+        ? [bookingData.roomIds]
+        : [];
+
+    const startDates = Array.isArray(bookingData.startDates)
+      ? bookingData.startDates
+      : bookingData.startDates
+        ? [bookingData.startDates]
+        : [];
+
+    const endDates = Array.isArray(bookingData.endDates)
+      ? bookingData.endDates
+      : bookingData.endDates
+        ? [bookingData.endDates]
+        : [];
+
+    const {merchant_uid, ...rest} = bookingData;
 
     // merchant_uid 중복 검사
     const existingBooking = await Booking.findOne({merchant_uid});
@@ -55,18 +81,20 @@ exports.createBooking = async bookingData => {
       types,
       productIds,
       counts,
-      roomIds: roomIds || [],
-      startDates: startDates || [],
-      endDates: endDates || [],
+      roomIds,
+      startDates,
+      endDates,
       merchant_uid,
       ...rest
     });
 
     await newBooking.save();
 
+    console.log('✅ [서버] 예약 생성 성공:', newBooking);
+
     return {status: 200, booking: newBooking, message: '예약 생성 완료'};
   } catch (error) {
-    console.error('예약 생성 오류:', error);
+    console.error('❌ [서버] 예약 생성 오류:', error);
     return {status: 500, message: '예약 생성 중 오류 발생'};
   }
 };
@@ -78,25 +106,35 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
       headers: {Authorization: accessToken}
     });
 
+    console.log('📌 [서버] PortOne 결제 정보:', data.response); // ✅ 결제 정보 로그 추가
     const paymentData = data.response;
 
+    // ✅ 해당 merchant_uid에 대한 모든 예약 찾기
     const bookings = await Booking.find({merchant_uid});
+    console.log('📌 [서버] 조회된 예약 정보:', bookings); // ✅ 예약 데이터 확인
 
     if (!bookings.length) throw new Error('예약 데이터를 찾을 수 없습니다.');
 
+    // ✅ 전체 예약 가격 합산
+    let totalOriginalPrice = bookings.reduce(
+      (sum, booking) => sum + (booking.totalPrice || 0),
+      0
+    );
+    console.log('📌 [서버] 예약 총 가격:', totalOriginalPrice);
+
     let discountAmount = 0;
+    let expectedFinalAmount = totalOriginalPrice;
 
     // ✅ 쿠폰 검증
     if (couponId) {
       console.log('📌 [서버] 쿠폰 검증 시작 - couponId:', couponId, 'userId:', userId);
 
-      // ✅ `ObjectId` 변환 후 검색
       const mongoose = require('mongoose');
       const userCoupon = await UserCoupon.findOne({
         _id: new mongoose.Types.ObjectId(couponId),
-        user: new mongoose.Types.ObjectId(userId), // `userId`도 ObjectId 변환
+        user: new mongoose.Types.ObjectId(userId),
         isUsed: false,
-        expiresAt: {$gt: new Date()} // ✅ 만료되지 않은 쿠폰만 조회
+        expiresAt: {$gt: new Date()} // ✅ 만료되지 않은 쿠폰
       }).populate('coupon');
 
       console.log('📌 [서버] 조회된 UserCoupon:', userCoupon);
@@ -108,45 +146,46 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
 
       const coupon = userCoupon.coupon;
 
-      // ✅ 최소 구매 금액 체크 추가
-      if (booking.totalPrice < coupon.minPurchaseAmount) {
+      // ✅ 최소 구매 금액 체크
+      if (totalOriginalPrice < coupon.minPurchaseAmount) {
         return {
           status: 400,
           message: `이 쿠폰은 ${coupon.minPurchaseAmount.toLocaleString()}원 이상 구매 시 사용 가능합니다.`
         };
       }
 
-      // ✅ 퍼센트 할인
+      // ✅ 할인 금액 계산
       if (coupon.discountType === 'percentage') {
-        discountAmount = (booking.totalPrice * coupon.discountValue) / 100;
+        discountAmount = (totalOriginalPrice * coupon.discountValue) / 100;
         if (coupon.maxDiscountAmount > 0) {
           discountAmount = Math.min(discountAmount, coupon.maxDiscountAmount);
         }
-      }
-      // ✅ 정액 할인
-      else if (coupon.discountType === 'fixed') {
+      } else if (coupon.discountType === 'fixed') {
         discountAmount = coupon.discountValue;
       }
 
-      // ✅ 최종 결제 금액에서 할인 적용
-      const expectedFinalAmount = booking.totalPrice - discountAmount;
-
-      // ✅ 결제 금액이 예상된 최종 금액과 일치하는지 확인
-      if (paymentData.amount !== expectedFinalAmount) {
-        console.error(
-          `결제 금액 불일치! 포트원: ${paymentData.amount}, 예상된 결제 금액: ${expectedFinalAmount}`
-        );
-        return {status: 400, message: '결제 금액 불일치'};
-      }
+      // ✅ 최종 결제 금액 업데이트
+      expectedFinalAmount = totalOriginalPrice - discountAmount;
 
       // ✅ 쿠폰을 사용 처리
       userCoupon.isUsed = true;
       await userCoupon.save();
-    } else {
-      // ✅ 쿠폰 없이 결제할 경우 원래 금액과 비교
-      if (paymentData.amount !== booking.totalPrice) {
-        return {status: 400, message: '결제 금액 불일치'};
-      }
+    }
+
+    // ✅ 결제 금액 검증 (expectedFinalAmount가 항상 올바르게 업데이트됨)
+    console.log('📌 [서버] 결제 금액 검증:', {
+      totalOriginalPrice,
+      discountAmount,
+      expectedFinalAmount,
+      portOneAmount: paymentData.amount
+    });
+
+    if (Math.abs(paymentData.amount - expectedFinalAmount) >= 0.01) {
+      console.error(
+        `❌ 결제 금액 불일치! 포트원: ${paymentData.amount}, 예상 결제 금액: ${expectedFinalAmount}`
+      );
+
+      return {status: 400, message: '결제 금액 불일치'};
     }
 
     await Promise.all(
@@ -200,10 +239,6 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
           })
         );
 
-        if (Number(paymentData.amount) !== Number(booking.totalPrice)) {
-          throw new Error('결제 금액 불일치');
-        }
-
         const newPayment = new Payment({
           bookingId: booking._id,
           imp_uid,
@@ -221,6 +256,7 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
       })
     );
 
+    console.log('✅ [서버] 결제 검증 성공');
     return {status: 200, message: '결제 검증 성공'};
   } catch (error) {
     console.error('결제 검증 오류:', error);

@@ -56,15 +56,24 @@ const TravelItemPurchaseForm = () => {
     if (!selectedCoupon || !item) return 0;
 
     let discount = 0;
+    const originalPrice = item.price * formData.count; // ✅ 원래 총 가격
+
     if (selectedCoupon.coupon.discountType === 'percentage') {
-      discount =
-        (item.price * formData.count * selectedCoupon.coupon.discountValue) / 100;
+      discount = (originalPrice * selectedCoupon.coupon.discountValue) / 100;
+
       if (selectedCoupon.coupon.maxDiscountAmount > 0) {
         discount = Math.min(discount, selectedCoupon.coupon.maxDiscountAmount);
       }
     } else if (selectedCoupon.coupon.discountType === 'fixed') {
       discount = selectedCoupon.coupon.discountValue || 0;
     }
+
+    console.log('📌 [클라이언트] 할인 금액 계산:', {
+      originalPrice,
+      discount,
+      finalPrice: originalPrice - discount
+    });
+
     return discount;
   };
 
@@ -81,13 +90,21 @@ const TravelItemPurchaseForm = () => {
     const finalPrice = totalPrice - discountAmount;
     const merchant_uid = `travelItem_${Date.now()}`;
 
+    console.log('📌 [클라이언트] 결제 요청 데이터:', {
+      itemId: item._id,
+      totalPrice,
+      discountAmount,
+      finalPrice,
+      couponId: selectedCoupon ? selectedCoupon._id : null
+    });
+
     try {
       // ✅ 예약 생성 요청
       const bookingResponse = await createBooking({
-        type: 'travelItem',
-        productId: item._id,
+        types: ['travelItem'], // ✅ 상품 타입 추가
+        productIds: [item._id], // ✅ 상품 ID 추가
+        counts: [formData.count], // ✅ 수량 추가
         merchant_uid,
-        count: formData.count,
         totalPrice,
         discountAmount,
         userId: user._id,
@@ -99,6 +116,8 @@ const TravelItemPurchaseForm = () => {
           address: user.address
         }
       });
+
+      console.log('📌 [클라이언트] 예약 응답:', bookingResponse);
 
       if (!bookingResponse || !bookingResponse.booking) {
         throw new Error('예약 생성 실패');
