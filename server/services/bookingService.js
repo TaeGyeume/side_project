@@ -28,46 +28,20 @@ const getPortOneToken = async () => {
 
 exports.createBooking = async bookingData => {
   try {
-    console.log('📌 [서버] 클라이언트에서 받은 데이터:', bookingData);
-
-    // 단일 상품 배열 변환 유지 (undefined, null 방지)
+    // 단일 상품 배열 변환 유지
     const types = Array.isArray(bookingData.types)
       ? bookingData.types
-      : bookingData.types
-        ? [bookingData.types]
-        : [];
+      : [bookingData.types];
 
     const productIds = Array.isArray(bookingData.productIds)
       ? bookingData.productIds
-      : bookingData.productIds
-        ? [bookingData.productIds]
-        : [];
+      : [bookingData.productIds];
 
     const counts = Array.isArray(bookingData.counts)
       ? bookingData.counts
-      : bookingData.counts
-        ? [bookingData.counts]
-        : [];
+      : [bookingData.counts];
 
-    const roomIds = Array.isArray(bookingData.roomIds)
-      ? bookingData.roomIds
-      : bookingData.roomIds
-        ? [bookingData.roomIds]
-        : [];
-
-    const startDates = Array.isArray(bookingData.startDates)
-      ? bookingData.startDates
-      : bookingData.startDates
-        ? [bookingData.startDates]
-        : [];
-
-    const endDates = Array.isArray(bookingData.endDates)
-      ? bookingData.endDates
-      : bookingData.endDates
-        ? [bookingData.endDates]
-        : [];
-
-    const {merchant_uid, ...rest} = bookingData;
+    const {roomIds, startDates, endDates, merchant_uid, ...rest} = bookingData;
 
     // merchant_uid 중복 검사
     const existingBooking = await Booking.findOne({merchant_uid});
@@ -81,20 +55,18 @@ exports.createBooking = async bookingData => {
       types,
       productIds,
       counts,
-      roomIds,
-      startDates,
-      endDates,
+      roomIds: roomIds || [],
+      startDates: startDates || [],
+      endDates: endDates || [],
       merchant_uid,
       ...rest
     });
 
     await newBooking.save();
 
-    console.log('✅ [서버] 예약 생성 성공:', newBooking);
-
     return {status: 200, booking: newBooking, message: '예약 생성 완료'};
   } catch (error) {
-    console.error('❌ [서버] 예약 생성 오류:', error);
+    console.error('예약 생성 오류:', error);
     return {status: 500, message: '예약 생성 중 오류 발생'};
   }
 };
