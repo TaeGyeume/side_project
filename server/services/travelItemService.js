@@ -139,10 +139,14 @@ exports.updateTravelItem = async (itemId, updateData, newImages) => {
   }
 };
 
-// ✅ 특정 상품 조회 (ID 기준)
+// ✅ 특정 상품 조회 (ID 기준) + 조회수 증가
 exports.getTravelItemById = async itemId => {
   try {
-    const travelItem = await TravelItem.findById(itemId).populate({
+    const travelItem = await TravelItem.findByIdAndUpdate(
+      itemId,
+      {$inc: {views: 1}}, // ✅ 조회수 1 증가
+      {new: true} // ✅ 업데이트된 문서 반환
+    ).populate({
       path: 'parentCategory', // ✅ `parentCategory` 필드 가져오기
       select: 'name parentCategory', // ✅ `name`과 `parentCategory` 필드 포함
       populate: {
@@ -156,7 +160,7 @@ exports.getTravelItemById = async itemId => {
       throw new Error('해당 상품을 찾을 수 없습니다.');
     }
 
-    console.log('✅ 불러온 상품 데이터:', travelItem); // ✅ 로그 출력
+    console.log('✅ 조회된 상품 데이터 (조회수 증가 적용됨):', travelItem); // ✅ 로그 출력
 
     return travelItem;
   } catch (error) {

@@ -1,8 +1,6 @@
 import React from 'react';
 import TourTicketList from '../components/tourTicket/TourTicketList';
-import CouponSidebar from '../components/CouponSidebar';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './styles/main.css';
 
 const Main = () => {
   return (
@@ -15,11 +13,6 @@ const Main = () => {
         <div className="main-content">
           <h3>지역 필수 티켓</h3>
           <TourTicketList />
-        </div>
-
-        {/* ✅ 사이드바 */}
-        <div className="sidebar">
-          <CouponSidebar />
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ const TourTicket = require('../models/TourTicket');
 const Room = require('../models/Room');
 const TravelItem = require('../models/TravelItem');
 const Flight = require('../models/Flight');
+const UserCoupon = require('../models/UserCoupon');
 
 let cachedToken = null;
 let tokenExpiration = null;
@@ -70,18 +71,94 @@ exports.createBooking = async bookingData => {
   }
 };
 
-exports.verifyPayment = async ({imp_uid, merchant_uid}) => {
+exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId}) => {
   try {
     const accessToken = await getPortOneToken();
     const {data} = await axios.get(`https://api.iamport.kr/payments/${imp_uid}`, {
       headers: {Authorization: accessToken}
     });
 
+    console.log('📌 [서버] PortOne 결제 정보:', data.response); // ✅ 결제 정보 로그 추가
     const paymentData = data.response;
 
+    // ✅ 해당 merchant_uid에 대한 모든 예약 찾기
     const bookings = await Booking.find({merchant_uid});
+    console.log('📌 [서버] 조회된 예약 정보:', bookings); // ✅ 예약 데이터 확인
 
     if (!bookings.length) throw new Error('예약 데이터를 찾을 수 없습니다.');
+
+    // ✅ 전체 예약 가격 합산
+    let totalOriginalPrice = bookings.reduce(
+      (sum, booking) => sum + (booking.totalPrice || 0),
+      0
+    );
+    console.log('📌 [서버] 예약 총 가격:', totalOriginalPrice);
+
+    let discountAmount = 0;
+    let expectedFinalAmount = totalOriginalPrice;
+
+    // ✅ 쿠폰 검증
+    if (couponId) {
+      console.log('📌 [서버] 쿠폰 검증 시작 - couponId:', couponId, 'userId:', userId);
+
+      const mongoose = require('mongoose');
+      const userCoupon = await UserCoupon.findOne({
+        _id: new mongoose.Types.ObjectId(couponId),
+        user: new mongoose.Types.ObjectId(userId),
+        isUsed: false,
+        expiresAt: {$gt: new Date()} // ✅ 만료되지 않은 쿠폰
+      }).populate('coupon');
+
+      console.log('📌 [서버] 조회된 UserCoupon:', userCoupon);
+
+      if (!userCoupon) {
+        console.error('❌ [서버] 쿠폰을 찾을 수 없음 또는 만료됨!');
+        return {status: 400, message: '사용 가능한 쿠폰을 찾을 수 없습니다.'};
+      }
+
+      const coupon = userCoupon.coupon;
+
+      // ✅ 최소 구매 금액 체크
+      if (totalOriginalPrice < coupon.minPurchaseAmount) {
+        return {
+          status: 400,
+          message: `이 쿠폰은 ${coupon.minPurchaseAmount.toLocaleString()}원 이상 구매 시 사용 가능합니다.`
+        };
+      }
+
+      // ✅ 할인 금액 계산
+      if (coupon.discountType === 'percentage') {
+        discountAmount = (totalOriginalPrice * coupon.discountValue) / 100;
+        if (coupon.maxDiscountAmount > 0) {
+          discountAmount = Math.min(discountAmount, coupon.maxDiscountAmount);
+        }
+      } else if (coupon.discountType === 'fixed') {
+        discountAmount = coupon.discountValue;
+      }
+
+      // ✅ 최종 결제 금액 업데이트
+      expectedFinalAmount = totalOriginalPrice - discountAmount;
+
+      // ✅ 쿠폰을 사용 처리
+      userCoupon.isUsed = true;
+      await userCoupon.save();
+    }
+
+    // ✅ 결제 금액 검증 (expectedFinalAmount가 항상 올바르게 업데이트됨)
+    console.log('📌 [서버] 결제 금액 검증:', {
+      totalOriginalPrice,
+      discountAmount,
+      expectedFinalAmount,
+      portOneAmount: paymentData.amount
+    });
+
+    if (Math.abs(paymentData.amount - expectedFinalAmount) >= 0.01) {
+      console.error(
+        `❌ 결제 금액 불일치! 포트원: ${paymentData.amount}, 예상 결제 금액: ${expectedFinalAmount}`
+      );
+
+      return {status: 400, message: '결제 금액 불일치'};
+    }
 
     await Promise.all(
       bookings.map(async booking => {
@@ -134,10 +211,6 @@ exports.verifyPayment = async ({imp_uid, merchant_uid}) => {
           })
         );
 
-        if (Number(paymentData.amount) !== Number(booking.totalPrice)) {
-          throw new Error('결제 금액 불일치');
-        }
-
         const newPayment = new Payment({
           bookingId: booking._id,
           imp_uid,
@@ -155,6 +228,7 @@ exports.verifyPayment = async ({imp_uid, merchant_uid}) => {
       })
     );
 
+    console.log('✅ [서버] 결제 검증 성공');
     return {status: 200, message: '결제 검증 성공'};
   } catch (error) {
     console.error('결제 검증 오류:', error);

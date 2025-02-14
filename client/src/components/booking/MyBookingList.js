@@ -71,53 +71,60 @@ const MyBookingList = ({status}) => {
         <p className="no-bookings">해당하는 예약이 없습니다.</p>
       ) : (
         <div className="booking-grid">
-          {filteredBookings.map(booking => (
-            <div
-              className={`booking-card ${status === 'canceled' ? 'canceled' : ''}`}
-              key={booking._id}>
-              <div className="booking-header">
-                <span className="booking-date">
-                  {new Date(booking.updatedAt).toLocaleDateString('ko-KR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    weekday: 'long'
-                  })}
-                </span>
-                {status === 'completed' && (
-                  <button
-                    className="cancel-button"
-                    onClick={() => handleCancel(booking._id)}>
-                    예약취소
-                  </button>
-                )}
-              </div>
+          {filteredBookings.map(booking => {
+            const bookingType = Array.isArray(booking.types)
+              ? booking.types[0]
+              : booking.type; // ✅ 배열 처리 추가
+            const product = Array.isArray(booking.productIds)
+              ? booking.productIds[0]
+              : booking.productId; // ✅ 배열 처리 추가
 
-              <div className="booking-content">
-                <h3 className="product-title">
-                  {booking.productId?.title ||
-                    booking.productId?.name ||
-                    '상품 정보 없음'}
-                </h3>
-                <p className={`type-label ${booking.type}`}>
-                  {booking.type === 'flight'
-                    ? '✈️ 항공권 예약'
-                    : booking.type === 'accommodation'
-                      ? '🏨 숙소 예약'
-                      : booking.type === 'travelItem'
-                        ? '🛍️ 여행용품 구매'
-                        : '🎫 투어 티켓'}
-                </p>
-                <p>
-                  예약 상태:{' '}
-                  <strong>{status === 'completed' ? '✅ 완료' : '❌ 취소됨'}</strong>
-                </p>
-                <p>
-                  총 가격: <strong>{booking.totalPrice.toLocaleString()} 원</strong>
-                </p>
+            return (
+              <div
+                className={`booking-card ${status === 'canceled' ? 'canceled' : ''}`}
+                key={booking._id}>
+                <div className="booking-header">
+                  <span className="booking-date">
+                    {new Date(booking.updatedAt).toLocaleDateString('ko-KR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      weekday: 'long'
+                    })}
+                  </span>
+                  {status === 'completed' && (
+                    <button
+                      className="cancel-button"
+                      onClick={() => handleCancel(booking._id)}>
+                      예약취소
+                    </button>
+                  )}
+                </div>
+
+                <div className="booking-content">
+                  <h3 className="product-title">
+                    {product?.title || product?.name || '상품 정보 없음'}
+                  </h3>
+                  <p className={`type-label ${bookingType}`}>
+                    {bookingType === 'flight'
+                      ? '✈️ 항공권 예약'
+                      : bookingType === 'accommodation'
+                        ? '🏨 숙소 예약'
+                        : bookingType === 'travelItem'
+                          ? '🛍️ 여행용품 구매'
+                          : '🎫 투어 티켓'}
+                  </p>
+                  <p>
+                    예약 상태:{' '}
+                    <strong>{status === 'completed' ? '✅ 완료' : '❌ 취소됨'}</strong>
+                  </p>
+                  <p>
+                    총 가격: <strong>{booking.totalPrice.toLocaleString()} 원</strong>
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

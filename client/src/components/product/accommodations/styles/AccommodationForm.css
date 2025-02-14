@@ -1,31 +1,123 @@
 .image-preview {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 15px;
+  margin-top: 15px;
 }
 
 .preview-container {
   position: relative;
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120px;
+  height: 150px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f9f9f9;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.preview-container:hover {
+  transform: scale(1.05);
 }
 
 .preview-image {
-  width: 100px;
+  width: 100%;
   height: 100px;
   object-fit: cover;
-  border-radius: 5px;
-  border: 1px solid #ddd;
+  border-radius: 6px;
 }
 
 .preview-container button {
   position: absolute;
   top: 5px;
   right: 5px;
-  background: red;
+  background: rgba(255, 0, 0, 0.8);
   color: white;
   border: none;
   cursor: pointer;
   border-radius: 50%;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease-in-out;
+}
+
+.preview-container button:hover {
+  background: rgba(255, 0, 0, 1);
+}
+
+/* ✅ 전체 폼 스타일 */
+.accommodation-form {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ✅ 폼 그룹 (각 필드) 스타일 */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+/* ✅ 라벨 스타일 */
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+/* ✅ 입력 필드 & 텍스트 영역 스타일 */
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: all 0.3s ease-in-out;
+  background: #f9f9f9;
+}
+
+/* ✅ 포커스 시 스타일 */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+  background: #fff;
+  outline: none;
+}
+
+/* ✅ 텍스트 영역 크기 조정 */
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* ✅ 버튼 스타일 */
+.form-button {
+  width: 100%;
+  padding: 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.form-button:hover {
+  background: #0056b3;
 }

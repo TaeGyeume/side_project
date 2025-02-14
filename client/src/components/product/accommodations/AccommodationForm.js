@@ -188,7 +188,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
   return (
     <form onSubmit={handleSubmit} className="accommodation-form">
       {/* 🔹 숙소명 */}
-      <div>
+      <div className="form-group">
         <label>숙소명</label>
         <input
           type="text"
@@ -200,7 +200,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
       </div>
 
       {/* 🔹 설명 */}
-      <div>
+      <div className="form-group">
         <label>설명</label>
         <textarea
           name="description"
@@ -210,7 +210,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
       </div>
 
       {/* 🔹 위치 선택 (DB에서 불러오기) */}
-      <div>
+      <div className="form-group">
         <label>국가 선택</label>
         <select name="country" value={selectedCountry} onChange={handleCountryChange}>
           <option value="">국가를 선택하세요</option>
@@ -222,7 +222,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
         </select>
       </div>
 
-      <div>
+      <div className="form-group">
         <label>도시 선택</label>
         <select
           name="location"
@@ -239,7 +239,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
       </div>
 
       {/* 🔹 좌표 입력 (경도, 위도) */}
-      <div>
+      <div className="form-group">
         <label>경도 (Longitude)</label>
         <input
           type="number"
@@ -250,7 +250,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
           required
         />
       </div>
-      <div>
+      <div className="form-group">
         <label>위도 (Latitude)</label>
         <input
           type="number"
@@ -263,7 +263,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
       </div>
 
       {/* 🔹 주소 입력 */}
-      <div>
+      <div className="form-group">
         <label>주소</label>
         <input
           type="text"
@@ -275,7 +275,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
       </div>
 
       {/* 🔹 카테고리 선택 */}
-      <div>
+      <div className="form-group">
         <label>카테고리</label>
         <select name="category" value={formData.category} onChange={handleChange}>
           <option value="Hotel">호텔</option>
@@ -286,7 +286,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
       </div>
 
       {/* 🔹 편의시설 (배열) */}
-      <div>
+      <div className="form-group">
         <label>편의시설</label>
         {formData.amenities.map((amenity, index) => (
           <div key={index}>
@@ -307,7 +307,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
       </div>
 
       {/* 🔹 숙소 이미지 업로드 */}
-      <div>
+      <div className="form-group">
         <label>숙소 이미지</label>
         <input type="file" name="images" multiple onChange={handleFileChange} />
       </div>
@@ -319,14 +319,16 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
             <div key={index} className="preview-container">
               <img src={image} alt={`preview-${index}`} className="preview-image" />
               <button type="button" onClick={() => handleRemoveImage(index)}>
-                삭제
+                ×
               </button>
             </div>
           ))}
         </div>
       )}
 
-      <button type="submit">숙소 등록</button>
+      <button type="submit" className="form-button">
+        숙소 등록
+      </button>
     </form>
   );
 };
