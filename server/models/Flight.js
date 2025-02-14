@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const flightSchema = new mongoose.Schema(
   {
     airline: {type: String, required: true},
-    airlineKorean: {type: String, required: true},
+    airlineKorean: {type: String, required: false},
     airlineHomepageUrl: {type: String},
 
     departure: {
@@ -15,8 +15,7 @@ const flightSchema = new mongoose.Schema(
         default: () => new Date(Date.now() + 9 * 60 * 60 * 1000),
         required: true
       },
-      time: {type: String, required: true}, // ✅ 원본 그대로 유지 (HHmm 형식)
-      weekday: {type: String, required: true}
+      time: {type: String, required: true} // ✅ 원본 그대로 유지 (HHmm 형식)
     },
 
     arrival: {
@@ -27,8 +26,7 @@ const flightSchema = new mongoose.Schema(
         default: () => new Date(Date.now() + 9 * 60 * 60 * 1000),
         required: true
       },
-      time: {type: String, required: true}, // ✅ 원본 그대로 유지 (HHmm 형식)
-      weekday: {type: String, required: true}
+      time: {type: String, required: true} // ✅ 원본 그대로 유지 (HHmm 형식)
     },
 
     flightNumber: {type: String, required: true, unique: false},

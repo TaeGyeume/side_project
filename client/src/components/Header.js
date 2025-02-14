@@ -70,7 +70,7 @@ const Header = () => {
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/travelItems">
-                여행용품
+                여행 용품
               </Link>
             </li>
             <li className="nav-item">
@@ -111,6 +111,11 @@ const Header = () => {
                       <li>
                         <Link className="dropdown-item" to="/booking/my?status=completed">
                           내 예약 목록
+                        </Link>
+                      </li>
+                      <li>
+                        <Link className="dropdown-item" to="/coupons/my">
+                          내 쿠폰함
                         </Link>
                       </li>
                     </ul>

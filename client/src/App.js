@@ -21,11 +21,14 @@ import AccommodationDetail from './pages/accommodations/AccommodationDetail';
 import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이지 추가
 import FlightResults from './pages/flights/FlightResults';
 import RoundTripResults from './pages/flights/RoundTripResults';
-import RoundTripDeparture from './pages/flights/RoundTripDeparture'; // ✅ 추가
-import RoundTripReturn from './pages/flights/RoundTripReturn'; // ✅ 추가
-import RoundTripConfirm from './pages/flights/RoundTripConfirm'; // ✅ 추가
+import RoundTripDeparture from './pages/flights/RoundTripDeparture';
+import RoundTripReturn from './pages/flights/RoundTripReturn';
+import RoundTripConfirm from './pages/flights/RoundTripConfirm';
+import BookingPage from './pages/flights/BookingPage';
+import FlightBookingPage from './pages/booking/FlightBookingPage';
 import TravelItemList from './pages/travelItem/TravelItemListPage';
 import TravelItemDetail from './pages/travelItem/TravelItemDetailPage';
+import MyCouponsPage from './pages/coupons/MyCouponsPage';
 import ProductPage from './pages/product/ProductPage';
 import AccommodationList from './pages/product/accommodations/AccommodationList';
 import AccommodationCreate from './pages/product/accommodations/AccommodationCreate';
@@ -43,6 +46,8 @@ import CategoryPage from './pages/product/travelItems/CategoryPage';
 import TravelItemPage from './pages/product/travelItems/TravelItemPage';
 import TravelItemListPage from './pages/product/travelItems/TravelItemListPage';
 import TravelItemEditPage from './pages/product/travelItems/TravelItemEditPage';
+import CouponCreatePage from './pages/product/coupons/CouponCreatePage';
+import CouponListPage from './pages/product/coupons/CouponListPage';
 import UserTourTicketPage from './pages/tourTicket/UserTourTicketPage';
 import TourTicketBookingPage from './pages/booking/TourTicketBookingPage';
 import AccommodationBookingPage from './pages/booking/AccommodationBookingPage';
@@ -115,6 +120,7 @@ const App = () => {
           <Route path="/flights/roundtrip-departure" element={<RoundTripDeparture />} />
           <Route path="/flights/roundtrip-return" element={<RoundTripReturn />} />
           <Route path="/flights/roundtrip-confirm" element={<RoundTripConfirm />} />
+          <Route path="/flights/before/booking" element={<BookingPage />} />
           <Route path="/travelItems" element={<TravelItemList />} />
           <Route path="/travelItems/:itemId" element={<TravelItemDetail />} />
 
@@ -130,11 +136,13 @@ const App = () => {
               path="/accommodation/booking/:roomId"
               element={<AccommodationBookingPage />}
             />
+            <Route path="/flights/booking" element={<FlightBookingPage />} />
             <Route
               path="/travelItems/purchase/:itemId"
               element={<TravelItemPurchaseForm />}
             />
             <Route path="/booking/my" element={<MyBookingPage />} />
+            <Route path="/coupons/my" element={<MyCouponsPage />} />
           </Route>
           {/* 🔒 어드민 전용 페이지 */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>
@@ -163,6 +171,8 @@ const App = () => {
             <Route path="/product/travelItems/newCategory" element={<CategoryPage />} />
             <Route path="/product/travelItems/new" element={<TravelItemPage />} />
             <Route path="/product/travelItems/list" element={<TravelItemListPage />} />
+            <Route path="/product/coupon/new" element={<CouponCreatePage />} />
+            <Route path="/product/coupon/list" element={<CouponListPage />} />
             <Route
               path="/product/travelItems/edit/:itemId"
               element={<TravelItemEditPage />}

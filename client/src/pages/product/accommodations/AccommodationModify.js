@@ -1,11 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {useParams, useNavigate} from 'react-router-dom';
-import {
-  fetchAccommodationDetail,
-  updateAccommodation,
-  deleteAccommodationImage,
-  fetchRoomList
-} from '../../../api/accommodation/accommodationService';
+import {fetchRoomList} from '../../../api/accommodation/accommodationService';
 import axios from '../../../api/axios';
 import RoomCard from '../../../components/accommodations/RoomCard';
 

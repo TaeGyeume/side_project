@@ -26,9 +26,9 @@ const RoundTripReturn = () => {
   const handleSelectReturn = flight => {
     console.log('✅ 도착 항공편 선택됨:', flight);
 
-    // 출발 & 도착 항공편 선택 후 예약 확인 페이지로 이동
-    navigate('/flights/roundtrip-confirm', {
-      state: {selectedDeparture, selectedReturn: flight, passengers}
+    // ✅ 출발 & 도착 항공편 선택 후 BookingPage로 이동
+    navigate('/flights/before/booking', {
+      state: {selectedDeparture, selectedReturn: flight, passengers, isRoundTrip: true}
     });
   };
 
