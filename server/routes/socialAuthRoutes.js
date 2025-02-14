@@ -40,7 +40,7 @@ router.get(
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
       path: '/',
-      maxAge: 15 * 60 * 1000 // 15분
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
     });
 
     // 리프레시 토큰 저장

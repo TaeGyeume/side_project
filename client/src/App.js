@@ -9,10 +9,10 @@ import EditProfile from './pages/user/EditProfile';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import CouponSidebar from './components/coupons/CouponSidebar';
-import NaverLoginCallback from './components/SocialLogin/NaverLoginCallback';
-import FacebookLoginCallback from './components/SocialLogin/FacebookLoginCallback';
-import KakaoLoginCallback from './components/SocialLogin/KakaoLoginCallback';
-import GoogleLoginCallback from './components/SocialLogin/GoogleLoginCallback';
+import NaverLoginCallback from './components/socialLogin/NaverLoginCallback';
+import FacebookLoginCallback from './components/socialLogin/FacebookLoginCallback';
+import KakaoLoginCallback from './components/socialLogin/KakaoLoginCallback';
+import GoogleLoginCallback from './components/socialLogin/GoogleLoginCallback';
 import FindUserId from './pages/auth/FindUserId';
 import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
@@ -57,6 +57,9 @@ import TravelItemPurchaseForm from './components/booking/TravelItemPurchasePage'
 import MyBookingPage from './pages/user/MyBookingPage';
 import ChannelTalk from './components/channelTalk/ChannelTalk';
 import MileagePage from './pages/mileage/MileagePage';
+import FavoritesPage from './pages/user/FavoritesPage';
+import '@fortawesome/fontawesome-free/css/all.min.css'; // FontAwesome 아이콘 스타일 불러오기
+import FavoriteListPage from './pages/user/FavoriteListPage'; // 방금 만든 페이지 임포트
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -140,6 +143,7 @@ const App = () => {
               element={<AccommodationBookingPage />}
             />
             <Route path="/flights/booking" element={<FlightBookingPage />} />
+            <Route path="/favorites" element={<FavoriteListPage />} />
             <Route
               path="/travelItems/purchase/:itemId"
               element={<TravelItemPurchaseForm />}
@@ -147,6 +151,7 @@ const App = () => {
             <Route path="/booking/my" element={<MyBookingPage />} />
             <Route path="/coupons/my" element={<MyCouponsPage />} />
             <Route path="/user/mileage" element={<MileagePage />} />
+            <Route path="/favorites" component={FavoritesPage} />
           </Route>
           {/* 🔒 어드민 전용 페이지 */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>
