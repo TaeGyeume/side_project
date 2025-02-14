@@ -15,7 +15,4 @@ router.post('/verify-payment', bookingController.verifyPayment);
 // 내 예약 목록
 router.get('/my', authMiddleware, bookingController.getMyBookings);
 
-// 구매 확정
-router.post('/confirm/:bookingId', bookingController.confirmBooking);
-
 module.exports = router;
