@@ -54,6 +54,7 @@ import AccommodationBookingPage from './pages/booking/AccommodationBookingPage';
 import TravelItemPurchaseForm from './components/booking/TravelItemPurchasePage';
 import MyBookingPage from './pages/user/MyBookingPage';
 import ChannelTalk from './components/ChannelTalk/ChannelTalk';
+import MileagePage from './pages/mileage/MileagePage';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -143,6 +144,7 @@ const App = () => {
             />
             <Route path="/booking/my" element={<MyBookingPage />} />
             <Route path="/coupons/my" element={<MyCouponsPage />} />
+            <Route path="/user/mileage" element={<MileagePage />} />
           </Route>
           {/* 🔒 어드민 전용 페이지 */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>

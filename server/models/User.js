@@ -66,7 +66,8 @@ const UserSchema = new mongoose.Schema(
     },
     passwordResetExpires: {
       type: Date // 토큰 만료 시간
-    }
+    },
+    mileage: {type: Number, default: 0}
   },
   {timestamps: true} // 자동으로 createdAt, updatedAt 필드 추가
 );

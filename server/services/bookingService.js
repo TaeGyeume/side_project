@@ -5,6 +5,7 @@ const TourTicket = require('../models/TourTicket');
 const Room = require('../models/Room');
 const TravelItem = require('../models/TravelItem');
 const Flight = require('../models/Flight');
+const User = require('../models/User');
 
 // const getPortOneToken = async () => {
 //   try {
@@ -357,7 +358,7 @@ exports.cancelBooking = async bookingId => {
     switch (booking.type) {
       case 'tourTicket': {
         product = await TourTicket.findById(booking.productId);
-        
+
         if (!product)
           return {status: 404, message: '투어 티켓 상품 정보를 찾을 수 없습니다.'};
 
