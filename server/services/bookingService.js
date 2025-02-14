@@ -1,302 +1,257 @@
-const axios = require('axios');
-const Booking = require('../models/Booking');
-const Payment = require('../models/Payment');
-const TourTicket = require('../models/TourTicket');
-const Room = require('../models/Room');
-const TravelItem = require('../models/TravelItem');
+// const axios = require('axios');
+// const Booking = require('../models/Booking');
+// const Payment = require('../models/Payment');
+// const TourTicket = require('../models/TourTicket');
+// const Room = require('../models/Room');
+// const TravelItem = require('../models/TravelItem');
+
+// let cachedToken = null;
+// let tokenExpiration = null; // 토큰 만료 시간 저장
 
 // const getPortOneToken = async () => {
 //   try {
-//     const {data} = await axios({
-//       url: 'https://api.iamport.kr/users/getToken',
-//       method: 'post',
-//       headers: {'Content-Type': 'application/json'},
-//       data: {
-//         imp_key: process.env.PORTONE_API_KEY,
-//         imp_secret: process.env.PORTONE_API_SECRET
-//       }
+//     // 캐싱된 토큰이 있고, 아직 유효하면 그대로 사용
+//     if (cachedToken && tokenExpiration && Date.now() < tokenExpiration) {
+//       console.log('캐싱된 포트원 토큰 사용');
+//       return cachedToken;
+//     }
+
+//     // 포트원 API에 토큰 요청
+//     const {data} = await axios.post('https://api.iamport.kr/users/getToken', {
+//       imp_key: process.env.PORTONE_API_KEY,
+//       imp_secret: process.env.PORTONE_API_SECRET
 //     });
 
-//     return data.response.access_token;
+//     if (data.code !== 0) {
+//       throw new Error(`포트원 토큰 요청 실패: ${data.message}`);
+//     }
+
+//     // 새로운 토큰 저장
+//     cachedToken = data.response.access_token;
+//     tokenExpiration = data.response.expired_at * 1000; // UNIX Timestamp → 밀리초 변환
+
+//     console.log('새 포트원 토큰 발급:', cachedToken);
+//     return cachedToken;
 //   } catch (error) {
-//     console.error('포트원 토큰 요청 실패:', error);
-//     throw new Error('포트원 토큰 요청 실패');
+//     console.error('포트원 토큰 요청 오류:', error);
+//     throw new Error('포트원 인증 토큰을 가져올 수 없습니다.');
 //   }
 // };
 
-let cachedToken = null;
-let tokenExpiration = null; // 토큰 만료 시간 저장
+// exports.createBooking = async bookingData => {
+//   try {
+//     console.log('예약 데이터 저장 요청:', bookingData);
 
-const getPortOneToken = async () => {
-  try {
-    // 캐싱된 토큰이 있고, 아직 유효하면 그대로 사용
-    if (cachedToken && tokenExpiration && Date.now() < tokenExpiration) {
-      console.log('캐싱된 포트원 토큰 사용');
-      return cachedToken;
-    }
+//     if (
+//       bookingData.type === 'accommodation' &&
+//       bookingData.roomId &&
+//       !bookingData.productId
+//     ) {
+//       const room = await Room.findById(bookingData.roomId);
+//       if (room) {
+//         bookingData.productId = room.accommodation; // 숙소 ID 자동 설정
+//         console.log('✅ 수동 설정된 숙소 ID (productId):', bookingData.productId);
+//       } else {
+//         throw new Error('해당 roomId에 해당하는 숙소가 존재하지 않습니다.');
+//       }
+//     }
 
-    // 포트원 API에 토큰 요청
-    const {data} = await axios.post('https://api.iamport.kr/users/getToken', {
-      imp_key: process.env.PORTONE_API_KEY,
-      imp_secret: process.env.PORTONE_API_SECRET
-    });
+//     const newBooking = new Booking({
+//       ...bookingData,
+//       paymentStatus: 'PENDING' // 결제 대기 상태로 예약 생성
+//     });
 
-    if (data.code !== 0) {
-      throw new Error(`포트원 토큰 요청 실패: ${data.message}`);
-    }
+//     const savedBooking = await newBooking.save();
 
-    // 새로운 토큰 저장
-    cachedToken = data.response.access_token;
-    tokenExpiration = data.response.expired_at * 1000; // UNIX Timestamp → 밀리초 변환
+//     console.log('예약이 정상적으로 저장됨:', savedBooking);
 
-    console.log('새 포트원 토큰 발급:', cachedToken);
-    return cachedToken;
-  } catch (error) {
-    console.error('포트원 토큰 요청 오류:', error);
-    throw new Error('포트원 인증 토큰을 가져올 수 없습니다.');
-  }
-};
+//     return savedBooking;
+//   } catch (error) {
+//     console.error('예약 생성 오류:', error);
+//     throw new Error('예약 생성 실패');
+//   }
+// };
 
-exports.createBooking = async bookingData => {
-  try {
-    console.log('예약 데이터 저장 요청:', bookingData);
+// exports.verifyPayment = async ({imp_uid, merchant_uid}) => {
+//   try {
+//     const accessToken = await getPortOneToken();
 
-    if (
-      bookingData.type === 'accommodation' &&
-      bookingData.roomId &&
-      !bookingData.productId
-    ) {
-      const room = await Room.findById(bookingData.roomId);
-      if (room) {
-        bookingData.productId = room.accommodation; // 숙소 ID 자동 설정
-        console.log('✅ 수동 설정된 숙소 ID (productId):', bookingData.productId);
-      } else {
-        throw new Error('해당 roomId에 해당하는 숙소가 존재하지 않습니다.');
-      }
-    }
+//     // 포트원에서 결제 정보 조회
+//     const {data} = await axios.get(`https://api.iamport.kr/payments/${imp_uid}`, {
+//       headers: {Authorization: accessToken}
+//     });
 
-    const newBooking = new Booking({
-      ...bookingData,
-      paymentStatus: 'PENDING' // 결제 대기 상태로 예약 생성
-    });
+//     const paymentData = data.response;
+//     if (!paymentData) {
+//       console.error('결제 정보 조회 실패');
+//       return {status: 400, message: '결제 정보를 찾을 수 없습니다.'};
+//     }
 
-    const savedBooking = await newBooking.save();
+//     // 예약 정보 조회
+//     const booking = await Booking.findOne({merchant_uid});
+//     if (!booking) {
+//       console.error(`예약 정보를 찾을 수 없음 (merchant_uid: ${merchant_uid})`);
+//       return {status: 404, message: '예약 정보를 찾을 수 없습니다.'};
+//     }
 
-    console.log('예약이 정상적으로 저장됨:', savedBooking);
+//     // 결제 금액 일치 여부 확인
+//     if (paymentData.amount !== booking.totalPrice) {
+//       console.error(
+//         `결제 금액 불일치! 포트원: ${paymentData.amount}, 예약 금액: ${booking.totalPrice}`
+//       );
+//       return {status: 400, message: '결제 금액 불일치'};
+//     }
 
-    return savedBooking;
-  } catch (error) {
-    console.error('예약 생성 오류:', error);
-    throw new Error('예약 생성 실패');
-  }
-};
+//     // 상품별 재고 감소 처리
+//     let product;
 
-exports.verifyPayment = async ({imp_uid, merchant_uid}) => {
-  try {
-    const accessToken = await getPortOneToken();
+//     switch (booking.type) {
+//       case 'tourTicket': {
+//         product = await TourTicket.findById(booking.productId);
 
-    // 포트원에서 결제 정보 조회
-    const {data} = await axios.get(`https://api.iamport.kr/payments/${imp_uid}`, {
-      headers: {Authorization: accessToken}
-    });
+//         if (!product)
+//           return {status: 404, message: '투어.티켓 상품 정보를 찾을 수 없습니다.'};
 
-    const paymentData = data.response;
-    if (!paymentData) {
-      console.error('결제 정보 조회 실패');
-      return {status: 400, message: '결제 정보를 찾을 수 없습니다.'};
-    }
+//         if (product.stock < booking.count)
+//           return {status: 400, message: '재고가 부족합니다.'};
 
-    // 예약 정보 조회
-    const booking = await Booking.findOne({merchant_uid});
-    if (!booking) {
-      console.error(`예약 정보를 찾을 수 없음 (merchant_uid: ${merchant_uid})`);
-      return {status: 404, message: '예약 정보를 찾을 수 없습니다.'};
-    }
+//         product.stock -= booking.count;
+//         break;
+//       }
 
-    // 결제 금액 일치 여부 확인
-    if (paymentData.amount !== booking.totalPrice) {
-      console.error(
-        `결제 금액 불일치! 포트원: ${paymentData.amount}, 예약 금액: ${booking.totalPrice}`
-      );
-      return {status: 400, message: '결제 금액 불일치'};
-    }
+//       case 'flight': {
+//         product = await Flight.findById(booking.productId);
 
-    // 상품별 재고 감소 처리
-    let product;
+//         if (!product) return {status: 404, message: '항공 상품 정보를 찾을 수 없습니다.'};
 
-    switch (booking.type) {
-      case 'tourTicket': {
-        product = await TourTicket.findById(booking.productId);
+//         if (product.availableSeats < booking.count)
+//           return {status: 400, message: '좌석이 부족합니다.'};
 
-        if (!product)
-          return {status: 404, message: '투어.티켓 상품 정보를 찾을 수 없습니다.'};
+//         product.availableSeats -= booking.count;
+//         break;
+//       }
 
-        if (product.stock < booking.count)
-          return {status: 400, message: '재고가 부족합니다.'};
+//       case 'accommodation': {
+//         product = await Room.findById(booking.roomId);
+//         if (!product) return {status: 404, message: '객실 정보를 찾을 수 없습니다.'};
 
-        product.stock -= booking.count;
-        break;
-      }
+//         const {startDate, endDate, count} = booking;
+//         let currentDate = new Date(startDate);
 
-      case 'flight': {
-        product = await Flight.findById(booking.productId);
+//         while (currentDate < new Date(endDate)) {
+//           const dateStr = currentDate.toISOString().split('T')[0];
 
-        if (!product) return {status: 404, message: '항공 상품 정보를 찾을 수 없습니다.'};
+//           // ✅ 해당 날짜의 예약 개수 가져오기
+//           let reservedIndex = product.reservedDates.findIndex(
+//             d => d.date.toISOString().split('T')[0] === dateStr
+//           );
+//           let reservedCountOnDate =
+//             reservedIndex !== -1 ? product.reservedDates[reservedIndex].count : 0;
 
-        if (product.availableSeats < booking.count)
-          return {status: 400, message: '좌석이 부족합니다.'};
+//           // ✅ 예약 가능 여부 체크
+//           if (reservedCountOnDate + count > product.availableCount) {
+//             console.error(`❌ ${dateStr} 날짜에 예약 가능한 객실 부족!`);
+//             return {
+//               status: 400,
+//               message: `${dateStr} 날짜에 예약 가능한 객실이 부족합니다.`
+//             };
+//           }
 
-        product.availableSeats -= booking.count;
-        break;
-      }
+//           // ✅ 예약 반영
+//           if (reservedIndex !== -1) {
+//             product.reservedDates[reservedIndex].count += count;
+//           } else {
+//             product.reservedDates.push({date: new Date(dateStr), count});
+//           }
 
-      case 'accommodation': {
-        product = await Room.findById(booking.roomId);
-        if (!product) return {status: 404, message: '객실 정보를 찾을 수 없습니다.'};
+//           currentDate.setDate(currentDate.getDate() + 1);
+//         }
 
-        const {startDate, endDate, count} = booking;
-        let currentDate = new Date(startDate);
+//         // ✅ 객실 가용 여부 업데이트 (availableCount 반영)
+//         const totalReserved = product.reservedDates.reduce((acc, d) => acc + d.count, 0);
+//         product.available = totalReserved < product.availableCount;
 
-        while (currentDate < new Date(endDate)) {
-          const dateStr = currentDate.toISOString().split('T')[0];
+//         await product.save();
+//         break;
+//       }
 
-          // ✅ 해당 날짜의 예약 개수 가져오기
-          let reservedIndex = product.reservedDates.findIndex(
-            d => d.date.toISOString().split('T')[0] === dateStr
-          );
-          let reservedCountOnDate =
-            reservedIndex !== -1 ? product.reservedDates[reservedIndex].count : 0;
+//       case 'travelItem': {
+//         product = await TravelItem.findById(booking.productId);
 
-          // ✅ 예약 가능 여부 체크
-          if (reservedCountOnDate + count > product.availableCount) {
-            console.error(`❌ ${dateStr} 날짜에 예약 가능한 객실 부족!`);
-            return {
-              status: 400,
-              message: `${dateStr} 날짜에 예약 가능한 객실이 부족합니다.`
-            };
-          }
+//         if (!product) return {status: 404, message: '여행용품 정보를 찾을 수 없습니다.'};
+//         if (product.stock < booking.count)
+//           return {status: 400, message: '재고가 부족합니다.'};
 
-          // ✅ 예약 반영
-          if (reservedIndex !== -1) {
-            product.reservedDates[reservedIndex].count += count;
-          } else {
-            product.reservedDates.push({date: new Date(dateStr), count});
-          }
+//         product.stock -= booking.count; // ✅ 재고 감소
+//         product.soldOut = product.stock === 0; // ✅ 품절 여부 업데이트
+//         break;
+//       }
 
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
+//       default:
+//         return {status: 400, message: '유효하지 않은 상품 유형입니다.'};
+//     }
 
-        // ✅ 객실 가용 여부 업데이트 (availableCount 반영)
-        const totalReserved = product.reservedDates.reduce((acc, d) => acc + d.count, 0);
-        product.available = totalReserved < product.availableCount;
+//     await product.save(); // 재고 저장
 
-        await product.save();
-        break;
-      }
+//     // 결제 정보 저장
+//     try {
+//       const newPayment = new Payment({
+//         bookingId: booking._id,
+//         imp_uid,
+//         merchant_uid,
+//         userId: booking.userId,
+//         amount: paymentData.amount,
+//         status: 'PAID',
+//         paymentMethod: paymentData.pay_method || 'unknown',
+//         paidAt: paymentData.paid_at ? new Date(paymentData.paid_at * 1000) : new Date(),
+//         receiptUrl: paymentData.receipt_url || ''
+//       });
 
-      case 'travelItem': {
-        product = await TravelItem.findById(booking.productId);
+//       await newPayment.save();
+//       console.log(`결제 정보 저장 완료: Payment ID: ${newPayment._id}`);
+//     } catch (error) {
+//       console.error('Payment 컬렉션 저장 오류:', error);
+//       return {status: 500, message: '결제 정보 저장 중 오류 발생'};
+//     }
 
-        if (!product) return {status: 404, message: '여행용품 정보를 찾을 수 없습니다.'};
-        if (product.stock < booking.count)
-          return {status: 400, message: '재고가 부족합니다.'};
+//     // 예약 상태 업데이트 (결제 완료)
+//     booking.paymentStatus = 'COMPLETED';
+//     await booking.save();
 
-        product.stock -= booking.count; // ✅ 재고 감소
-        product.soldOut = product.stock === 0; // ✅ 품절 여부 업데이트
-        break;
-      }
+//     console.log(`결제 검증 성공! 예약 ID: ${booking._id}`);
+//     return {status: 200, message: '결제 검증 성공', booking};
+//   } catch (error) {
+//     console.error('결제 검증 오류:', error);
+//     return {status: 500, message: '결제 검증 중 서버 오류 발생'};
+//   }
+// };
 
-      default:
-        return {status: 400, message: '유효하지 않은 상품 유형입니다.'};
-    }
-
-    await product.save(); // 재고 저장
-
-    // 결제 정보 저장
-    try {
-      const newPayment = new Payment({
-        bookingId: booking._id,
-        imp_uid,
-        merchant_uid,
-        userId: booking.userId,
-        amount: paymentData.amount,
-        status: 'PAID',
-        paymentMethod: paymentData.pay_method || 'unknown',
-        paidAt: paymentData.paid_at ? new Date(paymentData.paid_at * 1000) : new Date(),
-        receiptUrl: paymentData.receipt_url || ''
-      });
-
-      await newPayment.save();
-      console.log(`결제 정보 저장 완료: Payment ID: ${newPayment._id}`);
-    } catch (error) {
-      console.error('Payment 컬렉션 저장 오류:', error);
-      return {status: 500, message: '결제 정보 저장 중 오류 발생'};
-    }
-
-    // 예약 상태 업데이트 (결제 완료)
-    booking.paymentStatus = 'COMPLETED';
-    await booking.save();
-
-    console.log(`결제 검증 성공! 예약 ID: ${booking._id}`);
-    return {status: 200, message: '결제 검증 성공', booking};
-  } catch (error) {
-    console.error('결제 검증 오류:', error);
-    return {status: 500, message: '결제 검증 중 서버 오류 발생'};
-  }
-};
-
-// 이렇게 하니까 예약 조회됨
 // exports.getUserBookings = async userId => {
 //   try {
-//     console.log('📌 예약 조회 요청: 사용자 ID:', userId);
+//     console.log('예약 조회 요청: 사용자 ID:', userId);
 
-//     // ✅ 예약 목록 조회
-//     const bookings = await Booking.find({userId});
+//     // 예약 목록 조회
+//     const bookings = await Booking.find({userId}).populate({
+//       path: 'productId',
+//       select: 'title name' // productId에서 title 필드만 가져오기
+//     });
 
-//     console.log('🛠️ 예약 데이터 조회 결과:', bookings);
+//     console.log('예약 데이터 조회 결과:', bookings);
 
 //     if (!bookings.length) {
 //       return {status: 404, message: '예약 내역이 없습니다.'};
 //     }
 
-//     // ✅ `type` 값 확인 (정상적인 값인지 로그 출력)
 //     bookings.forEach((booking, index) => {
 //       console.log(`📌 ${index + 1}번째 예약 type:`, booking.type);
 //     });
 
 //     return {status: 200, data: bookings};
 //   } catch (error) {
-//     console.error('🚨 예약 내역 조회 오류:', error);
+//     console.error('예약 내역 조회 오류:', error);
 //     return {status: 500, message: '서버 오류 발생'};
 //   }
 // };
-
-exports.getUserBookings = async userId => {
-  try {
-    console.log('예약 조회 요청: 사용자 ID:', userId);
-
-    // 예약 목록 조회
-    const bookings = await Booking.find({userId}).populate({
-      path: 'productId',
-      select: 'title name' // productId에서 title 필드만 가져오기
-    });
-
-    console.log('예약 데이터 조회 결과:', bookings);
-
-    if (!bookings.length) {
-      return {status: 404, message: '예약 내역이 없습니다.'};
-    }
-
-    bookings.forEach((booking, index) => {
-      console.log(`📌 ${index + 1}번째 예약 type:`, booking.type);
-    });
-
-    return {status: 200, data: bookings};
-  } catch (error) {
-    console.error('예약 내역 조회 오류:', error);
-    return {status: 500, message: '서버 오류 발생'};
-  }
-};
 
 // exports.cancelBooking = async bookingId => {
 //   try {
@@ -308,102 +263,284 @@ exports.getUserBookings = async userId => {
 //       return {status: 400, message: '이미 취소된 예약입니다.'};
 //     }
 
-//     // 예약 상태 변경
+//     let product;
+
+//     switch (booking.type) {
+//       case 'tourTicket': {
+//         product = await TourTicket.findById(booking.productId);
+
+//         if (!product)
+//           return {status: 404, message: '투어 티켓 상품 정보를 찾을 수 없습니다.'};
+
+//         product.stock += booking.count;
+//         await product.save();
+//         break;
+//       }
+
+//       case 'flight': {
+//         product = await Flight.findById(booking.productId);
+//         if (!product) return {status: 404, message: '항공권 정보를 찾을 수 없습니다.'};
+
+//         product.availableSeats += booking.count;
+//         await product.save();
+//         break;
+//       }
+
+//       case 'accommodation': {
+//         product = await Room.findById(booking.roomId);
+//         if (!product) return {status: 404, message: '객실 정보를 찾을 수 없습니다.'};
+
+//         const {startDate, endDate, count} = booking;
+//         let currentDate = new Date(startDate);
+
+//         while (currentDate < new Date(endDate)) {
+//           const dateStr = currentDate.toISOString().split('T')[0];
+
+//           let reservedIndex = product.reservedDates.findIndex(
+//             d => d.date.toISOString().split('T')[0] === dateStr
+//           );
+
+//           if (reservedIndex !== -1) {
+//             product.reservedDates[reservedIndex].count -= count;
+
+//             if (product.reservedDates[reservedIndex].count <= 0) {
+//               product.reservedDates.splice(reservedIndex, 1); // 개수가 0이면 배열에서 제거
+//             }
+//           }
+
+//           currentDate.setDate(currentDate.getDate() + 1);
+//         }
+
+//         await product.save();
+//         break;
+//       }
+
+//       case 'travelItem': {
+//         product = await TravelItem.findById(booking.productId);
+//         if (!product) return {status: 404, message: '여행용품 정보를 찾을 수 없습니다.'};
+
+//         product.stock += booking.count;
+//         product.soldOut = false;
+//         await product.save();
+//         break;
+//       }
+
+//       default:
+//         return {status: 400, message: '유효하지 않은 상품 유형입니다.'};
+//     }
+
 //     booking.paymentStatus = 'CANCELED';
 //     booking.updatedAt = new Date(Date.now() + 9 * 60 * 60 * 1000);
 //     await booking.save();
 
-//     return {status: 200, message: '결제가 취소되었습니다.'};
+//     console.log(`예약 취소 처리 완료! 상품 재고 복구됨 (예약 ID: ${booking._id})`);
+//     return {status: 200, message: '결제가 취소되었습니다. 상품 재고가 복구되었습니다.'};
 //   } catch (error) {
 //     console.error('예약 취소 오류:', error);
 //     return {status: 500, message: '서버 오류 발생'};
 //   }
 // };
 
-exports.cancelBooking = async bookingId => {
+const axios = require('axios');
+const Booking = require('../models/Booking');
+const Payment = require('../models/Payment');
+const TourTicket = require('../models/TourTicket');
+const Room = require('../models/Room');
+const TravelItem = require('../models/TravelItem');
+const Flight = require('../models/Flight');
+
+let cachedToken = null;
+let tokenExpiration = null;
+
+const getPortOneToken = async () => {
+  if (cachedToken && tokenExpiration && Date.now() < tokenExpiration) return cachedToken;
+  const {data} = await axios.post('https://api.iamport.kr/users/getToken', {
+    imp_key: process.env.PORTONE_API_KEY,
+    imp_secret: process.env.PORTONE_API_SECRET
+  });
+  if (data.code !== 0) throw new Error(`포트원 토큰 요청 실패: ${data.message}`);
+  cachedToken = data.response.access_token;
+  tokenExpiration = data.response.expired_at * 1000;
+  return cachedToken;
+};
+
+exports.createBooking = async bookingData => {
   try {
-    const booking = await Booking.findById(bookingId);
+    // 단일 상품 배열 변환 유지
+    const types = Array.isArray(bookingData.types)
+      ? bookingData.types
+      : [bookingData.types];
+    const productIds = Array.isArray(bookingData.productIds)
+      ? bookingData.productIds
+      : [bookingData.productIds];
+    const counts = Array.isArray(bookingData.counts)
+      ? bookingData.counts
+      : [bookingData.counts];
+    const {roomIds, startDates, endDates, merchant_uid, ...rest} = bookingData;
 
-    if (!booking) return {status: 404, message: '예약 정보를 찾을 수 없습니다.'};
-
-    if (booking.paymentStatus === 'CANCELED') {
-      return {status: 400, message: '이미 취소된 예약입니다.'};
+    // merchant_uid 중복 검사
+    const existingBooking = await Booking.findOne({merchant_uid});
+    if (existingBooking) {
+      return {status: 400, message: '이미 존재하는 예약번호입니다.'};
     }
 
-    let product;
+    // 하나의 예약 데이터로 생성
+    const newBooking = new Booking({
+      types,
+      productIds,
+      counts,
+      roomIds: roomIds || [],
+      startDates: startDates || [],
+      endDates: endDates || [],
+      merchant_uid,
+      ...rest
+    });
 
-    switch (booking.type) {
-      case 'tourTicket': {
-        product = await TourTicket.findById(booking.productId);
-        
-        if (!product)
-          return {status: 404, message: '투어 티켓 상품 정보를 찾을 수 없습니다.'};
+    await newBooking.save();
 
-        product.stock += booking.count;
-        await product.save();
-        break;
-      }
+    return {status: 200, booking: newBooking, message: '예약 생성 완료'};
+  } catch (error) {
+    console.error('예약 생성 오류:', error);
+    return {status: 500, message: '예약 생성 중 오류 발생'};
+  }
+};
 
-      case 'flight': {
-        product = await Flight.findById(booking.productId);
-        if (!product) return {status: 404, message: '항공권 정보를 찾을 수 없습니다.'};
+exports.verifyPayment = async ({imp_uid, merchant_uid}) => {
+  try {
+    const accessToken = await getPortOneToken();
+    const {data} = await axios.get(`https://api.iamport.kr/payments/${imp_uid}`, {
+      headers: {Authorization: accessToken}
+    });
+    const paymentData = data.response;
 
-        product.availableSeats += booking.count;
-        await product.save();
-        break;
-      }
+    const bookings = await Booking.find({merchant_uid});
+    if (!bookings.length) throw new Error('예약 데이터를 찾을 수 없습니다.');
 
-      case 'accommodation': {
-        product = await Room.findById(booking.roomId);
-        if (!product) return {status: 404, message: '객실 정보를 찾을 수 없습니다.'};
-
-        const {startDate, endDate, count} = booking;
-        let currentDate = new Date(startDate);
-
-        while (currentDate < new Date(endDate)) {
-          const dateStr = currentDate.toISOString().split('T')[0];
-
-          let reservedIndex = product.reservedDates.findIndex(
-            d => d.date.toISOString().split('T')[0] === dateStr
-          );
-
-          if (reservedIndex !== -1) {
-            product.reservedDates[reservedIndex].count -= count;
-
-            if (product.reservedDates[reservedIndex].count <= 0) {
-              product.reservedDates.splice(reservedIndex, 1); // 개수가 0이면 배열에서 제거
-            }
-          }
-
-          currentDate.setDate(currentDate.getDate() + 1);
+    await Promise.all(
+      bookings.map(async booking => {
+        const {types, productIds, counts} = booking;
+        if (
+          !Array.isArray(types) ||
+          !Array.isArray(productIds) ||
+          !Array.isArray(counts)
+        ) {
+          throw new Error('예약 데이터 배열이 올바르지 않습니다.');
         }
 
-        await product.save();
-        break;
-      }
+        await Promise.all(
+          productIds.map(async (productId, index) => {
+            let product;
+            switch (types[index]) {
+              case 'tourTicket':
+                product = await TourTicket.findById(productId);
+                product.stock -= counts[index];
+                break;
+              case 'flight':
+                product = await Flight.findById(productId);
+                // 필수 필드 기본값 설정
+                product.arrival.weekday = product.arrival.weekday || '월요일';
+                product.departure.weekday = product.departure.weekday || '월요일';
+                product.airlineKorean = product.airlineKorean || '항공사';
 
-      case 'travelItem': {
-        product = await TravelItem.findById(booking.productId);
-        if (!product) return {status: 404, message: '여행용품 정보를 찾을 수 없습니다.'};
+                product.availableSeats -= counts[index];
+                break;
+              case 'accommodation':
+                product = await Room.findById(booking.roomId);
+                product.reservedDates.push({
+                  date: booking.startDate,
+                  count: counts[index]
+                });
+                break;
+              case 'travelItem':
+                product = await TravelItem.findById(productId);
+                product.stock -= counts[index];
+                break;
+            }
+            if (!product) throw new Error(`${types[index]} 상품을 찾을 수 없습니다.`);
+            await product.save();
+          })
+        );
 
-        product.stock += booking.count;
-        product.soldOut = false;
-        await product.save();
-        break;
-      }
+        if (Number(paymentData.amount) !== Number(booking.totalPrice)) {
+          throw new Error('결제 금액 불일치');
+        }
 
-      default:
-        return {status: 400, message: '유효하지 않은 상품 유형입니다.'};
-    }
+        const newPayment = new Payment({
+          bookingId: booking._id,
+          imp_uid,
+          merchant_uid,
+          userId: booking.userId,
+          amount: paymentData.amount,
+          status: 'PAID',
+          paymentMethod: paymentData.pay_method,
+          paidAt: new Date(paymentData.paid_at * 1000),
+          receiptUrl: paymentData.receipt_url
+        });
+        await newPayment.save();
+        booking.paymentStatus = 'COMPLETED';
+        await booking.save();
+      })
+    );
 
-    booking.paymentStatus = 'CANCELED';
-    booking.updatedAt = new Date(Date.now() + 9 * 60 * 60 * 1000);
-    await booking.save();
-
-    console.log(`예약 취소 처리 완료! 상품 재고 복구됨 (예약 ID: ${booking._id})`);
-    return {status: 200, message: '결제가 취소되었습니다. 상품 재고가 복구되었습니다.'};
+    return {status: 200, message: '결제 검증 성공'};
   } catch (error) {
-    console.error('예약 취소 오류:', error);
-    return {status: 500, message: '서버 오류 발생'};
+    console.error('결제 검증 오류:', error);
+    return {status: 500, message: `결제 검증 중 오류: ${error.message}`};
+  }
+};
+
+exports.cancelBooking = async bookingIds => {
+  try {
+    const bookings = await Booking.find({_id: {$in: bookingIds}});
+    await Promise.all(
+      bookings.map(async booking => {
+        const {types, productIds, counts} = booking;
+        await Promise.all(
+          productIds.map(async (productId, index) => {
+            let product;
+            switch (types[index]) {
+              case 'tourTicket':
+                product = await TourTicket.findById(productId);
+                product.stock += counts[index];
+                break;
+              case 'flight':
+                product = await Flight.findById(productId);
+                product.availableSeats += counts[index];
+                break;
+              case 'accommodation':
+                product = await Room.findById(booking.roomId);
+                product.reservedDates = product.reservedDates.filter(
+                  d =>
+                    d.date.toISOString().split('T')[0] !==
+                    booking.startDate.toISOString().split('T')[0]
+                );
+                break;
+              case 'travelItem':
+                product = await TravelItem.findById(productId);
+                product.stock += counts[index];
+                break;
+            }
+            await product.save();
+          })
+        );
+        booking.paymentStatus = 'CANCELED';
+        booking.updatedAt = new Date(Date.now() + 9 * 60 * 60 * 1000);
+        await booking.save();
+      })
+    );
+    return {status: 200, message: '모든 예약이 취소되었습니다.'};
+  } catch (error) {
+    return {status: 500, message: '예약 취소 중 오류 발생'};
+  }
+};
+
+exports.getUserBookings = async userId => {
+  try {
+    const bookings = await Booking.find({userId}).populate('productIds');
+    return bookings.length
+      ? {status: 200, data: bookings}
+      : {status: 404, message: '예약 내역 없음'};
+  } catch (error) {
+    return {status: 500, message: '서버 오류'};
   }
 };
