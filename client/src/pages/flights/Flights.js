@@ -2,7 +2,8 @@ import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import FlightSearch from '../../components/flights/FlightSearch';
 import RoundTripSearch from '../../components/flights/RoundTripSearch';
-import FlightList from '../../components/flights/FlightList';
+// import FlightList from '../../components/flights/FlightList';
+import FlightCardList from '../../components/flights/FlightCardList';
 import {fetchFlights} from '../../api/flight/flights';
 import moment from 'moment-timezone';
 
@@ -69,8 +70,7 @@ const Flights = () => {
       {/* 🔍 편도 검색 or 왕복 검색 */}
       {isRoundTrip ? <RoundTripSearch /> : <FlightSearch onSearch={handleSearch} />}
 
-      {/* 🛫 모든 항공편 표시 */}
-      <FlightList flights={flights} />
+      <FlightCardList flights={flights} />
     </div>
   );
 };

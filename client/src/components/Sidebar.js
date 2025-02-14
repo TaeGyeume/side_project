@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
 import Nav from 'react-bootstrap/Nav';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
@@ -6,6 +7,7 @@ import Tab from 'react-bootstrap/Tab';
 
 const Sidebar = ({activeSection, onSelectCategory}) => {
   const [sidebarTop, setSidebarTop] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,6 +59,17 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
                   eventKey="travelItem"
                   onClick={() => onSelectCategory('travelItem')}>
                   🛍️ 여행용품
+                </Nav.Link>
+              </Nav.Item>
+
+              {/* ✅ 쿠폰 관리 탭 */}
+              <Nav.Item style={{whiteSpace: 'nowrap'}}>
+                <Nav.Link
+                  style={
+                    activeSection === 'couponList' ? activeTabStyle : defaultTabStyle
+                  }
+                  onClick={() => navigate('/product/coupon/list')}>
+                  🎫 쿠폰 관리
                 </Nav.Link>
               </Nav.Item>
             </Nav>
