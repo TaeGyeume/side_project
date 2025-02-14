@@ -55,13 +55,14 @@ const BookingForm = () => {
       return;
     }
 
-    // ✅ 날짜 유효성 검사 (체크아웃이 체크인 이후인지 확인)
     const startDate = new Date(formData.startDate);
     const endDate = new Date(formData.endDate);
     if (endDate <= startDate) {
       alert('🚨 체크아웃 날짜는 체크인 날짜 이후여야 합니다.');
       return;
     }
+
+    const accommodationId = room.accommodation;
 
     // ✅ 총 결제 금액 계산 (숙박일수 * 1박 요금 * 객실 개수)
     const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
@@ -77,12 +78,13 @@ const BookingForm = () => {
 
     try {
       console.log('📢 예약 요청 데이터:', {
-        type: 'accommodation',
-        roomId: room._id, // ✅ 객실 ID만 보냄
+        types: ['accommodation'],
+        productIds: [accommodationId],
+        roomIds: [room._id], // ✅ 올바르게 `roomIds` 배열에 포함
+        counts: [formData.count],
         merchant_uid,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        count: formData.count, // ✅ adults → count로 변경
+        startDates: [formData.startDate],
+        endDates: [formData.endDate],
         totalPrice,
         userId: user._id,
         reservationInfo: {
@@ -92,14 +94,15 @@ const BookingForm = () => {
         }
       });
 
-      // ✅ 예약 생성 요청 (백엔드에서 숙소 ID 자동 설정)
+      // ✅ 예약 생성 요청
       const bookingResponse = await createBooking({
-        type: 'accommodation',
-        roomId: room._id, // ✅ 객실 ID만 보냄
+        types: ['accommodation'],
+        productIds: [accommodationId], // 상품 ID가 따로 없으므로 비워둠
+        roomIds: [room._id], // ✅ 올바르게 `roomIds` 배열에 포함
+        counts: [formData.count],
         merchant_uid,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        count: formData.count, // ✅ adults 제거 → count 추가
+        startDates: [formData.startDate],
+        endDates: [formData.endDate],
         totalPrice,
         userId: user._id,
         reservationInfo: {
@@ -115,24 +118,23 @@ const BookingForm = () => {
         throw new Error('🚨 예약 생성 실패');
       }
 
-      // ✅ 예약이 성공하면 결제 요청 실행
+      // ✅ 포트원 결제 요청
       const {IMP} = window;
-      IMP.init('imp22685348'); // 포트원 결제 시스템 초기화
+      IMP.init('imp22685348');
 
       IMP.request_pay(
         {
           pg: 'html5_inicis.INIpayTest',
           pay_method: 'card',
-          merchant_uid, // 예약에서 받은 merchant_uid 사용
-          name: room.name, // 객실 이름
-          amount: totalPrice, // 최종 결제 금액
+          merchant_uid,
+          name: room.name,
+          amount: totalPrice,
           buyer_email: user.email,
           buyer_name: user.username,
           buyer_tel: user.phone
         },
         async rsp => {
           if (rsp.success) {
-            // ✅ 결제 성공 → 결제 검증 요청
             try {
               console.log('📢 결제 검증 요청 데이터:', {
                 imp_uid: rsp.imp_uid,
