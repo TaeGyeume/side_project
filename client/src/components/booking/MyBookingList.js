@@ -1,5 +1,9 @@
 import React, {useEffect, useState} from 'react';
-import {getMyBookings, cancelBooking} from '../../api/booking/bookingService';
+import {
+  getMyBookings,
+  cancelBooking,
+  confirmBooking
+} from '../../api/booking/bookingService';
 import './styles/MyBookingList.css';
 
 const MyBookingList = ({status}) => {
@@ -41,7 +45,24 @@ const MyBookingList = ({status}) => {
     }
   };
 
-  const handleConfirm = () => {};
+  const handleConfirm = async bookingId => {
+    try {
+      const response = await confirmBooking(bookingId);
+      if (response.status === 200) {
+        alert('구매가 확정되었습니다.');
+        setBookings(prev =>
+          prev.map(booking =>
+            booking._id === bookingId ? {...booking, paymentStatus: 'CONFIRMED'} : booking
+          )
+        );
+      } else {
+        alert(`구매 확정 실패: ${response.message}`);
+      }
+    } catch (error) {
+      alert('구매 확정 중 오류 발생');
+    }
+  };
+
   const handleReview = () => {};
 
   if (loading) return <p className="loading-text">로딩 중...</p>;
@@ -80,7 +101,8 @@ const MyBookingList = ({status}) => {
               }`}>
               <div className="booking-header">
                 <span className="booking-date">
-                  {new Date(booking.updatedAt)
+                  주문 일자:&nbsp;
+                  {new Date(booking.createdAt)
                     .toISOString()
                     .replace('T', ' | ')
                     .substring(0, 21)}

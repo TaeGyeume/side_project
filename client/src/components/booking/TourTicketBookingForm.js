@@ -58,7 +58,13 @@ const TourTicketBookingForm = () => {
       0
     );
 
-    const merchant_uid = `multi_${Date.now()}`;
+    const now = new Date(Date.now() + 9 * 60 * 60 * 1000); // 한국 시간
+    const formattedDate = now
+      .toISOString()
+      .slice(2, 19) // YYMMDDTHHMMSS
+      .replace(/[-T:]/g, ''); // YYMMDDHHMMSS
+
+    const merchant_uid = `${user.username}_${formattedDate}`;
 
     const bookingData = {
       types: selectedProducts.map(item => item.type), // 서버 스키마에 맞게 수정
