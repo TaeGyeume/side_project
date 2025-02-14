@@ -35,7 +35,9 @@ export const verifyPayment = async paymentData => {
   try {
     const response = await axios.post(`${BASE_URL}/verify-payment`, {
       imp_uid: paymentData.imp_uid,
-      merchant_uid: paymentData.merchant_uid
+      merchant_uid: paymentData.merchant_uid,
+      couponId: paymentData.couponId || null, // ✅ 쿠폰 ID 추가
+      userId: paymentData.userId || null // ✅ 유저 ID 추가
     });
 
     // console.log('결제 검증 응답:', response.data);

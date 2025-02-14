@@ -25,9 +25,22 @@ exports.createBooking = async (req, res) => {
 
 exports.verifyPayment = async (req, res) => {
   try {
-    const {imp_uid, merchant_uid} = req.body;
-    const result = await bookingService.verifyPayment({imp_uid, merchant_uid});
-    res.status(result.status).json(result);
+    console.log('📌 [서버] 결제 검증 요청 도착:', req.body);
+    const {imp_uid, merchant_uid, couponId, userId} = req.body;
+
+    if (!imp_uid || !merchant_uid) {
+      console.error('❌ [서버] 필수 결제 정보가 없습니다.');
+      return res.status(400).json({message: '필수 결제 정보가 없습니다.'});
+    }
+    // ✅ 쿠폰 ID와 사용자 ID를 추가하여 결제 검증 요청
+    const result = await bookingService.verifyPayment({
+      imp_uid,
+      merchant_uid,
+      couponId,
+      userId
+    });
+
+    res.status(result.status).json({message: result.message, booking: result.booking});
   } catch (error) {
     console.error('결제 검증 오류:', error);
     res.status(500).json({message: '결제 검증 오류'});

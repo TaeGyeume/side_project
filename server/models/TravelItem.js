@@ -44,6 +44,10 @@ const TravelItemSchema = new mongoose.Schema({
     ref: 'travelItem', // 🔹 상위 카테고리 (없으면 최상위)
     default: null
   },
+  views: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now

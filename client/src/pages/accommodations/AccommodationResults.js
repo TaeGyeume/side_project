@@ -110,7 +110,7 @@ const AccommodationResults = () => {
           fetchAccommodations(filters, page + 1); // ✅ 다음 페이지 데이터 요청
         }
       },
-      {threshold: 1.0}
+      {threshold: 0.3}
     );
 
     observer.observe(observerRef.current);

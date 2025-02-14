@@ -1,0 +1,41 @@
+/* ✅ 쿠폰 사이드바 위치 조정 */
+.coupon-sidebar {
+  position: fixed; /* ✅ 오른쪽 고정 */
+  top: 50%; /* ✅ 화면의 중간에 배치 */
+  right: 15px; /* ✅ 오른쪽 끝으로 정렬 */
+  transform: translateY(-50%); /* ✅ 화면 중앙 정렬 */
+  width: 170px; /* ✅ 사이드바 너비 조정 */
+  max-height: 80vh; /* ✅ 화면의 80%까지만 차지 */
+  overflow-y: auto; /* ✅ 내부 스크롤 가능 */
+  background: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1050; /* ✅ 다른 요소보다 위로 */
+}
+
+/* ✅ 쿠폰 카드 스타일 */
+.coupon-card {
+  width: 100%;
+  padding: 8px; /* ✅ 내부 패딩 줄이기 */
+  margin-bottom: 10px; /* ✅ 카드 간격 조정 */
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* ✅ 버튼 크기 조정 */
+.coupon-card button {
+  font-size: 12px;
+  padding: 5px 10px;
+}
+
+/* ✅ 모바일에서는 화면 전체 너비 차지 */
+@media (max-width: 768px) {
+  .coupon-sidebar {
+    position: fixed;
+    right: 10px;
+    width: 180px;
+    max-height: 70vh;
+    z-index: 1100; /* ✅ 더 위로 배치 */
+  }
+}

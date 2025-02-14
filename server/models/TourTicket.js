@@ -8,6 +8,7 @@ const tourTicketSchema = new mongoose.Schema(
     price: {type: Number, required: true}, // 가격
     stock: {type: Number, required: true}, // 재고
     images: [{type: String}], // 이미지
+    views: {type: Number, default: 0},
     createdAt: {
       type: Date,
       default: () => new Date(Date.now() + 9 * 60 * 60 * 1000) // KST

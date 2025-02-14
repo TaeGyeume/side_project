@@ -10,6 +10,7 @@ require('./models/TourTicket');
 require('./models/Accommodation');
 require('./models/Flight');
 
+const favoriteRoutes = require('./routes/favoriteRoutes');
 const authRoutes = require('./routes/authRoutes');
 const locationRoutes = require('./routes/locationRoutes');
 const accommodationRoutes = require('./routes/accommodationRoutes');
@@ -24,6 +25,7 @@ const authorizeRoles = require('./middleware/authorizeRoles'); // ✅ 역할 기
 const bookingRoutes = require('./routes/bookingRoutes');
 const couponRoutes = require('./routes/couponRoutes');
 const userCouponRoutes = require('./routes/userCouponRoutes');
+const userMileageRoutes = require('./routes/userMileageRoutes');
 
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -51,13 +53,15 @@ app.use(passport.initialize()); // Passport 초기화 추가
 
 // 라우트 설정
 app.use('/', routes);
+app.use('/api/favorites', favoriteRoutes); // '/api/favorites' 경로로 라우터 연결
 app.use('/api/locations', locationRoutes);
 app.use('/api/accommodations', accommodationRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api', routes);
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', socialAuthRoutes); // 소셜 로그인 라우트 추가
-app.use('/api/flights', flightRoutes); // ✈️ 항공편 관련 API
+app.use('/api/flights', flightRoutes); // 항공편 관련 API
+app.use('/api/user-mileages', userMileageRoutes); // 마일리지 API
 app.use('/api/travelItems', travelItemRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/user-coupons', userCouponRoutes);
