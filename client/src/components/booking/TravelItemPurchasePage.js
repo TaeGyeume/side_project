@@ -88,7 +88,14 @@ const TravelItemPurchaseForm = () => {
   const handlePayment = async () => {
     const totalPrice = item.price * formData.count;
     const finalPrice = totalPrice - discountAmount;
-    const merchant_uid = `travelItem_${Date.now()}`;
+
+    const now = new Date(Date.now() + 9 * 60 * 60 * 1000); // 한국 시간
+    const formattedDate = now
+      .toISOString()
+      .slice(2, 19) // YYMMDDTHHMMSS
+      .replace(/[-T:]/g, ''); // YYMMDDHHMMSS
+
+    const merchant_uid = `${user.username}_${formattedDate}`;
 
     console.log('📌 [클라이언트] 결제 요청 데이터:', {
       itemId: item._id,

@@ -1,5 +1,9 @@
 import React, {useEffect, useState} from 'react';
-import {getMyBookings, cancelBooking} from '../../api/booking/bookingService';
+import {
+  getMyBookings,
+  cancelBooking,
+  confirmBooking
+} from '../../api/booking/bookingService';
 import './styles/MyBookingList.css';
 
 const MyBookingList = ({status}) => {
@@ -26,41 +30,55 @@ const MyBookingList = ({status}) => {
     try {
       const response = await cancelBooking(bookingId);
 
-      if (
-        response.status === 200 ||
-        response.message.includes('결제가 취소되었습니다.')
-      ) {
+      if (response.status === 200) {
         alert('예약이 정상적으로 취소되었습니다.');
-
         setBookings(prev =>
           prev.map(booking =>
             booking._id === bookingId ? {...booking, paymentStatus: 'CANCELED'} : booking
           )
         );
-
-        console.log('예약 취소 성공:', response.message);
-        return;
       } else {
         alert(`예약 취소 실패: ${response.message}`);
-        console.error('예약 취소 실패:', response.message);
       }
     } catch (error) {
       alert(`예약 취소 오류 발생: ${error.message}`);
-      console.error('예약 취소 오류:', error);
     }
   };
+
+  const handleConfirm = async bookingId => {
+    try {
+      const response = await confirmBooking(bookingId);
+      if (response.status === 200) {
+        alert('구매가 확정되었습니다.');
+        setBookings(prev =>
+          prev.map(booking =>
+            booking._id === bookingId ? {...booking, paymentStatus: 'CONFIRMED'} : booking
+          )
+        );
+      } else {
+        alert(`구매 확정 실패: ${response.message}`);
+      }
+    } catch (error) {
+      alert('구매 확정 중 오류 발생');
+    }
+  };
+
+  const handleReview = () => {};
 
   if (loading) return <p className="loading-text">로딩 중...</p>;
   if (error) return <p className="error-text">{error}</p>;
 
-  // 상태에 따라 예약 필터링
   const filteredBookings = bookings
     .filter(booking => {
-      if (status === 'completed') return booking.paymentStatus === 'COMPLETED';
-      if (status === 'canceled') return booking.paymentStatus === 'CANCELED';
-      return false;
+      if (status === 'completed') {
+        return (
+          booking.paymentStatus === 'COMPLETED' || booking.paymentStatus === 'CONFIRMED'
+        );
+      } else if (status === 'canceled') {
+        return booking.paymentStatus === 'CANCELED';
+      }
+      return true;
     })
-    // `createdAt` 기준 내림차순 정렬 (최신 예약이 위에 출력됨)
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   return (
@@ -71,60 +89,84 @@ const MyBookingList = ({status}) => {
         <p className="no-bookings">해당하는 예약이 없습니다.</p>
       ) : (
         <div className="booking-grid">
-          {filteredBookings.map(booking => {
-            const bookingType = Array.isArray(booking.types)
-              ? booking.types[0]
-              : booking.type; // ✅ 배열 처리 추가
-            const product = Array.isArray(booking.productIds)
-              ? booking.productIds[0]
-              : booking.productId; // ✅ 배열 처리 추가
+          {filteredBookings.map(booking => (
+            <div
+              key={booking._id}
+              className={`booking-card ${
+                status === 'canceled'
+                  ? 'canceled'
+                  : status === 'confirmed'
+                    ? 'confirmed'
+                    : ''
+              }`}>
+              <div className="booking-header">
+                <span className="booking-date">
+                  주문 일자:&nbsp;
+                  {new Date(booking.createdAt)
+                    .toISOString()
+                    .replace('T', ' | ')
+                    .substring(0, 21)}
+                </span>
 
-            return (
-              <div
-                className={`booking-card ${status === 'canceled' ? 'canceled' : ''}`}
-                key={booking._id}>
-                <div className="booking-header">
-                  <span className="booking-date">
-                    {new Date(booking.updatedAt).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      weekday: 'long'
-                    })}
-                  </span>
-                  {status === 'completed' && (
+                {status === 'completed' && booking.paymentStatus === 'COMPLETED' && (
+                  <div className="booking-buttons">
+                    <button
+                      className="confirm-button"
+                      onClick={() => handleConfirm(booking._id)}>
+                      구매 확정
+                    </button>
                     <button
                       className="cancel-button"
                       onClick={() => handleCancel(booking._id)}>
-                      예약취소
+                      예약 취소
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
 
-                <div className="booking-content">
-                  <h3 className="product-title">
-                    {product?.title || product?.name || '상품 정보 없음'}
-                  </h3>
-                  <p className={`type-label ${bookingType}`}>
-                    {bookingType === 'flight'
-                      ? '✈️ 항공권 예약'
-                      : bookingType === 'accommodation'
-                        ? '🏨 숙소 예약'
-                        : bookingType === 'travelItem'
-                          ? '🛍️ 여행용품 구매'
-                          : '🎫 투어 티켓'}
-                  </p>
-                  <p>
-                    예약 상태:{' '}
-                    <strong>{status === 'completed' ? '✅ 완료' : '❌ 취소됨'}</strong>
-                  </p>
-                  <p>
-                    총 가격: <strong>{booking.totalPrice.toLocaleString()} 원</strong>
-                  </p>
-                </div>
+                {status === 'completed' && booking.paymentStatus === 'CONFIRMED' && (
+                  <div className="booking-buttons">
+                    <button
+                      className="review-button"
+                      onClick={() => handleReview(booking._id)}>
+                      리뷰 작성
+                    </button>
+                  </div>
+                )}
               </div>
-            );
-          })}
+
+              {booking.productIds.map((product, idx) => (
+                <React.Fragment key={idx}>
+                  {idx === 0 ? (
+                    <div className="booking-content">
+                      <p>주문번호: {booking.merchant_uid}</p>
+                      <p>수량: {booking.counts.length}개</p>
+                      <p>가격: {booking.totalPrice.toLocaleString()} 원</p>
+                      <strong>
+                        {booking.paymentStatus === 'COMPLETED'
+                          ? '🟢 완료'
+                          : booking.paymentStatus === 'CANCELED'
+                            ? '🔴 취소됨'
+                            : booking.paymentStatus === 'CONFIRMED'
+                              ? '🔵 구매 확정'
+                              : ''}
+                      </strong>
+                    </div>
+                  ) : idx === 1 ? (
+                    <div className="booking-content">
+                      <br />
+                      <p>그 외 상품 {booking.productIds.length - 1}개</p>
+                    </div>
+                  ) : null}
+                </React.Fragment>
+              ))}
+
+              <div className="booking-footer">
+                <a href={`/booking/detail/${booking._id}`} className="detail-link">
+                  {'>> 상세 페이지로 이동'}
+                </a>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
