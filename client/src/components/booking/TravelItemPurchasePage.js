@@ -4,38 +4,34 @@ import {fetchTravelItemDetail} from '../../api/travelItem/travelItemService';
 import {createBooking, verifyPayment} from '../../api/booking/bookingService';
 import {fetchUserCoupons} from '../../api/coupon/couponService';
 import {authAPI} from '../../api/auth/index';
+import CouponSelector from './CouponSelector';
 
 const TravelItemPurchaseForm = () => {
   const {itemId} = useParams();
   const [item, setItem] = useState(null);
   const [user, setUser] = useState(null);
-  const [userCoupons, setUserCoupons] = useState([]); // 사용자 쿠폰 목록
+  const [userCoupons, setUserCoupons] = useState([]);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [formData, setFormData] = useState({count: 1});
 
   useEffect(() => {
-    // ✅ 여행용품 정보 가져오기
     const fetchItem = async () => {
       try {
         const data = await fetchTravelItemDetail(itemId);
         setItem(data);
-
-        // ✅ 아이템 정보가 로드된 후 사용자 데이터 가져오기
         fetchUserData(data.price);
       } catch (error) {
         console.error('상품 정보를 가져오는 중 오류 발생:', error);
       }
     };
 
-    // ✅ 현재 로그인한 사용자 정보 & 사용 가능한 쿠폰 가져오기
     const fetchUserData = async itemPrice => {
       try {
         const userData = await authAPI.getUserProfile();
         setUser(userData);
         const coupons = await fetchUserCoupons(userData._id);
 
-        // ✅ 사용되지 않은(isUsed === false) & 최소 구매 금액 충족하는 쿠폰만 필터링
         const validCoupons = coupons.filter(
           coupon =>
             !coupon.isUsed &&
@@ -49,61 +45,23 @@ const TravelItemPurchaseForm = () => {
     };
 
     fetchItem();
-  }, [itemId, formData.count]); // ✅ 아이템 가격이 변경될 때마다 다시 필터링 실행
+  }, [itemId, formData.count]);
 
-  // ✅ 할인 금액 계산 로직
-  const calculateDiscount = selectedCoupon => {
-    if (!selectedCoupon || !item) return 0;
-
-    let discount = 0;
-    const originalPrice = item.price * formData.count; // ✅ 원래 총 가격
-
-    if (selectedCoupon.coupon.discountType === 'percentage') {
-      discount = (originalPrice * selectedCoupon.coupon.discountValue) / 100;
-
-      if (selectedCoupon.coupon.maxDiscountAmount > 0) {
-        discount = Math.min(discount, selectedCoupon.coupon.maxDiscountAmount);
-      }
-    } else if (selectedCoupon.coupon.discountType === 'fixed') {
-      discount = selectedCoupon.coupon.discountValue || 0;
-    }
-
-    console.log('📌 [클라이언트] 할인 금액 계산:', {
-      originalPrice,
-      discount,
-      finalPrice: originalPrice - discount
-    });
-
-    return discount;
-  };
-
-  // ✅ 쿠폰 선택 핸들러
-  const handleCouponChange = event => {
-    const coupon = userCoupons.find(c => c._id === event.target.value);
+  const handleCouponSelect = (coupon, discount) => {
     setSelectedCoupon(coupon);
-    setDiscountAmount(calculateDiscount(coupon));
+    setDiscountAmount(discount);
   };
 
-  // ✅ 결제 요청 로직
   const handlePayment = async () => {
     const totalPrice = item.price * formData.count;
     const finalPrice = totalPrice - discountAmount;
     const merchant_uid = `travelItem_${Date.now()}`;
 
-    console.log('📌 [클라이언트] 결제 요청 데이터:', {
-      itemId: item._id,
-      totalPrice,
-      discountAmount,
-      finalPrice,
-      couponId: selectedCoupon ? selectedCoupon._id : null
-    });
-
     try {
-      // ✅ 예약 생성 요청
       const bookingResponse = await createBooking({
-        types: ['travelItem'], // ✅ 상품 타입 추가
-        productIds: [item._id], // ✅ 상품 ID 추가
-        counts: [formData.count], // ✅ 수량 추가
+        types: ['travelItem'],
+        productIds: [item._id],
+        counts: [formData.count],
         merchant_uid,
         totalPrice,
         discountAmount,
@@ -117,8 +75,6 @@ const TravelItemPurchaseForm = () => {
         }
       });
 
-      console.log('📌 [클라이언트] 예약 응답:', bookingResponse);
-
       if (!bookingResponse || !bookingResponse.booking) {
         throw new Error('예약 생성 실패');
       }
@@ -127,7 +83,6 @@ const TravelItemPurchaseForm = () => {
       return;
     }
 
-    // ✅ 포트원 결제 요청
     const {IMP} = window;
     IMP.init('imp22685348');
 
@@ -147,12 +102,6 @@ const TravelItemPurchaseForm = () => {
         if (rsp.success) {
           try {
             const verifyResponse = await verifyPayment({
-              imp_uid: rsp.imp_uid,
-              merchant_uid,
-              couponId: selectedCoupon ? selectedCoupon._id : null,
-              userId: user._id
-            });
-            console.log('📌 [클라이언트] 결제 검증 요청 데이터:', {
               imp_uid: rsp.imp_uid,
               merchant_uid,
               couponId: selectedCoupon ? selectedCoupon._id : null,
@@ -193,21 +142,13 @@ const TravelItemPurchaseForm = () => {
         onChange={e => setFormData({...formData, count: e.target.value})}
       />
 
-      <label>쿠폰 선택</label>
-      <select onChange={handleCouponChange}>
-        <option value="">쿠폰 선택 안함</option>
-        {userCoupons.map(coupon => (
-          <option key={coupon._id} value={coupon._id}>
-            {coupon.coupon.discountValue
-              ? `${coupon.coupon.name} (${coupon.coupon.discountValue}${
-                  coupon.coupon.discountType === 'percentage' ? '%' : '원'
-                } 할인)`
-              : '(할인 정보 없음)'}
-          </option>
-        ))}
-      </select>
+      <CouponSelector
+        userCoupons={userCoupons}
+        itemPrice={item.price}
+        count={formData.count}
+        onCouponSelect={handleCouponSelect}
+      />
 
-      <p>할인 금액: {discountAmount.toLocaleString()} 원</p>
       <p>
         최종 결제 금액: {(item.price * formData.count - discountAmount).toLocaleString()}{' '}
         원

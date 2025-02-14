@@ -7,7 +7,10 @@ export const createBooking = async bookingData => {
     const response = await axios.post(`${BASE_URL}/create`, {
       types: bookingData.types,
       productIds: bookingData.productIds,
+      roomIds: bookingData.roomIds,
       counts: bookingData.counts,
+      startDates: bookingData.startDates,
+      endDates: bookingData.endDates,
       totalPrice: bookingData.totalPrice,
       userId: bookingData.userId,
       reservationInfo: bookingData.reservationInfo,
