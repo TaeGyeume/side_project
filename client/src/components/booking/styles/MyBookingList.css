@@ -12,9 +12,9 @@ h2 {
 }
 
 .booking-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  display: flex;
+  flex-direction: column; /* 세로 방향으로 일렬 출력 */
+  gap: 20px; /* 각 항목 간격 */
 }
 
 .booking-card {
@@ -33,6 +33,11 @@ h2 {
   align-items: center;
 }
 
+.booking-buttons {
+  display: flex;
+  gap: 8px;
+}
+
 .booking-date {
   font-size: 14px;
   font-weight: bold;
@@ -40,17 +45,21 @@ h2 {
 }
 
 .cancel-button {
-  background: #ff4d4f;
-  color: white;
-  border: none;
+  background: transparent;
+  color: #ff4d4f;
+  border: 2px solid #ff4d4f;
   padding: 5px 10px;
   border-radius: 5px;
   cursor: pointer;
   font-size: 14px;
+  transition:
+    background 0.3s,
+    color 0.3s;
 }
 
 .cancel-button:hover {
-  background: #e63946;
+  background: #ff4d4f;
+  color: white;
 }
 
 .product-title {
@@ -112,4 +121,56 @@ h2 {
   font-size: 16px;
   color: #777;
   text-align: center;
+}
+
+.confirm-button {
+  background: transparent;
+  color: #007bff;
+  border: 2px solid #007bff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition:
+    background 0.3s,
+    color 0.3s;
+}
+
+.confirm-button:hover {
+  background: #007bff;
+  color: white;
+}
+
+.review-button {
+  background: transparent;
+  color: #8e44ad; /* 보라색 계열 */
+  border: 2px solid #8e44ad;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.review-button:hover {
+  background: #8e44ad;
+  color: white;
+}
+
+.booking-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.detail-link {
+  text-decoration: none; /* 밑줄 제거 */
+  color: #555555; /* 기본 색상 */
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.detail-link:hover {
+  color: #000000; /* 마우스 오버 시 색상 변경 */
 }

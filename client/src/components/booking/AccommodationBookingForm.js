@@ -67,7 +67,14 @@ const BookingForm = () => {
     // ✅ 총 결제 금액 계산 (숙박일수 * 1박 요금 * 객실 개수)
     const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
     const totalPrice = room.pricePerNight * nights * formData.count;
-    const merchant_uid = `accommodation_${Date.now()}`;
+
+    const now = new Date(Date.now() + 9 * 60 * 60 * 1000); // 한국 시간
+    const formattedDate = now
+      .toISOString()
+      .slice(2, 19) // YYMMDDTHHMMSS
+      .replace(/[-T:]/g, ''); // YYMMDDHHMMSS
+
+    const merchant_uid = `${user.username}_${formattedDate}`;
 
     try {
       console.log('📢 예약 요청 데이터:', {
