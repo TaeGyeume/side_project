@@ -5,6 +5,7 @@ const TourTicket = require('../models/TourTicket');
 const Room = require('../models/Room');
 const TravelItem = require('../models/TravelItem');
 const Flight = require('../models/Flight');
+const UserCoupon = require('../models/UserCoupon');
 
 // const getPortOneToken = async () => {
 //   try {
@@ -92,7 +93,7 @@ exports.createBooking = async bookingData => {
   }
 };
 
-exports.verifyPayment = async ({imp_uid, merchant_uid}) => {
+exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId}) => {
   try {
     const accessToken = await getPortOneToken();
 
@@ -114,12 +115,69 @@ exports.verifyPayment = async ({imp_uid, merchant_uid}) => {
       return {status: 404, message: '예약 정보를 찾을 수 없습니다.'};
     }
 
-    // 결제 금액 일치 여부 확인
-    if (paymentData.amount !== booking.totalPrice) {
-      console.error(
-        `결제 금액 불일치! 포트원: ${paymentData.amount}, 예약 금액: ${booking.totalPrice}`
-      );
-      return {status: 400, message: '결제 금액 불일치'};
+    let discountAmount = 0;
+
+    // ✅ 쿠폰 검증
+    if (couponId) {
+      console.log('📌 [서버] 쿠폰 검증 시작 - couponId:', couponId, 'userId:', userId);
+
+      // ✅ `ObjectId` 변환 후 검색
+      const mongoose = require('mongoose');
+      const userCoupon = await UserCoupon.findOne({
+        _id: new mongoose.Types.ObjectId(couponId),
+        user: new mongoose.Types.ObjectId(userId), // `userId`도 ObjectId 변환
+        isUsed: false,
+        expiresAt: {$gt: new Date()} // ✅ 만료되지 않은 쿠폰만 조회
+      }).populate('coupon');
+
+      console.log('📌 [서버] 조회된 UserCoupon:', userCoupon);
+
+      if (!userCoupon) {
+        console.error('❌ [서버] 쿠폰을 찾을 수 없음 또는 만료됨!');
+        return {status: 400, message: '사용 가능한 쿠폰을 찾을 수 없습니다.'};
+      }
+
+      const coupon = userCoupon.coupon;
+
+      // ✅ 최소 구매 금액 체크 추가
+      if (booking.totalPrice < coupon.minPurchaseAmount) {
+        return {
+          status: 400,
+          message: `이 쿠폰은 ${coupon.minPurchaseAmount.toLocaleString()}원 이상 구매 시 사용 가능합니다.`
+        };
+      }
+
+      // ✅ 퍼센트 할인
+      if (coupon.discountType === 'percentage') {
+        discountAmount = (booking.totalPrice * coupon.discountValue) / 100;
+        if (coupon.maxDiscountAmount > 0) {
+          discountAmount = Math.min(discountAmount, coupon.maxDiscountAmount);
+        }
+      }
+      // ✅ 정액 할인
+      else if (coupon.discountType === 'fixed') {
+        discountAmount = coupon.discountValue;
+      }
+
+      // ✅ 최종 결제 금액에서 할인 적용
+      const expectedFinalAmount = booking.totalPrice - discountAmount;
+
+      // ✅ 결제 금액이 예상된 최종 금액과 일치하는지 확인
+      if (paymentData.amount !== expectedFinalAmount) {
+        console.error(
+          `결제 금액 불일치! 포트원: ${paymentData.amount}, 예상된 결제 금액: ${expectedFinalAmount}`
+        );
+        return {status: 400, message: '결제 금액 불일치'};
+      }
+
+      // ✅ 쿠폰을 사용 처리
+      userCoupon.isUsed = true;
+      await userCoupon.save();
+    } else {
+      // ✅ 쿠폰 없이 결제할 경우 원래 금액과 비교
+      if (paymentData.amount !== booking.totalPrice) {
+        return {status: 400, message: '결제 금액 불일치'};
+      }
     }
 
     // 상품별 재고 감소 처리
@@ -357,7 +415,7 @@ exports.cancelBooking = async bookingId => {
     switch (booking.type) {
       case 'tourTicket': {
         product = await TourTicket.findById(booking.productId);
-        
+
         if (!product)
           return {status: 404, message: '투어 티켓 상품 정보를 찾을 수 없습니다.'};
 

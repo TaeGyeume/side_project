@@ -7,6 +7,8 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import EditProfile from './pages/user/EditProfile';
 import Header from './components/Header';
+import Footer from './components/Footer';
+import CouponSidebar from './components/coupons/CouponSidebar';
 import NaverLoginCallback from './components/SocialLogin/NaverLoginCallback';
 import FacebookLoginCallback from './components/SocialLogin/FacebookLoginCallback';
 import KakaoLoginCallback from './components/SocialLogin/KakaoLoginCallback';
@@ -53,7 +55,7 @@ import TourTicketBookingPage from './pages/booking/TourTicketBookingPage';
 import AccommodationBookingPage from './pages/booking/AccommodationBookingPage';
 import TravelItemPurchaseForm from './components/booking/TravelItemPurchasePage';
 import MyBookingPage from './pages/user/MyBookingPage';
-import ChannelTalk from './components/ChannelTalk/ChannelTalk';
+import ChannelTalk from './components/channelTalk/ChannelTalk';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -78,19 +80,19 @@ const App = () => {
 
   return (
     <Router>
+      <h1 className="text-center">Our Real Trip</h1>
+      <ChannelTalk />
+      {serverMessage && (
+        <div
+          className={`alert ${
+            serverMessage.includes('실패') ? 'alert-danger' : 'alert-success'
+          }`}
+          role="alert">
+          {serverMessage}
+        </div>
+      )}
+      <Header />
       <div className="container mt-5">
-        <h1 className="text-center">Our Real Trip</h1>
-        <ChannelTalk />
-        {serverMessage && (
-          <div
-            className={`alert ${
-              serverMessage.includes('실패') ? 'alert-danger' : 'alert-success'
-            }`}
-            role="alert">
-            {serverMessage}
-          </div>
-        )}
-        <Header />
         <Routes>
           {/* 비인증 사용자 접근 가능 */}
           <Route path="/" element={<Navigate to="/main" />} />
@@ -184,6 +186,8 @@ const App = () => {
           <Route path="*" element={<div>페이지를 찾을 수 없습니다.</div>} />
         </Routes>
       </div>
+      <CouponSidebar />
+      <Footer />
     </Router>
   );
 };

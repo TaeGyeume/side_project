@@ -50,7 +50,7 @@ const CouponList = () => {
 
   return (
     <Container>
-      <h2 className="coupon-title">🎟 쿠폰 목록</h2>
+      <h2 className="coupon-title">🎫 쿠폰 목록</h2>
       <Row>
         {coupons.length > 0 ? (
           coupons.map(coupon => (
