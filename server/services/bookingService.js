@@ -5,6 +5,7 @@ const TourTicket = require('../models/TourTicket');
 const Room = require('../models/Room');
 const TravelItem = require('../models/TravelItem');
 const Flight = require('../models/Flight');
+const schedule = require('node-schedule');
 
 let cachedToken = null;
 let tokenExpiration = null;
@@ -62,6 +63,7 @@ exports.createBooking = async bookingData => {
     });
 
     await newBooking.save();
+    exports.scheduleAutoConfirm(newBooking._id, newBooking.createdAt);
 
     return {status: 200, booking: newBooking, message: '예약 생성 완료'};
   } catch (error) {
@@ -239,4 +241,34 @@ exports.getUserBookings = async userId => {
     console.error('예약 조회 오류:', error);
     return {status: 500, message: '서버 오류'};
   }
+};
+
+exports.confirmBooking = async bookingId => {
+  try {
+    const booking = await Booking.findById(bookingId);
+    if (!booking) return {status: 404, message: '예약을 찾을 수 없습니다.'};
+
+    if (booking.paymentStatus === 'COMPLETED') {
+      booking.paymentStatus = 'CONFIRMED';
+      await booking.save();
+      return {status: 200, message: '구매 확정 완료'};
+    } else {
+      return {status: 400, message: '구매 확정 불가 상태'};
+    }
+  } catch (error) {
+    console.error('구매 확정 오류:', error);
+    return {status: 500, message: '구매 확정 중 오류 발생'};
+  }
+};
+
+exports.scheduleAutoConfirm = (bookingId, createdAt) => {
+  const confirmTime = new Date(new Date(createdAt).getTime() + 3 * 60 * 1000);
+  schedule.scheduleJob(confirmTime, async () => {
+    const booking = await Booking.findById(bookingId);
+    if (booking && booking.paymentStatus === 'COMPLETED') {
+      booking.paymentStatus = 'CONFIRMED';
+      await booking.save();
+      console.log(`✅ 3분 경과, 예약 ${bookingId} 구매 확정`);
+    }
+  });
 };
