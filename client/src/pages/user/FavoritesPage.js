@@ -1,47 +1,44 @@
-import React, {useEffect, useState} from 'react';
-import {getUserFavorites} from '../../api/user/favoriteService'; // 즐겨찾기 목록을 가져오는 서비스 함수
-import {useNavigate} from 'react-router-dom';
+import React, {useState, useEffect} from 'react';
+import {getUserFavorites} from '../../api/user/favoriteService';
 
 const FavoritesPage = () => {
   const [favorites, setFavorites] = useState([]);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
+        setLoading(true);
         const response = await getUserFavorites();
         setFavorites(response.favorites);
       } catch (error) {
-        console.error('Error fetching favorites:', error);
+        // console.error('❌ Error fetching favorites:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchFavorites();
-  }, []);
-
-  const handleItemClick = itemId => {
-    navigate(`/item/${itemId}`); // 해당 아이템의 상세 페이지로 이동
-  };
+  }, []); // 🚀 빈 배열([]) → 페이지 진입 시 한 번 실행
 
   return (
     <div>
       <h1>즐겨찾기 목록</h1>
-      <div>
-        {favorites.length > 0 ? (
-          favorites.map(favorite => (
-            <div key={favorite._id} onClick={() => handleItemClick(favorite.item._id)}>
-              <h3>{favorite.item.title}</h3>
-              <p>{favorite.item.description}</p>
-              <img
-                src={`http://localhost:5000${favorite.item.images[0]}`}
-                alt={favorite.item.title}
-              />
-            </div>
-          ))
-        ) : (
-          <p>즐겨찾기 목록이 비어 있습니다.</p>
-        )}
-      </div>
+      {loading ? (
+        <p>로딩 중...</p>
+      ) : (
+        <ul>
+          {favorites.map(fav => (
+            <li key={fav._id}>
+              <img src={fav.images[0]} alt={fav.title} width="100" />
+              <p>
+                {fav.title} ({fav.location})
+              </p>
+              <p>{fav.price}원</p>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

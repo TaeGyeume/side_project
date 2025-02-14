@@ -7,10 +7,10 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import EditProfile from './pages/user/EditProfile';
 import Header from './components/Header';
-import NaverLoginCallback from './components/SocialLogin/NaverLoginCallback';
-import FacebookLoginCallback from './components/SocialLogin/FacebookLoginCallback';
-import KakaoLoginCallback from './components/SocialLogin/KakaoLoginCallback';
-import GoogleLoginCallback from './components/SocialLogin/GoogleLoginCallback';
+import NaverLoginCallback from './components/socialLogin/NaverLoginCallback';
+import FacebookLoginCallback from './components/socialLogin/FacebookLoginCallback';
+import KakaoLoginCallback from './components/socialLogin/KakaoLoginCallback';
+import GoogleLoginCallback from './components/socialLogin/GoogleLoginCallback';
 import FindUserId from './pages/auth/FindUserId';
 import {useAuthStore} from './store/authStore'; // Zustand 스토어
 import PrivateRoute from './routes/PrivateRoute'; // 보호된 라우트 추가
