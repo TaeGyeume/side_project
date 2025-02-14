@@ -3,14 +3,18 @@ import axios from 'axios';
 // Axios 전역 설정: 쿠키 포함
 axios.defaults.withCredentials = true;
 
+// 서버 URL을 환경 변수로 설정 (로컬 환경에서만 사용, 배포 시 환경 변수로 변경 가능)
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api/favorites';
+
 // 즐겨찾기 추가/삭제 (토글)
 export const toggleFavorite = async (itemId, itemType) => {
   try {
-    const formattedItemType = itemType.charAt(0).toLowerCase() + itemType.slice(1);
+    const formattedItemType = itemType.charAt(0).toLowerCase() + itemType.slice(1); // 첫 글자를 소문자로 변환
     console.log(`📤 Sending request - itemId: ${itemId}, itemType: ${formattedItemType}`);
 
     const response = await axios.post(
-      'http://localhost:5000/api/favorites/toggle',
+      `${API_BASE_URL}/toggle`,
       {itemId, itemType: formattedItemType},
       {withCredentials: true}
     );
@@ -19,21 +23,18 @@ export const toggleFavorite = async (itemId, itemType) => {
     return response.data;
   } catch (error) {
     console.error('❌ Error toggling favorite:', error.response?.data || error.message);
-    throw new Error('Failed to toggle favorite');
+    throw new Error(error.response?.data?.message || 'Failed to toggle favorite');
   }
 };
 
 // 사용자 즐겨찾기 목록 조회
 export const getUserFavorites = async () => {
   try {
-    const response = await axios.get('http://localhost:5000/api/favorites', {
-      withCredentials: true
-    });
-
+    const response = await axios.get(API_BASE_URL, {withCredentials: true});
     console.log('📥 Fetched favorites:', response.data.favorites);
     return response.data;
   } catch (error) {
-    // console.error('❌ Error fetching favorites:', error.response?.data || error.message);
-    throw new Error('Failed to fetch user favorites');
+    console.error('❌ Error fetching favorites:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to fetch user favorites');
   }
 };

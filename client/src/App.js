@@ -59,7 +59,7 @@ import ChannelTalk from './components/channelTalk/ChannelTalk';
 import MileagePage from './pages/mileage/MileagePage';
 import FavoritesPage from './pages/user/FavoritesPage';
 import '@fortawesome/fontawesome-free/css/all.min.css'; // FontAwesome 아이콘 스타일 불러오기
-import FavoriteListPage from './pages/user/FavoriteListPage'; // 방금 만든 페이지 임포트
+import FavoriteList from './components/user/FavoriteList'; // 즐겨찾기 목록 페이지
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -143,7 +143,9 @@ const App = () => {
               element={<AccommodationBookingPage />}
             />
             <Route path="/flights/booking" element={<FlightBookingPage />} />
-            <Route path="/favorites" element={<FavoriteListPage />} />
+
+            <Route path="/favorite-list" element={<FavoriteList />} />
+
             <Route
               path="/travelItems/purchase/:itemId"
               element={<TravelItemPurchaseForm />}
