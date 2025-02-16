@@ -1,24 +1,37 @@
 const mongoose = require('mongoose');
-const Favorite = require('../models/Favorite'); // ✅ 대소문자 확인
-const Accommodation = require('../models/Accommodation');
-const TourTicket = require('../models/TourTicket');
-const TravelItem = require('../models/TravelItem');
+const Favorite = require('../models/Favorite');
+const {Accommodation, TourTicket, TravelItem} = require('../models');
 
-// ✅ 정확한 itemType을 유지하기 위해 대소문자를 맞춘 modelMap
+// ✅ 정확한 itemType을 유지하기 위한 modelMap
 const modelMap = {
-  accommodation: Accommodation,
-  tourTicket: TourTicket, // ✅ 정확한 대소문자 사용
-  travelItem: TravelItem
+  Accommodation: Accommodation,
+  TourTicket: TourTicket,
+  TravelItem: TravelItem
 };
 
-// 즐겨찾기 추가 또는 삭제 (토글 기능 포함)
+// ✅ itemType 변환 함수 (소문자로 변환 후 매핑)
+const normalizeItemType = itemType => {
+  if (typeof itemType === 'string') {
+    const mapping = {
+      accommodation: 'Accommodation',
+      tourticket: 'TourTicket',
+      travelitem: 'TravelItem'
+    };
+
+    const lowercasedType = itemType.toLowerCase();
+    return mapping[lowercasedType] || itemType;
+  }
+  return itemType;
+};
+
+// ✅ 즐겨찾기 추가 또는 삭제 (토글 기능 포함)
 const toggleFavorite = async (userId, itemId, itemType) => {
   try {
+    itemType = normalizeItemType(itemType);
     console.log(
       `🔍 toggleFavorite called with: userId=${userId}, itemId=${itemId}, itemType=${itemType}`
     );
 
-    // ✅ 클라이언트에서 변환한 itemType을 그대로 사용
     if (!modelMap[itemType]) {
       throw new Error(
         `Invalid item type received: ${itemType}. Expected one of: ${Object.keys(modelMap).join(', ')}`
@@ -39,12 +52,10 @@ const toggleFavorite = async (userId, itemId, itemType) => {
     });
 
     if (existingFavorite) {
-      // ✅ 이미 존재하면 삭제 (토글 기능)
       await Favorite.deleteOne({_id: existingFavorite._id});
       console.log(`🗑️ Removed from favorites: ${itemId} (${itemType})`);
       return {message: 'Favorite removed successfully'};
     } else {
-      // ✅ 존재하지 않으면 추가
       const favorite = new Favorite({user: userId, item: itemId, itemType});
       await favorite.save();
       console.log(`⭐ Added to favorites: ${itemId} (${itemType})`);
@@ -56,7 +67,7 @@ const toggleFavorite = async (userId, itemId, itemType) => {
   }
 };
 
-// 사용자 즐겨찾기 목록 조회 (populate 적용)
+// ✅ 사용자 즐겨찾기 목록 조회 (populate 적용)
 const getUserFavorites = async userId => {
   try {
     console.log(`📥 Fetching favorites for user: ${userId}`);
@@ -64,21 +75,21 @@ const getUserFavorites = async userId => {
     const favorites = await Favorite.find({user: userId})
       .populate({
         path: 'item',
-        select: 'title images price location'
+        select: 'title name images price minPrice location' // ✅ Accommodation의 name 포함, minPrice를 price로 변환
       })
-      .exec();
+      .lean();
 
-    // 응답 데이터 가공
-    const formattedFavorites = favorites.map(fav => ({
+    console.log(`✅ Retrieved favorites for user ${userId}:`, favorites);
+
+    return favorites.map(fav => ({
       _id: fav._id,
       itemType: fav.itemType,
-      title: fav.item?.title || 'No Title',
+      itemId: fav.item?._id || null,
+      title: fav.item?.title || fav.item?.name || 'No Title', // ✅ title이 없으면 name 사용
       location: fav.item?.location || 'Unknown',
-      price: fav.item?.price || 0,
+      price: fav.item?.price || fav.item?.minPrice || 0, // ✅ Accommodation은 minPrice 사용
       images: fav.item?.images || []
     }));
-
-    return formattedFavorites;
   } catch (error) {
     console.error('❌ Error fetching user favorites:', error.message);
     throw new Error('Error fetching user favorites');
