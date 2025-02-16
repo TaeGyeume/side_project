@@ -59,6 +59,9 @@ import ChannelTalk from './components/channelTalk/ChannelTalk';
 import MileagePage from './pages/mileage/MileagePage';
 import '@fortawesome/fontawesome-free/css/all.min.css'; // FontAwesome 아이콘 스타일 불러오기
 import FavoriteList from './components/user/FavoriteList'; // 즐겨찾기 목록 페이지
+import QnaBoardList from './pages/qna/QnaBoardList';
+import QnaBoardDetail from './pages/qna/QnaBoardDetail';
+import QnaBoardWrite from './pages/qna/QnaBoardWrite';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -142,9 +145,10 @@ const App = () => {
               element={<AccommodationBookingPage />}
             />
             <Route path="/flights/booking" element={<FlightBookingPage />} />
-
             <Route path="/favorite-list" element={<FavoriteList />} />
-
+            <Route path="/qna" element={<QnaBoardList />} />
+            <Route path="/qna/:qnaBoardId" element={<QnaBoardDetail />} />
+            <Route path="/qna/write" element={<QnaBoardWrite />} />
             <Route
               path="/travelItems/purchase/:itemId"
               element={<TravelItemPurchaseForm />}

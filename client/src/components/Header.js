@@ -78,6 +78,11 @@ const Header = () => {
                 알림
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/qna">
+                고객 문의
+              </Link>
+            </li>
 
             {isAuthenticated && user ? (
               <>
