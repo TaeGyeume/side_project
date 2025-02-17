@@ -64,6 +64,7 @@ exports.createBooking = async bookingData => {
     });
 
     await newBooking.save();
+    bookingService.scheduleAutoConfirm(newBooking._id, newBooking.createdAt);
 
     return {status: 200, booking: newBooking, message: '예약 생성 완료'};
   } catch (error) {
@@ -331,9 +332,11 @@ exports.confirmBooking = async bookingId => {
 };
 
 exports.scheduleAutoConfirm = (bookingId, createdAt) => {
-  const confirmTime = new Date(new Date(createdAt).getTime() + 3 * 60 * 1000);
+  const confirmTime = new Date(new Date(createdAt).getTime() + 3 * 60 * 1000); // 3분 후
+
   schedule.scheduleJob(confirmTime, async () => {
     const booking = await Booking.findById(bookingId);
+
     if (booking && booking.paymentStatus === 'COMPLETED') {
       booking.paymentStatus = 'CONFIRMED';
       await booking.save();

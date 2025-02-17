@@ -16,6 +16,11 @@ exports.createBooking = async (req, res) => {
     };
 
     const result = await bookingService.createBooking(bookingData);
+
+    if (result.status === 200) {
+      bookingService.scheduleAutoConfirm(result.booking._id, result.booking.createdAt);
+    }
+
     res.status(201).json(result);
   } catch (error) {
     console.error('예약 생성 오류:', error);
