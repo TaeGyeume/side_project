@@ -1,7 +1,7 @@
 const QnaBoard = require('../models/QnaBoard');
 const QnaComment = require('../models/QnaComment');
 
-// ✅ QnA 게시글 작성
+// ✅ QnA 게시글 작성 (파일 업로드 처리 추가)
 const createQnaBoard = async (
   userId,
   category,
@@ -11,6 +11,20 @@ const createQnaBoard = async (
   attachments = []
 ) => {
   try {
+    console.log('📌 QnA 게시글 저장 데이터:', {
+      userId,
+      category,
+      title,
+      content,
+      images,
+      attachments
+    });
+
+    // ✅ 필수 데이터 확인
+    if (!category || !title || !content) {
+      throw new Error('카테고리, 제목, 내용을 입력해야 합니다.');
+    }
+
     const qnaBoard = new QnaBoard({
       user: userId,
       category,

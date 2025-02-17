@@ -1,16 +1,43 @@
 import axios from 'axios';
 
-// API 기본 URL (환경 변수 적용 가능)
+// API 기본 URL
 const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api/qna';
 
-// ✅ QnA 게시글 생성
-export const createQnaBoard = async formData => {
+// ✅ QnA 게시글 생성 (파일이 있을 경우 `FormData`, 없을 경우 `JSON`)
+export const createQnaBoard = async (data, isMultipart = false) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}`, formData, {
-      headers: {'Content-Type': 'multipart/form-data'}, // 파일 업로드를 위한 헤더 설정
-      withCredentials: true // JWT 포함 요청
+    let headers = {'Content-Type': 'application/json'}; // 기본적으로 JSON 요청
+    let requestData = data;
+
+    // ✅ FormData로 변환이 필요한 경우
+    if (isMultipart) {
+      headers['Content-Type'] = 'multipart/form-data';
+      const formData = new FormData();
+
+      formData.append('category', data.category);
+      formData.append('title', data.title);
+      formData.append('content', data.content);
+
+      if (data.images) {
+        Array.from(data.images).forEach(file => formData.append('images', file));
+      }
+      if (data.attachments) {
+        Array.from(data.attachments).forEach(file =>
+          formData.append('attachments', file)
+        );
+      }
+
+      requestData = formData;
+    }
+
+    console.log('📡 요청 데이터:', requestData);
+
+    const response = await axios.post(`${API_BASE_URL}`, requestData, {
+      headers,
+      withCredentials: true
     });
+
     return response.data;
   } catch (error) {
     console.error('❌ QnA 게시글 생성 오류:', error.response?.data || error.message);
