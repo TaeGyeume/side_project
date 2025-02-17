@@ -1,27 +1,46 @@
 import React, {useState, useEffect} from 'react';
-import {getUserFavorites} from '../../api/user/favoriteService'; // 즐겨찾기 데이터 요청
+import {getUserFavorites} from '../../api/user/favoriteService';
+import {useNavigate} from 'react-router-dom';
+import FavoriteButton from '../../components/user/FavoriteButton';
 import './styles/FavoriteList.css';
 
 const FavoriteList = () => {
-  const [favorites, setFavorites] = useState([]); // 즐겨찾기 목록 상태
-  const [loading, setLoading] = useState(true); // 로딩 상태
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // 즐겨찾기 목록을 가져오는 함수
+  // ✅ 즐겨찾기 목록 불러오기
   const fetchFavorites = async () => {
     try {
-      const response = await getUserFavorites(); // 서버에서 즐겨찾기 목록 가져오기
-      setFavorites(response.favorites); // 가져온 데이터를 상태에 저장
+      const response = await getUserFavorites();
+      console.log('📡 즐겨찾기 목록 데이터:', response.favorites);
+      setFavorites(response.favorites.map(fav => ({...fav, isFavorite: true})));
     } catch (error) {
-      console.error('즐겨찾기 목록 가져오기 오류:', error);
+      console.error('❌ 즐겨찾기 목록 가져오기 오류:', error);
     } finally {
-      setLoading(false); // 로딩 상태 종료
+      setLoading(false);
     }
   };
 
-  // 페이지 로드 시 즐겨찾기 목록을 가져옴
   useEffect(() => {
     fetchFavorites();
   }, []);
+
+  // ✅ 즐겨찾기 상태를 즉시 UI에 반영하는 함수
+  const updateFavoriteStatus = (itemId, newStatus) => {
+    console.log(`🔹 업데이트된 즐겨찾기 상태 (${itemId}):`, newStatus);
+
+    setFavorites(prevFavorites => {
+      return prevFavorites.map(item =>
+        item.itemId === itemId ? {...item, isFavorite: newStatus} : item
+      );
+    });
+
+    // ✅ 즐겨찾기 해제 시 리스트에서 삭제 (선택 사항)
+    if (!newStatus) {
+      setFavorites(prevFavorites => prevFavorites.filter(item => item.itemId !== itemId));
+    }
+  };
 
   return (
     <div className="favorite-list-container">
@@ -32,20 +51,42 @@ const FavoriteList = () => {
       ) : (
         <div className="favorite-list">
           {favorites.length > 0 ? (
-            favorites.map(item => (
-              <div key={item._id} className="favorite-item">
-                <img
-                  src={`http://localhost:5000${item.images[0]}`}
-                  alt={item.title}
-                  className="favorite-item-image"
-                />
-                <div className="favorite-item-info">
-                  <h3>{item.title}</h3>
-                  <p>{item.description}</p>
-                  <p>{item.price}원</p>
+            favorites.map(item => {
+              console.log('🛠 즐겨찾기 아이템:', item);
+
+              return (
+                <div
+                  key={item.itemId}
+                  className="favorite-item"
+                  onClick={() => navigate(`/tourTicket/list/${item.itemId}`)}
+                  style={{cursor: 'pointer'}}>
+                  {/* 🔹 이미지 컨테이너 내부에 즐겨찾기 아이콘 배치 */}
+                  <div className="favorite-item-image-container">
+                    <img
+                      src={`http://localhost:5000${item.images?.[0]}`}
+                      alt={item.title}
+                      className="favorite-item-image"
+                    />
+
+                    {/* 🔹 아이콘이 이미지 안에 배치되도록 수정 */}
+                    <div className="favorite-list-icon">
+                      <FavoriteButton
+                        itemId={item.itemId}
+                        itemType={item.itemType || 'TourTicket'}
+                        initialFavoriteStatus={item.isFavorite}
+                        onFavoriteToggle={updateFavoriteStatus}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="favorite-item-info">
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                    <p>{item.price?.toLocaleString()}원</p>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <p>즐겨찾기한 항목이 없습니다.</p>
           )}

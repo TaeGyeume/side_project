@@ -15,7 +15,7 @@ const FavoriteSchema = new mongoose.Schema(
     },
     itemType: {
       type: String,
-      enum: ['Accommodation', 'tourTicket', 'TravelItem'], // 즐겨찾기된 아이템 타입
+      enum: ['Accommodation', 'TourTicket', 'TravelItem'], // 즐겨찾기된 아이템 타입
       required: true
     },
     createdAt: {

@@ -115,6 +115,8 @@ exports.createBooking = async bookingData => {
     });
 
     await newBooking.save();
+    console.log('📌 [서버] 예약 생성 완료:', newBooking);
+    exports.scheduleAutoConfirm(newBooking._id, newBooking.createdAt);
 
     return {status: 200, booking: newBooking, message: '예약 생성 완료'};
   } catch (error) {
@@ -511,14 +513,34 @@ exports.confirmBooking = async bookingId => {
   }
 };
 
-exports.scheduleAutoConfirm = (bookingId, createdAt) => {
-  const confirmTime = new Date(new Date(createdAt).getTime() + 3 * 60 * 1000);
-  schedule.scheduleJob(confirmTime, async () => {
-    const booking = await Booking.findById(bookingId);
-    if (booking && booking.paymentStatus === 'COMPLETED') {
-      booking.paymentStatus = 'CONFIRMED';
-      await booking.save();
-      console.log(`✅ 3분 경과, 예약 ${bookingId} 구매 확정`);
-    }
-  });
+exports.scheduleAutoConfirm = async (bookingId, createdAt) => {
+  // createdAt이 KST로 저장되어 있으므로, UTC로 변환
+  const utcCreatedAt = new Date(createdAt.getTime() - 9 * 60 * 60 * 1000);
+
+  const confirmTime = new Date(utcCreatedAt.getTime() + 3 * 60 * 1000); // 3분 뒤 구매 확정으로 바뀜
+  console.log(`⏰ UTC 변환된 예약 확인 스케줄 시간: ${confirmTime}`);
+
+  try {
+    schedule.scheduleJob(confirmTime, async () => {
+      try {
+        const booking = await Booking.findById(bookingId);
+        if (booking) {
+          console.log(`예약 ${bookingId} 조회 성공`);
+          if (booking.paymentStatus === 'COMPLETED') {
+            booking.paymentStatus = 'CONFIRMED';
+            await booking.save();
+            console.log(`✅ 예약 ${bookingId} 구매 확정`);
+          } else {
+            console.log(`예약 ${bookingId}의 결제 상태가 'COMPLETED'가 아닙니다.`);
+          }
+        } else {
+          console.log(`예약 ${bookingId}을 찾을 수 없습니다.`);
+        }
+      } catch (error) {
+        console.error(`예약 ${bookingId} 확정 처리 중 오류:`, error);
+      }
+    });
+  } catch (error) {
+    console.error(`스케줄 설정 중 오류:`, error);
+  }
 };

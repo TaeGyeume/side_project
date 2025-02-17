@@ -78,6 +78,11 @@ const Header = () => {
                 알림
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/qna">
+                고객 문의
+              </Link>
+            </li>
 
             {isAuthenticated && user ? (
               <>
@@ -108,11 +113,6 @@ const Header = () => {
                           내 프로필
                         </Link>
                       </li>
-                      <li className="nav-item">
-                        <Link className="nav-link" to="/favorite-list">
-                          즐겨찾기
-                        </Link>
-                      </li>
                       <li>
                         <Link className="dropdown-item" to="/booking/my?status=completed">
                           내 예약 목록
@@ -121,6 +121,11 @@ const Header = () => {
                       <li>
                         <Link className="dropdown-item" to="/coupons/my">
                           내 쿠폰함
+                        </Link>
+                      </li>
+                      <li>
+                        <Link className="dropdown-item" to="/favorite-list">
+                          즐겨찾기
                         </Link>
                       </li>
                     </ul>
