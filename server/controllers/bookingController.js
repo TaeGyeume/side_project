@@ -31,7 +31,7 @@ exports.createBooking = async (req, res) => {
     console.log('📌 [서버] 변환된 데이터:', bookingData);
     const result = await bookingService.createBooking(bookingData);
 
-    if (result.status === 200) {
+    if (result.status === 200 && result.booking) {
       bookingService.scheduleAutoConfirm(result.booking._id, result.booking.createdAt);
     }
 
