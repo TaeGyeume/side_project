@@ -601,3 +601,38 @@ exports.scheduleAutoConfirm = async (bookingId, createdAt) => {
     console.error(`스케줄 설정 중 오류:`, error);
   }
 };
+
+exports.getBookingDetails = async bookingId => {
+  try {
+    // 예약 정보 조회 + 연관된 데이터 가져오기
+    const booking = await Booking.findById(bookingId)
+      .populate('userId', 'name email phone') // 사용자 정보 포함
+      .populate('userCouponId', 'discountAmount') // 쿠폰 정보 포함
+      .populate('roomIds', 'name pricePerNight reservedDates'); // 객실 정보 포함
+
+    if (!booking) {
+      return {status: 404, message: '예약 정보를 찾을 수 없습니다.'};
+    }
+
+    // ✅ productIds를 동적으로 populate
+    const populatedProducts = await Promise.all(
+      booking.productIds.map(async (productId, index) => {
+        const model = booking.types[index]; // 현재 productId의 타입 가져오기 (동일 인덱스)
+        if (!model) return null; // 모델이 없으면 null 반환
+        return await mongoose
+          .model(model)
+          .findById(productId)
+          .select('name price airline departure arrival');
+      })
+    );
+
+    // `toObject()`로 Mongoose 객체를 일반 JavaScript 객체로 변환
+    const bookingData = booking.toObject();
+    bookingData.productIds = populatedProducts; // ✅ productIds에 각 모델에서 가져온 실제 데이터 추가
+
+    return {status: 200, data: bookingData};
+  } catch (error) {
+    console.error('❌ 예약 상세 조회 오류:', error);
+    return {status: 500, message: '서버 오류'};
+  }
+};
