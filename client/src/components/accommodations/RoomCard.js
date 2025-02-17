@@ -1,12 +1,13 @@
 // src/components/accommodations/RoomCard.js
 import React from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate, useSearchParams} from 'react-router-dom';
 import {useAuthStore} from '../../store/authStore';
 import {deleteRoom} from '../../api/room/roomService';
 
 const RoomCard = ({room, onRoomDeleted}) => {
   const navigate = useNavigate();
   const {user, isAuthenticated} = useAuthStore();
+  const [searchParams] = useSearchParams();
   const SERVER_URL = 'http://localhost:5000';
 
   // ✅ 이미지가 없는 경우 기본 이미지 설정
@@ -38,9 +39,14 @@ const RoomCard = ({room, onRoomDeleted}) => {
     }
   };
 
-  // ✅ 예약 버튼 클릭 시, 예약 페이지로 이동
+  // ✅ 예약 버튼 클릭 시, 검색된 체크인 날짜, 체크아웃 날짜, 인원 정보를 전달
   const handleBooking = () => {
-    navigate(`/accommodation/booking/${room._id}`);
+    const startDate = searchParams.get('startDate') || '';
+    const endDate = searchParams.get('endDate') || '';
+
+    navigate(
+      `/accommodation/booking/${room._id}?startDate=${startDate}&endDate=${endDate}`
+    );
   };
 
   return (

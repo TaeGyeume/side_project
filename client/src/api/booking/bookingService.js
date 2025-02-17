@@ -11,8 +11,13 @@ export const createBooking = async bookingData => {
       counts: bookingData.counts,
       startDates: bookingData.startDates,
       endDates: bookingData.endDates,
-      totalPrice: bookingData.totalPrice,
+      totalPrice: bookingData.totalPrice, // 총 가격
+      discountAmount: bookingData.discountAmount || 0, // 할인 금액 (없으면 0)
+      finalPrice:
+        bookingData.finalPrice ||
+        bookingData.totalPrice - (bookingData.discountAmount || 0), // 최종 결제 금액
       userId: bookingData.userId,
+      couponId: bookingData.couponId || null, // 쿠폰 ID (선택 사항)
       reservationInfo: bookingData.reservationInfo,
       merchant_uid: bookingData.merchant_uid
     });
