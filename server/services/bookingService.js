@@ -88,11 +88,18 @@ exports.createBooking = async bookingData => {
 
       if (userCoupon) {
         appliedCoupon = userCoupon._id;
-        userCoupon.isUsed = true; // ✅ 결제 완료 전까지 "예약" 상태
-        await userCoupon.save();
         console.log(`✅ [서버] 쿠폰 예약 처리 완료 - userCouponId: ${appliedCoupon}`);
       } else {
         console.warn(`⚠️ [서버] 유효한 쿠폰을 찾을 수 없음! couponId: ${couponId}`);
+      }
+    }
+
+    // ✅ `PENDING` 상태일 때 쿠폰을 무조건 `false`로 유지
+    if (appliedCoupon) {
+      const userCoupon = await UserCoupon.findById(appliedCoupon);
+      if (userCoupon) {
+        userCoupon.isUsed = false; // ✅ PENDING 상태에서는 무조건 false
+        await userCoupon.save();
       }
     }
 
