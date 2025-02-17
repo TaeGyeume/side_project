@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
-import {getQnaBoards} from '../../api/qna/qnaBoardService'; // API 호출
+import {getQnaBoards} from '../../api/qna/qnaBoardService';
 import {useNavigate} from 'react-router-dom';
-import {getUserProfile} from '../../api/user/user'; // 사용자 정보 가져오기
-import './styles/QnaBoardList.css'; // 스타일 파일 (별도로 생성 필요)
+import {getUserProfile} from '../../api/user/user';
+import './styles/QnaBoardList.css';
 
 const QnaBoardList = () => {
   const [qnaBoards, setQnaBoards] = useState([]);
@@ -10,35 +10,31 @@ const QnaBoardList = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [user, setUser] = useState(null); // ✅ 사용자 정보 상태 추가
+  const [user, setUser] = useState(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchQnaBoards = async () => {
+    const fetchUserAndBoards = async () => {
       try {
         setLoading(true);
+
+        // ✅ 사용자 정보 가져오기
+        const userResponse = await getUserProfile();
+        setUser(userResponse.data);
+
+        // ✅ QnA 게시글 목록 가져오기
         const response = await getQnaBoards(page, category);
         setQnaBoards(response.qnaBoards);
-        setTotalPages(response.totalPages);
+        setTotalPages(response.totalPages || 1);
       } catch (error) {
-        console.error('QnA 목록을 가져오는 중 오류 발생:', error);
+        console.error('❌ 데이터 로드 중 오류 발생:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    const fetchUser = async () => {
-      try {
-        const response = await getUserProfile();
-        setUser(response.data);
-      } catch (error) {
-        console.error('❌ 사용자 정보를 가져오는 중 오류 발생:', error);
-      }
-    };
-
-    fetchUser(); // ✅ 사용자 정보 가져오기
-    fetchQnaBoards();
+    fetchUserAndBoards();
   }, [page, category]);
 
   return (
@@ -76,11 +72,18 @@ const QnaBoardList = () => {
               <div
                 key={qna._id}
                 className="qna-board-item"
-                onClick={() => navigate(`/qna/${qna._id}`)} // 상세 페이지로 이동
-              >
+                onClick={() => navigate(`/qna/${qna._id}`)}>
                 <h3>{qna.title}</h3>
                 <p>{qna.category}</p>
-                <p>작성자: {qna.user?.name || '익명'}</p>
+
+                {/* 🔹 작성자 정보 표시 (이름 우선, 없으면 아이디) */}
+                <p>
+                  작성자: <strong>{qna.user?.username || '익명'}</strong>
+                </p>
+                <p>
+                  이메일: <strong>{qna.user?.email || '알 수 없음'}</strong>
+                </p>
+
                 <p>작성일: {new Date(qna.createdAt).toLocaleDateString()}</p>
               </div>
             ))

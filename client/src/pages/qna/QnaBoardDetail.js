@@ -11,11 +11,11 @@ import {getUserProfile} from '../../api/user/user'; // ✅ 사용자 정보 조�
 import './styles/QnaBoardDetail.css'; // 스타일 파일 (별도로 생성 필요)
 
 const QnaBoardDetail = () => {
-  const {qnaBoardId} = useParams(); // ✅ 올바른 변수명 사용
+  const {qnaBoardId} = useParams();
   console.log('📌 QnA 게시글 ID:', qnaBoardId);
 
   const navigate = useNavigate();
-  const [user, setUser] = useState(null); // ✅ 인증된 사용자 정보
+  const [user, setUser] = useState(null); // ✅ 현재 로그인한 사용자 정보
   const [qnaBoard, setQnaBoard] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
@@ -26,7 +26,7 @@ const QnaBoardDetail = () => {
   const fetchUser = async () => {
     try {
       console.log('🚀 사용자 정보 요청 시작');
-      const response = await getUserProfile(); // ✅ 기존 axios 요청을 getUserProfile()로 변경
+      const response = await getUserProfile();
       console.log('✅ 사용자 정보 응답:', response.data);
       setUser(response.data);
     } catch (error) {
@@ -39,6 +39,7 @@ const QnaBoardDetail = () => {
     const fetchQnaBoard = async () => {
       try {
         const data = await getQnaBoardById(qnaBoardId);
+        console.log('📥 QnA 게시글 데이터:', data);
         setQnaBoard(data);
       } catch (error) {
         console.error('QnA 게시글 조회 오류:', error);
@@ -48,14 +49,14 @@ const QnaBoardDetail = () => {
     const fetchComments = async () => {
       try {
         const response = await getQnaComments(qnaBoardId);
-        console.log('📥 댓글 데이터:', response.comments); // ✅ 댓글 데이터 확인
+        console.log('📥 댓글 데이터:', response.comments);
         setComments(response.comments);
       } catch (error) {
         console.error('QnA 댓글 조회 오류:', error);
       }
     };
 
-    fetchUser(); // ✅ 사용자 정보 가져오기
+    fetchUser();
     fetchQnaBoard();
     fetchComments();
     setLoading(false);
@@ -66,9 +67,9 @@ const QnaBoardDetail = () => {
     if (!user) return alert('로그인이 필요합니다.');
     if (window.confirm('정말로 삭제하시겠습니까?')) {
       try {
-        await deleteQnaBoard(qnaBoardId); // ✅ ID 수정
+        await deleteQnaBoard(qnaBoardId);
         alert('게시글이 삭제되었습니다.');
-        navigate('/qna'); // 삭제 후 목록으로 이동
+        navigate('/qna');
       } catch (error) {
         console.error('QnA 게시글 삭제 오류:', error);
       }
@@ -82,8 +83,8 @@ const QnaBoardDetail = () => {
 
     setCommentLoading(true);
     try {
-      const comment = await createQnaComment(qnaBoardId, newComment); // ✅ ID 수정
-      setComments([comment, ...comments]); // 최신 댓글이 위로 가도록 추가
+      const comment = await createQnaComment(qnaBoardId, newComment);
+      setComments(prevComments => [comment, ...prevComments]);
       setNewComment('');
     } catch (error) {
       console.error('QnA 댓글 작성 오류:', error);
@@ -97,7 +98,9 @@ const QnaBoardDetail = () => {
     if (window.confirm('정말로 댓글을 삭제하시겠습니까?')) {
       try {
         await deleteQnaComment(commentId);
-        setComments(comments.filter(comment => comment._id !== commentId));
+        setComments(prevComments =>
+          prevComments.filter(comment => comment._id !== commentId)
+        );
       } catch (error) {
         console.error('QnA 댓글 삭제 오류:', error);
       }
@@ -111,12 +114,20 @@ const QnaBoardDetail = () => {
     <div className="qna-detail-container">
       <h1>{qnaBoard.title}</h1>
       <p>카테고리: {qnaBoard.category}</p>
-      <p>작성자: {qnaBoard.user?.name || '익명'}</p>
-      <p>작성일: {new Date(qnaBoard.createdAt).toLocaleString()}</p>
+      {/* 작성자: 이름 우선, 없으면 이메일 표시 */}
+      <p>
+        작성자: <strong>{qnaBoard.user?.name || qnaBoard.user?.email || '익명'}</strong>
+      </p>
+      <p>
+        작성일:{' '}
+        {qnaBoard.createdAt
+          ? new Date(qnaBoard.createdAt).toLocaleString()
+          : '알 수 없음'}
+      </p>
       <p>{qnaBoard.content}</p>
 
       {/* 이미지 & 파일 첨부 */}
-      {qnaBoard.images.length > 0 && (
+      {qnaBoard.images && qnaBoard.images.length > 0 && (
         <div className="qna-images">
           {qnaBoard.images.map((img, index) => (
             <img key={index} src={`http://localhost:5000${img}`} alt="첨부 이미지" />
@@ -124,7 +135,7 @@ const QnaBoardDetail = () => {
         </div>
       )}
 
-      {qnaBoard.attachments.length > 0 && (
+      {qnaBoard.attachments && qnaBoard.attachments.length > 0 && (
         <div className="qna-attachments">
           {qnaBoard.attachments.map((file, index) => (
             <a key={index} href={`http://localhost:5000${file}`} download>
@@ -135,7 +146,7 @@ const QnaBoardDetail = () => {
       )}
 
       {/* 관리자 또는 작성자만 삭제 가능 */}
-      {user && (user?.id === qnaBoard.user._id || user?.roles.includes('admin')) && (
+      {user && (user.id === qnaBoard.user?._id || user.roles?.includes('admin')) && (
         <button onClick={handleDeleteQnaBoard} className="delete-button">
           게시글 삭제
         </button>
@@ -145,21 +156,24 @@ const QnaBoardDetail = () => {
       <div className="qna-comments">
         <h3>댓글 ({comments.length})</h3>
         {comments.map(comment => (
-          <div key={comment._id} className="qna-comment">
+          <div key={comment._id || Math.random()} className="qna-comment">
             <p>
-              <strong>{comment.user?.name || '알 수 없음'}</strong>{' '}
+              <strong>{comment.user?.username || '알 수 없음'}</strong>{' '}
               {comment.isAdmin && <span>(관리자)</span>}
             </p>
             <p>{comment.content}</p>
-            <p className="comment-date">{new Date(comment.createdAt).toLocaleString()}</p>
-            {user &&
-              (user?.id === comment.user?._id || user?.roles.includes('admin')) && (
-                <button
-                  onClick={() => handleDeleteComment(comment._id)}
-                  className="delete-comment">
-                  삭제
-                </button>
-              )}
+            <p className="comment-date">
+              {comment.createdAt
+                ? new Date(comment.createdAt).toLocaleString()
+                : '날짜 없음'}
+            </p>
+            {user && (user.id === comment.user?._id || user.roles?.includes('admin')) && (
+              <button
+                onClick={() => handleDeleteComment(comment._id)}
+                className="delete-comment">
+                삭제
+              </button>
+            )}
           </div>
         ))}
       </div>
