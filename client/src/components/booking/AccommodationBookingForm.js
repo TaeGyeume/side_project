@@ -1,15 +1,26 @@
 import React, {useEffect, useState} from 'react';
-import {useParams} from 'react-router-dom';
+import {useParams, useSearchParams} from 'react-router-dom';
 import {getRoomById} from '../../api/room/roomService';
 import {createBooking, verifyPayment} from '../../api/booking/bookingService';
 import {authAPI} from '../../api/auth/index';
+import {fetchUserCoupons} from '../../api/coupon/couponService';
+import {cancelBooking} from '../../api/booking/bookingService';
+import CouponSelector from './CouponSelector';
 
 const BookingForm = () => {
   const {roomId} = useParams();
+  const [searchParams] = useSearchParams();
   const [room, setRoom] = useState(null);
   const [user, setUser] = useState(null);
+  const [userCoupons, setUserCoupons] = useState([]);
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
+
+  const defaultStartDate = searchParams.get('startDate') || '';
+  const defaultEndDate = searchParams.get('endDate') || '';
+
   const [formData, setFormData] = useState({
-    rooms: [{startDate: '', endDate: '', count: 1}] // ✅ 여러 객실을 처리할 수 있도록 배열로 변경
+    rooms: [{startDate: defaultStartDate, endDate: defaultEndDate, count: 1}]
   });
 
   useEffect(() => {
@@ -17,22 +28,32 @@ const BookingForm = () => {
       try {
         const roomData = await getRoomById(roomId);
         setRoom(roomData);
+        await fetchUserData(roomData); // ✅ roomData를 fetchUserData에 전달
       } catch (error) {
         console.error('❌ 객실 정보를 불러오는 중 오류 발생:', error);
       }
     };
 
-    const fetchUser = async () => {
+    const fetchUserData = async roomData => {
+      // ✅ roomData 파라미터 추가
       try {
         const userData = await authAPI.getUserProfile();
         setUser(userData);
+        const coupons = await fetchUserCoupons(userData._id);
+
+        // ✅ 최소 예약 금액 충족하는 쿠폰만 필터링
+        const validCoupons = coupons.filter(
+          coupon =>
+            !coupon.isUsed && coupon.coupon.minPurchaseAmount <= roomData.pricePerNight
+        );
+
+        setUserCoupons(validCoupons);
       } catch (error) {
         console.error('❌ 사용자 정보를 불러오는 중 오류 발생:', error);
       }
     };
 
     fetchRoom();
-    fetchUser();
   }, [roomId]);
 
   if (!room || !user) {
@@ -61,6 +82,12 @@ const BookingForm = () => {
     setFormData({...formData, rooms: updatedRooms});
   };
 
+  // ✅ 쿠폰 선택 핸들러
+  const handleCouponSelect = (coupon, discount) => {
+    setSelectedCoupon(coupon);
+    setDiscountAmount(discount);
+  };
+
   /* ✅ 예약 생성 및 결제 요청 */
   const handlePayment = async () => {
     if (formData.rooms.some(room => !room.startDate || !room.endDate)) {
@@ -87,6 +114,8 @@ const BookingForm = () => {
       0
     );
 
+    const finalPrice = totalPrice - discountAmount;
+
     try {
       console.log('📢 예약 요청 데이터:', {
         types: Array(formData.rooms.length).fill('accommodation'),
@@ -96,8 +125,11 @@ const BookingForm = () => {
         merchant_uid,
         startDates,
         endDates,
-        totalPrice,
+        totalPrice, // ✅ 총 결제 금액 (할인 전) 추가
+        discountAmount, // ✅ 할인 금액 추가
+        finalPrice, // ✅ 최종 결제 금액 (할인 후) 추가
         userId: user._id,
+        couponId: selectedCoupon ? selectedCoupon._id : null,
         reservationInfo: {
           name: user.username,
           email: user.email,
@@ -113,8 +145,11 @@ const BookingForm = () => {
         merchant_uid,
         startDates,
         endDates,
-        totalPrice,
+        totalPrice, // ✅ 총 결제 금액 (할인 전) 추가
+        discountAmount, // ✅ 할인 금액 추가
+        finalPrice, // ✅ 최종 결제 금액 (할인 후) 추가
         userId: user._id,
+        couponId: selectedCoupon ? selectedCoupon._id : null,
         reservationInfo: {
           name: user.username,
           email: user.email,
@@ -137,7 +172,7 @@ const BookingForm = () => {
           pay_method: 'card',
           merchant_uid,
           name: room.name,
-          amount: totalPrice,
+          amount: finalPrice,
           buyer_email: user.email,
           buyer_name: user.username,
           buyer_tel: user.phone
@@ -147,7 +182,9 @@ const BookingForm = () => {
             try {
               const verifyResponse = await verifyPayment({
                 imp_uid: rsp.imp_uid,
-                merchant_uid
+                merchant_uid,
+                couponId: selectedCoupon ? selectedCoupon._id : null,
+                userId: user._id
               });
 
               if (verifyResponse.message === '결제 검증 성공') {
@@ -161,6 +198,13 @@ const BookingForm = () => {
             }
           } else {
             alert(`🚨 결제 실패: ${rsp.error_msg}`);
+            if (selectedCoupon) {
+              console.log(
+                '📌 [클라이언트] 결제 취소, 예약 취소 요청 보냄:',
+                merchant_uid
+              );
+              await cancelBooking(merchant_uid);
+            }
           }
         }
       );
@@ -203,6 +247,22 @@ const BookingForm = () => {
             max={room.availableCount}
             onChange={e => handleRoomChange(index, 'count', e.target.value)}
           />
+
+          <CouponSelector
+            userCoupons={userCoupons}
+            itemPrice={room.pricePerNight}
+            count={formData.rooms[0].count}
+            onCouponSelect={handleCouponSelect}
+          />
+
+          <p>
+            최종 결제 금액:{' '}
+            {(
+              room.pricePerNight * formData.rooms[0].count -
+              discountAmount
+            ).toLocaleString()}{' '}
+            원
+          </p>
 
           {formData.rooms.length > 1 && (
             <button onClick={() => removeRoom(index)}>🗑 객실 삭제</button>
