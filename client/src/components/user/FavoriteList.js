@@ -30,16 +30,39 @@ const FavoriteList = () => {
   const updateFavoriteStatus = (itemId, newStatus) => {
     console.log(`🔹 업데이트된 즐겨찾기 상태 (${itemId}):`, newStatus);
 
-    setFavorites(prevFavorites => {
-      return prevFavorites.map(item =>
+    setFavorites(prevFavorites =>
+      prevFavorites.map(item =>
         item.itemId === itemId ? {...item, isFavorite: newStatus} : item
-      );
-    });
+      )
+    );
 
     // ✅ 즐겨찾기 해제 시 리스트에서 삭제 (선택 사항)
     if (!newStatus) {
       setFavorites(prevFavorites => prevFavorites.filter(item => item.itemId !== itemId));
     }
+  };
+
+  // ✅ 아이템 클릭 시 적절한 URL로 이동
+  const handleItemClick = item => {
+    let url = '/';
+
+    // ✅ itemType에 따라 이동할 경로 설정
+    switch (item.itemType) {
+      case 'TourTicket':
+        url = `/tourTicket/list/${item.itemId}`;
+        break;
+      case 'TravelItem':
+        url = `/travelItems/${item.itemId}`;
+        break;
+      case 'Accommodation':
+        url = `/accommodations/${item.itemId}/detail`;
+        break;
+      default:
+        console.warn('⚠️ 알 수 없는 itemType:', item.itemType);
+        return;
+    }
+
+    navigate(url);
   };
 
   return (
@@ -58,7 +81,7 @@ const FavoriteList = () => {
                 <div
                   key={item.itemId}
                   className="favorite-item"
-                  onClick={() => navigate(`/tourTicket/list/${item.itemId}`)}
+                  onClick={() => handleItemClick(item)} // ✅ 동적 URL 이동
                   style={{cursor: 'pointer'}}>
                   {/* 🔹 이미지 컨테이너 내부에 즐겨찾기 아이콘 배치 */}
                   <div className="favorite-item-image-container">
