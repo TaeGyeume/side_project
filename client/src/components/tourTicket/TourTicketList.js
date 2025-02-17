@@ -76,18 +76,20 @@ const TourTicketList = () => {
                 alt={ticket.title}
                 className="ticket-image"
               />
-              <div className="ticket-info">
-                <h3 className="ticket-title">{ticket.title}</h3>
-                <p className="ticket-description">✏️ {ticket.description}</p>
-                <p className="ticket-location">지역: {ticket.location}</p>
-                <p className="ticket-price">{ticket.price.toLocaleString()}원</p>
-                {/* ✅ 즐겨찾기 버튼 (즐겨찾기 상태 반영) */}
+              {/* ✅ 즐겨찾기 버튼 (즐겨찾기 상태 반영) */}
+              <div className="favorite-list-icon">
                 <FavoriteButton
                   itemId={ticket._id}
                   itemType="TourTicket"
                   initialFavoriteStatus={ticket.isFavorite}
                   onClick={e => e.stopPropagation()}
                 />
+              </div>
+              <div className="ticket-info">
+                <h3 className="ticket-title">{ticket.title}</h3>
+                <p className="ticket-description">✏️ {ticket.description}</p>
+                <p className="ticket-location">지역: {ticket.location}</p>
+                <p className="ticket-price">{ticket.price.toLocaleString()}원</p>
               </div>
             </div>
           ))

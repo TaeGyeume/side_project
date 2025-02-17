@@ -1,5 +1,4 @@
-/* client/src/styles/FavoriteList.css */
-
+/* FavoriteList 전용 스타일 */
 .favorite-list-container {
   padding: 20px;
 }
@@ -22,11 +21,37 @@
   background-color: #f9f9f9;
 }
 
+/* 이미지 컨테이너 */
+.favorite-item-image-container {
+  position: relative; /* 즐겨찾기 아이콘을 배치할 기준 */
+  width: 100%;
+  height: 200px; /* 이미지 높이 조정 */
+  overflow: hidden;
+  border-radius: 10px;
+}
+
 .favorite-item-image {
   width: 100%;
-  height: 150px;
+  height: 100%;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: 8px;
+}
+
+/* 즐겨찾기 아이콘 - 이미지 오른쪽 상단에 위치 */
+.favorite-list-icon {
+  position: absolute;
+  top: 12px; /* 상단에서 여백 */
+  right: 12px; /* 오른쪽에서 여백 */
+  font-size: 22px; /* 아이콘 크기 */
+  cursor: pointer;
+  color: #ffcc00; /* 기본 색상 */
+  padding: 6px; /* 패딩 추가 */
+  z-index: 10; /* 다른 요소 위에 배치 */
+  transition: background 0.3s ease-in-out;
+}
+
+.favorite-list-icon.active {
+  color: #ffcc00; /* 즐겨찾기 상태일 때 */
 }
 
 .favorite-item-info {
