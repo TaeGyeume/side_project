@@ -12,7 +12,10 @@ exports.createBooking = async (req, res) => {
       merchant_uid,
       roomIds,
       startDates,
-      endDates
+      endDates,
+      discountAmount,
+      finalPrice,
+      couponId
     } = req.body;
 
     const bookingData = {
@@ -25,7 +28,10 @@ exports.createBooking = async (req, res) => {
       merchant_uid,
       roomIds,
       startDates,
-      endDates
+      endDates,
+      discountAmount,
+      finalPrice,
+      couponId
     };
 
     console.log('📌 [서버] 변환된 데이터:', bookingData);
