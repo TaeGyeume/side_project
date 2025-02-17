@@ -207,15 +207,25 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
                 product.stock -= counts[index];
                 break;
 
-              case 'flight':
+              case 'flight': {
+                // ✈️ ✅ 항공편 좌석 감소 로직 추가
                 product = await Flight.findById(productId);
-                // 필수 필드 기본값 설정
-                product.arrival.weekday = product.arrival.weekday || '월요일';
-                product.departure.weekday = product.departure.weekday || '월요일';
-                product.airlineKorean = product.airlineKorean || '항공사';
+                if (!product) {
+                  throw new Error('항공편 정보를 찾을 수 없습니다.');
+                }
 
-                product.availableSeats -= counts[index];
+                // ✅ 좌석 감소 처리
+                if (product.seatsAvailable < counts[index]) {
+                  throw new Error(
+                    `잔여 좌석이 부족합니다. (남은 좌석: ${product.seatsAvailable})`
+                  );
+                }
+
+                product.seatsAvailable -= counts[index];
+                await product.save();
+                console.log(`✈️ 항공편(${productId}) 좌석 ${counts[index]}석 감소 완료`);
                 break;
+              }
 
               case 'accommodation': {
                 if (!roomIds[index])

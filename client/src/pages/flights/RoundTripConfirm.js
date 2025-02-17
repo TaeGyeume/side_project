@@ -98,7 +98,7 @@ const RoundTripConfirm = () => {
     const bookingData = {
       types: selectedProducts.map(item => item.type),
       productIds: selectedProducts.map(item => item.productId),
-      counts: selectedProducts.map(item => item.count),
+      counts: selectedProducts.map(item => passengers),
       totalPrice: totalAmount,
       userId: user._id,
       reservationInfo: {name: user.username, email: user.email, phone: user.phone},
