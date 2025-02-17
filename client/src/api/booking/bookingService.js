@@ -7,7 +7,10 @@ export const createBooking = async bookingData => {
     const response = await axios.post(`${BASE_URL}/create`, {
       types: bookingData.types,
       productIds: bookingData.productIds,
+      roomIds: bookingData.roomIds,
       counts: bookingData.counts,
+      startDates: bookingData.startDates,
+      endDates: bookingData.endDates,
       totalPrice: bookingData.totalPrice,
       userId: bookingData.userId,
       reservationInfo: bookingData.reservationInfo,
@@ -23,7 +26,7 @@ export const createBooking = async bookingData => {
 
 export const cancelBooking = async bookingIds => {
   try {
-    const response = await axios.post(`${BASE_URL}/cancel/bookingId`, {bookingIds}); // 배열 기반 취소
+    const response = await axios.post(`${BASE_URL}/cancel/:bookingId`, {bookingIds}); // 배열 기반 취소
     return response.data;
   } catch (error) {
     console.error('예약 취소 중 오류:', error.response?.data || error);
@@ -56,5 +59,15 @@ export const getMyBookings = async () => {
   } catch (error) {
     console.error('예약 내역 불러오기 실패:', error);
     throw error;
+  }
+};
+
+export const confirmBooking = async bookingId => {
+  try {
+    const response = await axios.post(`${BASE_URL}/confirm/${bookingId}`);
+    return response.data;
+  } catch (error) {
+    console.error('구매 확정 실패:', error.response?.data || error);
+    return {status: 500, message: '구매 확정 중 오류 발생'};
   }
 };

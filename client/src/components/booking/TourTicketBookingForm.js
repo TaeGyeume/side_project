@@ -1,15 +1,18 @@
-// 예약 및 결제 파라미터 입력 폼
-
 import React, {useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {getTourTicketById} from '../../api/tourTicket/tourTicketService';
 import {createBooking, verifyPayment} from '../../api/booking/bookingService';
+import {fetchUserCoupons} from '../../api/coupon/couponService';
 import {authAPI} from '../../api/auth/index';
+import CouponSelector from './CouponSelector';
 
 const TourTicketBookingForm = () => {
   const {id} = useParams();
   const [ticket, setTicket] = useState(null);
   const [user, setUser] = useState(null);
+  const [userCoupons, setUserCoupons] = useState([]);
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
   const [formData, setFormData] = useState({count: 1});
 
   useEffect(() => {
@@ -17,104 +20,123 @@ const TourTicketBookingForm = () => {
       try {
         const data = await getTourTicketById(id);
         setTicket(data);
+        fetchUserData(data.price);
       } catch (error) {
         console.error('상품 정보를 가져오는 중 오류 발생:', error);
       }
     };
 
-    const fetchUser = async () => {
+    const fetchUserData = async itemPrice => {
       try {
         const userData = await authAPI.getUserProfile();
         setUser(userData);
+        const coupons = await fetchUserCoupons(userData._id);
+
+        const validCoupons = coupons.filter(
+          coupon =>
+            !coupon.isUsed &&
+            coupon.coupon.minPurchaseAmount <= itemPrice * formData.count
+        );
+
+        setUserCoupons(validCoupons);
       } catch (error) {
         console.error('사용자 정보를 가져오는 중 오류 발생:', error);
       }
     };
 
     fetchTicket();
-    fetchUser();
-  }, [id]);
+  }, [id, formData.count]);
 
-  if (!ticket || !user) {
-    return <p>상품 정보를 불러오는 중...</p>;
-  }
-
-  const handleChange = e => {
-    setFormData({...formData, [e.target.name]: e.target.value});
+  const handleCouponSelect = (coupon, discount) => {
+    setSelectedCoupon(coupon);
+    setDiscountAmount(discount);
   };
 
   const handlePayment = async () => {
-    const selectedProducts = [
-      {
-        type: 'tourTicket',
-        productId: ticket._id,
-        count: formData.count,
-        price: ticket.price
-      }
-    ];
+    const totalPrice = ticket.price * formData.count;
+    const finalPrice = totalPrice - discountAmount;
 
-    const totalPrice = selectedProducts.reduce(
-      (sum, item) => sum + item.count * item.price,
-      0
-    );
+    const now = new Date(Date.now() + 9 * 60 * 60 * 1000); // 한국 시간
+    const formattedDate = now
+      .toISOString()
+      .slice(2, 19) // YYMMDDTHHMMSS
+      .replace(/[-T:]/g, ''); // YYMMDDHHMMSS
 
-    const merchant_uid = `multi_${Date.now()}`;
-
-    const bookingData = {
-      types: selectedProducts.map(item => item.type), // 서버 스키마에 맞게 수정
-      productIds: selectedProducts.map(item => item.productId), // 상품 ID 배열
-      counts: selectedProducts.map(item => item.count), // 개수 배열
-      totalPrice,
-      userId: user._id,
-      reservationInfo: {name: user.username, email: user.email, phone: user.phone},
-      merchant_uid
-    };
-
-    // console.log('🔍 예약 요청 데이터:', bookingData);
+    const merchant_uid = `${user.username}_${formattedDate}`;
 
     try {
-      const bookingResponse = await createBooking(bookingData); // 수정된 변수명 기반 데이터 전달
-      // console.log('예약 생성 성공:', bookingResponse);
+      const bookingResponse = await createBooking({
+        types: ['tourTicket'],
+        productIds: [ticket._id],
+        counts: [formData.count],
+        merchant_uid,
+        totalPrice,
+        discountAmount,
+        userId: user._id,
+        couponId: selectedCoupon ? selectedCoupon._id : null,
+        reservationInfo: {
+          name: user.username,
+          email: user.email,
+          phone: user.phone
+        }
+      });
 
-      const {IMP} = window;
-      IMP.init('imp22685348');
+      if (!bookingResponse || !bookingResponse.booking) {
+        throw new Error('예약 생성 실패');
+      }
+    } catch (error) {
+      alert('예약 요청 중 오류가 발생했습니다.');
+      return;
+    }
 
-      IMP.request_pay(
-        {
-          pg: 'html5_inicis.INIpayTest',
-          pay_method: 'card',
-          merchant_uid,
-          name: '투어.티켓 예약',
-          amount: totalPrice,
-          buyer_email: user.email,
-          buyer_name: user.username,
-          buyer_tel: user.phone
-        },
-        async rsp => {
-          if (rsp.success) {
-            // console.log('결제 성공:', rsp);
+    const {IMP} = window;
+    IMP.init('imp22685348');
+
+    IMP.request_pay(
+      {
+        pg: 'html5_inicis.INIpayTest',
+        pay_method: 'card',
+        merchant_uid: merchant_uid,
+        name: ticket.title,
+        amount: finalPrice,
+        buyer_email: user.email,
+        buyer_name: user.username,
+        buyer_tel: user.phone
+      },
+      async rsp => {
+        if (rsp.success) {
+          try {
             const verifyResponse = await verifyPayment({
               imp_uid: rsp.imp_uid,
-              merchant_uid
+              merchant_uid,
+              couponId: selectedCoupon ? selectedCoupon._id : null,
+              userId: user._id
             });
 
-            // console.log('결제 검증 성공:', verifyResponse);
-            if (verifyResponse.message === '결제 검증 성공')
-              alert('투어.티켓 예약이 완료되었습니다.');
-            else alert(`결제 검증 실패: ${verifyResponse.message}`);
-          } else alert(`결제 실패: ${rsp.error_msg}`);
+            if (verifyResponse.message === '결제 검증 성공') {
+              alert('✅ 투어 티켓 예약이 완료되었습니다.');
+            } else {
+              alert(`❌ 결제 검증 실패: ${verifyResponse.message}`);
+            }
+          } catch (error) {
+            alert('❌ 결제 검증 중 오류가 발생했습니다.');
+          }
+        } else {
+          alert(`❌ 결제 실패: ${rsp.error_msg}`);
         }
-      );
-    } catch (error) {
-      console.error('예약 및 결제 중 오류 발생:', error);
-      alert('예약 및 결제 중 오류 발생');
-    }
+      }
+    );
   };
+
+  if (!ticket || !user) {
+    return <p>⏳ 상품 정보를 불러오는 중...</p>;
+  }
 
   return (
     <div className="booking-form">
       <h3>상품명: {ticket.title}</h3>
       <p>가격: {ticket.price.toLocaleString()} 원</p>
+
       <label>총 개수</label>
       <input
         type="number"
@@ -122,8 +144,21 @@ const TourTicketBookingForm = () => {
         value={formData.count}
         min="1"
         max="50"
-        onChange={handleChange}
+        onChange={e => setFormData({...formData, count: e.target.value})}
       />
+
+      <CouponSelector
+        userCoupons={userCoupons}
+        itemPrice={ticket.price}
+        count={formData.count}
+        onCouponSelect={handleCouponSelect}
+      />
+
+      <p>
+        최종 결제 금액:{' '}
+        {(ticket.price * formData.count - discountAmount).toLocaleString()} 원
+      </p>
+
       <button onClick={handlePayment} className="payment-btn">
         결제하기
       </button>

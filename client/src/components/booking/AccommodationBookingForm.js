@@ -1,21 +1,18 @@
 import React, {useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
-import {getRoomById} from '../../api/room/roomService'; // 객실 정보 API
+import {getRoomById} from '../../api/room/roomService';
 import {createBooking, verifyPayment} from '../../api/booking/bookingService';
 import {authAPI} from '../../api/auth/index';
 
 const BookingForm = () => {
-  const {roomId} = useParams(); // URL에서 객실 ID 가져오기
+  const {roomId} = useParams();
   const [room, setRoom] = useState(null);
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
-    startDate: '',
-    endDate: '',
-    count: 1 // ✅ adults → count로 변경 (예약할 객실 개수)
+    rooms: [{startDate: '', endDate: '', count: 1}] // ✅ 여러 객실을 처리할 수 있도록 배열로 변경
   });
 
   useEffect(() => {
-    // 객실 정보 가져오기
     const fetchRoom = async () => {
       try {
         const roomData = await getRoomById(roomId);
@@ -25,7 +22,6 @@ const BookingForm = () => {
       }
     };
 
-    // 현재 로그인한 사용자 정보 가져오기
     const fetchUser = async () => {
       try {
         const userData = await authAPI.getUserProfile();
@@ -43,39 +39,63 @@ const BookingForm = () => {
     return <p>🔄 객실 정보를 불러오는 중...</p>;
   }
 
-  // 입력값 변경 핸들러
-  const handleChange = e => {
-    setFormData({...formData, [e.target.name]: e.target.value});
+  // ✅ 입력값 변경 핸들러 (객실 개별 데이터 변경)
+  const handleRoomChange = (index, key, value) => {
+    const updatedRooms = [...formData.rooms];
+    updatedRooms[index][key] = value;
+    setFormData({...formData, rooms: updatedRooms});
+  };
+
+  // ✅ 새로운 객실 추가
+  const addRoom = () => {
+    setFormData({
+      ...formData,
+      rooms: [...formData.rooms, {startDate: '', endDate: '', count: 1}]
+    });
+  };
+
+  // ✅ 특정 객실 삭제
+  const removeRoom = index => {
+    if (formData.rooms.length === 1) return; // 최소 1개 객실 유지
+    const updatedRooms = formData.rooms.filter((_, i) => i !== index);
+    setFormData({...formData, rooms: updatedRooms});
   };
 
   /* ✅ 예약 생성 및 결제 요청 */
   const handlePayment = async () => {
-    if (!formData.startDate || !formData.endDate) {
-      alert('🚨 체크인 날짜와 체크아웃 날짜를 선택하세요.');
+    if (formData.rooms.some(room => !room.startDate || !room.endDate)) {
+      alert('🚨 모든 객실의 체크인 및 체크아웃 날짜를 선택하세요.');
       return;
     }
 
-    // ✅ 날짜 유효성 검사 (체크아웃이 체크인 이후인지 확인)
-    const startDate = new Date(formData.startDate);
-    const endDate = new Date(formData.endDate);
-    if (endDate <= startDate) {
-      alert('🚨 체크아웃 날짜는 체크인 날짜 이후여야 합니다.');
-      return;
-    }
+    const now = new Date(Date.now() + 9 * 60 * 60 * 1000); // 한국 시간
+    const formattedDate = now.toISOString().slice(2, 19).replace(/[-T:]/g, ''); // YYMMDDHHMMSS
+    const merchant_uid = `${user.username}_${formattedDate}`;
 
-    // ✅ 총 결제 금액 계산 (숙박일수 * 1박 요금 * 객실 개수)
-    const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-    const totalPrice = room.pricePerNight * nights * formData.count;
-    const merchant_uid = `accommodation_${Date.now()}`; // 고유 주문 번호 생성
+    const startDates = formData.rooms.map(room => room.startDate);
+    const endDates = formData.rooms.map(room => room.endDate);
+    const counts = formData.rooms.map(room => room.count);
+
+    const nights = formData.rooms.map(room =>
+      Math.ceil(
+        (new Date(room.endDate) - new Date(room.startDate)) / (1000 * 60 * 60 * 24)
+      )
+    );
+
+    const totalPrice = nights.reduce(
+      (sum, night, i) => sum + night * room.pricePerNight * counts[i],
+      0
+    );
 
     try {
       console.log('📢 예약 요청 데이터:', {
-        type: 'accommodation',
-        roomId: room._id, // ✅ 객실 ID만 보냄
+        types: Array(formData.rooms.length).fill('accommodation'),
+        productIds: Array(formData.rooms.length).fill(room.accommodation),
+        roomIds: Array(formData.rooms.length).fill(room._id),
+        counts,
         merchant_uid,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        count: formData.count, // ✅ adults → count로 변경
+        startDates,
+        endDates,
         totalPrice,
         userId: user._id,
         reservationInfo: {
@@ -85,14 +105,14 @@ const BookingForm = () => {
         }
       });
 
-      // ✅ 예약 생성 요청 (백엔드에서 숙소 ID 자동 설정)
       const bookingResponse = await createBooking({
-        type: 'accommodation',
-        roomId: room._id, // ✅ 객실 ID만 보냄
+        types: Array(formData.rooms.length).fill('accommodation'),
+        productIds: Array(formData.rooms.length).fill(room.accommodation),
+        roomIds: Array(formData.rooms.length).fill(room._id),
+        counts,
         merchant_uid,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        count: formData.count, // ✅ adults 제거 → count 추가
+        startDates,
+        endDates,
         totalPrice,
         userId: user._id,
         reservationInfo: {
@@ -108,42 +128,32 @@ const BookingForm = () => {
         throw new Error('🚨 예약 생성 실패');
       }
 
-      // ✅ 예약이 성공하면 결제 요청 실행
       const {IMP} = window;
-      IMP.init('imp22685348'); // 포트원 결제 시스템 초기화
+      IMP.init('imp22685348');
 
       IMP.request_pay(
         {
           pg: 'html5_inicis.INIpayTest',
           pay_method: 'card',
-          merchant_uid, // 예약에서 받은 merchant_uid 사용
-          name: room.name, // 객실 이름
-          amount: totalPrice, // 최종 결제 금액
+          merchant_uid,
+          name: room.name,
+          amount: totalPrice,
           buyer_email: user.email,
           buyer_name: user.username,
           buyer_tel: user.phone
         },
         async rsp => {
           if (rsp.success) {
-            // ✅ 결제 성공 → 결제 검증 요청
             try {
-              console.log('📢 결제 검증 요청 데이터:', {
-                imp_uid: rsp.imp_uid,
-                merchant_uid
-              });
-
               const verifyResponse = await verifyPayment({
                 imp_uid: rsp.imp_uid,
                 merchant_uid
               });
 
-              console.log('✅ 결제 검증 응답:', verifyResponse);
-
               if (verifyResponse.message === '결제 검증 성공') {
                 alert('✅ 예약 및 결제가 완료되었습니다.');
               } else {
                 alert(`🚨 결제 검증 실패: ${verifyResponse.message}`);
-                console.error('결제 검증 실패 상세 로그:', verifyResponse);
               }
             } catch (error) {
               console.error('❌ 결제 검증 중 오류 발생:', error);
@@ -165,31 +175,42 @@ const BookingForm = () => {
       <h3>🏨 객실명: {room.name}</h3>
       <p>💰 1박 가격: {room.pricePerNight.toLocaleString()} 원</p>
 
-      <label>📅 체크인 날짜</label>
-      <input
-        type="date"
-        name="startDate"
-        value={formData.startDate}
-        onChange={handleChange}
-      />
+      {formData.rooms.map((roomData, index) => (
+        <div key={index} className="room-group">
+          <h4>🏨 객실 {index + 1}</h4>
+          <label>📅 체크인 날짜</label>
+          <input
+            type="date"
+            name="startDate"
+            value={roomData.startDate}
+            onChange={e => handleRoomChange(index, 'startDate', e.target.value)}
+          />
 
-      <label>📅 체크아웃 날짜</label>
-      <input
-        type="date"
-        name="endDate"
-        value={formData.endDate}
-        onChange={handleChange}
-      />
+          <label>📅 체크아웃 날짜</label>
+          <input
+            type="date"
+            name="endDate"
+            value={roomData.endDate}
+            onChange={e => handleRoomChange(index, 'endDate', e.target.value)}
+          />
 
-      <label>🏨 예약할 객실 개수</label>
-      <input
-        type="number"
-        name="count"
-        value={formData.count}
-        min="1"
-        max={room.availableCount} // ✅ 남은 객실 개수 반영
-        onChange={handleChange}
-      />
+          <label>🏨 예약할 객실 개수</label>
+          <input
+            type="number"
+            name="count"
+            value={roomData.count}
+            min="1"
+            max={room.availableCount}
+            onChange={e => handleRoomChange(index, 'count', e.target.value)}
+          />
+
+          {formData.rooms.length > 1 && (
+            <button onClick={() => removeRoom(index)}>🗑 객실 삭제</button>
+          )}
+        </div>
+      ))}
+
+      <button onClick={addRoom}>➕ 객실 추가</button>
 
       <button onClick={handlePayment} className="payment-btn">
         💳 결제하기
