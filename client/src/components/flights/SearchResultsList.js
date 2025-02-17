@@ -21,12 +21,12 @@ const formatTime = timeString => {
   return `${timeString.substr(0, 2)}:${timeString.substr(2, 2)}`;
 };
 
-const SearchResultsList = ({flights}) => {
+const SearchResultsList = ({flights, passengers = 1}) => {
   const navigate = useNavigate();
 
   const handleSelectFlight = flight => {
-    navigate('/flights/before/booking', {
-      state: {selectedFlight: flight, isRoundTrip: false}
+    navigate('/flights/roundtrip-confirm', {
+      state: {selectedFlight: flight, isRoundTrip: false, passengers}
     });
   };
 
