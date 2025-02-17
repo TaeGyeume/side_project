@@ -192,3 +192,35 @@
   color: #6c757d;
   margin-top: 20px;
 } */
+
+/* 즐겨찾기 아이콘 - 이미지 오른쪽 상단에 위치 */
+.favorite-list-icon {
+  position: absolute;
+  top: 12px; /* 상단에서 여백 */
+  right: 12px; /* 오른쪽에서 여백 */
+  font-size: 22px; /* 아이콘 크기 */
+  cursor: pointer;
+  color: #ffcc00; /* 기본 색상 */
+  padding: 6px; /* 패딩 추가 */
+  z-index: 10; /* 다른 요소 위에 배치 */
+  transition: background 0.3s ease-in-out;
+}
+
+.favorite-list-icon.active {
+  color: #ffcc00; /* 즐겨찾기 상태일 때 */
+}
+
+.favorite-item-info {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.favorite-item-info h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.favorite-item-info p {
+  font-size: 14px;
+  color: #555;
+}

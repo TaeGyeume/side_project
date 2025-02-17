@@ -1,15 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import {getTourTickets} from '../../api/tourTicket/tourTicketService';
+import {getUserFavorites} from '../../api/user/favoriteService'; // 🔹 즐겨찾기 목록 가져오기 추가
 import {useLocation, useNavigate} from 'react-router-dom';
 import './styles/TourTicketList.css';
 import TourTicketFilter from '../tourTicket/TourTicketFilter';
-import FavoriteButton from '../../components/user/FavoriteButton'; // 즐겨찾기 버튼 임포트
+import FavoriteButton from '../../components/user/FavoriteButton';
 
 const TourTicketList = () => {
   const [tickets, setTickets] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 10000000]);
   const [searchQuery, setSearchQuery] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
+  const [favorites, setFavorites] = useState([]); // 🔹 즐겨찾기 목록 상태 추가
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,21 +26,32 @@ const TourTicketList = () => {
       }
     };
 
+    const fetchFavorites = async () => {
+      try {
+        const response = await getUserFavorites();
+        setFavorites(response.favorites); // 🔹 사용자 즐겨찾기 목록 저장
+      } catch (error) {
+        console.error('즐겨찾기 목록 가져오기 오류:', error);
+      }
+    };
+
     fetchTickets();
+    fetchFavorites();
   }, []);
 
-  // 필터링된 상품
-  const filteredTickets = tickets.filter(ticket => {
-    const isPriceInRange = ticket.price >= priceRange[0] && ticket.price <= priceRange[1];
-    const isNameMatch = ticket.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const isLocationMatch = locationFilter ? ticket.location === locationFilter : true;
+  // 🔹 특정 아이템이 즐겨찾기 목록에 있는지 확인하는 함수
+  const isFavoriteItem = itemId => {
+    return favorites.some(fav => fav.itemId === itemId);
+  };
 
-    return isPriceInRange && isNameMatch && isLocationMatch;
-  });
+  // 🔹 필터링된 상품 (즐겨찾기 정보 반영)
+  const filteredTickets = tickets.map(ticket => ({
+    ...ticket,
+    isFavorite: isFavoriteItem(ticket._id) // ✅ 즐겨찾기 상태 반영
+  }));
 
   return (
     <div className="tour-ticket-container">
-      {/* <h1>투어 & 티켓</h1> */}
       <TourTicketFilter
         priceRange={priceRange}
         setPriceRange={setPriceRange}
@@ -49,13 +62,13 @@ const TourTicketList = () => {
       />
 
       <div className="tour-ticket-grid">
-        {tickets.length > 0 ? (
-          tickets.map(ticket => (
+        {filteredTickets.length > 0 ? (
+          filteredTickets.map(ticket => (
             <div
               key={ticket._id}
               className="tour-ticket-card"
               onClick={e => {
-                e.stopPropagation(); // 클릭 이벤트가 상위 요소로 전파되지 않도록 방지
+                e.stopPropagation();
                 navigate(`/tourTicket/list/${ticket._id}`);
               }}>
               <img
@@ -63,18 +76,20 @@ const TourTicketList = () => {
                 alt={ticket.title}
                 className="ticket-image"
               />
+              {/* ✅ 즐겨찾기 버튼 (즐겨찾기 상태 반영) */}
+              <div className="favorite-list-icon">
+                <FavoriteButton
+                  itemId={ticket._id}
+                  itemType="TourTicket"
+                  initialFavoriteStatus={ticket.isFavorite}
+                  onClick={e => e.stopPropagation()}
+                />
+              </div>
               <div className="ticket-info">
                 <h3 className="ticket-title">{ticket.title}</h3>
                 <p className="ticket-description">✏️ {ticket.description}</p>
                 <p className="ticket-location">지역: {ticket.location}</p>
                 <p className="ticket-price">{ticket.price.toLocaleString()}원</p>
-                {/* 즐겨찾기 버튼 클릭 이벤트 */}
-                <FavoriteButton
-                  itemId={ticket._id}
-                  itemType="TourTicket"
-                  initialFavoriteStatus={ticket.isFavorite}
-                  onClick={e => e.stopPropagation()} // 버튼 클릭 시 이벤트 전파 방지
-                />
               </div>
             </div>
           ))

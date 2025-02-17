@@ -1,0 +1,46 @@
+.qna-detail-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+}
+
+.qna-images img {
+  max-width: 100%;
+  height: auto;
+  margin-top: 10px;
+}
+
+.qna-attachments a {
+  display: block;
+  margin-top: 5px;
+}
+
+.delete-button {
+  background-color: red;
+  color: white;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.qna-comments {
+  margin-top: 20px;
+}
+
+.qna-comment {
+  border-bottom: 1px solid #ddd;
+  padding: 10px;
+}
+
+.comment-input textarea {
+  width: 100%;
+  height: 80px;
+  margin-top: 10px;
+}
+
+.comment-input button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  margin-top: 5px;
+  cursor: pointer;
+}
