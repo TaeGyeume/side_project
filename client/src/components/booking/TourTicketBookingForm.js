@@ -3,6 +3,7 @@ import {useParams} from 'react-router-dom';
 import {getTourTicketById} from '../../api/tourTicket/tourTicketService';
 import {createBooking, verifyPayment} from '../../api/booking/bookingService';
 import {fetchUserCoupons} from '../../api/coupon/couponService';
+import {cancelBooking} from '../../api/booking/bookingService';
 import {authAPI} from '../../api/auth/index';
 import CouponSelector from './CouponSelector';
 
@@ -72,6 +73,7 @@ const TourTicketBookingForm = () => {
         merchant_uid,
         totalPrice,
         discountAmount,
+        finalPrice, // ✅ 최종 결제 금액 (할인 후) 추가
         userId: user._id,
         couponId: selectedCoupon ? selectedCoupon._id : null,
         reservationInfo: {
@@ -123,6 +125,10 @@ const TourTicketBookingForm = () => {
           }
         } else {
           alert(`❌ 결제 실패: ${rsp.error_msg}`);
+          if (selectedCoupon) {
+            console.log('📌 [클라이언트] 결제 취소, 예약 취소 요청 보냄:', merchant_uid);
+            await cancelBooking(merchant_uid);
+          }
         }
       }
     );
