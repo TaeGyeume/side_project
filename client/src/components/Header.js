@@ -108,6 +108,11 @@ const Header = () => {
                           내 프로필
                         </Link>
                       </li>
+                      <li className="nav-item">
+                        <Link className="nav-link" to="/favorite-list">
+                          즐겨찾기
+                        </Link>
+                      </li>
                       <li>
                         <Link className="dropdown-item" to="/booking/my?status=completed">
                           내 예약 목록
@@ -120,13 +125,6 @@ const Header = () => {
                       </li>
                     </ul>
                   )}
-                </li>
-
-                {/* 즐겨찾기 메뉴 추가 */}
-                <li className="nav-item">
-                  <Link className="nav-link" to="/favorite-list">
-                    즐겨찾기
-                  </Link>
                 </li>
 
                 {/* 사용자 이름 표시 */}

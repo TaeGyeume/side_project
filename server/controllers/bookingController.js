@@ -2,8 +2,18 @@ const bookingService = require('../services/bookingService');
 
 exports.createBooking = async (req, res) => {
   try {
-    const {types, productIds, counts, totalPrice, userId, reservationInfo, merchant_uid} =
-      req.body;
+    const {
+      types,
+      productIds,
+      counts,
+      totalPrice,
+      userId,
+      reservationInfo,
+      merchant_uid,
+      roomIds,
+      startDates,
+      endDates
+    } = req.body;
 
     const bookingData = {
       types,
@@ -12,9 +22,13 @@ exports.createBooking = async (req, res) => {
       totalPrice,
       userId,
       reservationInfo,
-      merchant_uid
+      merchant_uid,
+      roomIds,
+      startDates,
+      endDates
     };
 
+    console.log('📌 [서버] 변환된 데이터:', bookingData);
     const result = await bookingService.createBooking(bookingData);
 
     if (result.status === 200) {

@@ -42,7 +42,21 @@ exports.createBooking = async bookingData => {
       ? bookingData.counts
       : [bookingData.counts];
 
-    const {roomIds, startDates, endDates, merchant_uid, ...rest} = bookingData;
+    const roomIds = Array.isArray(bookingData.roomIds)
+      ? bookingData.roomIds
+      : [bookingData.roomIds];
+
+    const startDates = Array.isArray(bookingData.startDates)
+      ? bookingData.startDates
+      : [bookingData.startDates];
+
+    const endDates = Array.isArray(bookingData.endDates)
+      ? bookingData.endDates
+      : [bookingData.endDates];
+
+    console.log('📌 [서버] 변환된 데이터:', {roomIds, startDates, endDates});
+
+    const {merchant_uid, ...rest} = bookingData;
 
     // merchant_uid 중복 검사
     const existingBooking = await Booking.findOne({merchant_uid});
@@ -56,9 +70,9 @@ exports.createBooking = async bookingData => {
       types,
       productIds,
       counts,
-      roomIds: roomIds || [],
-      startDates: startDates || [],
-      endDates: endDates || [],
+      roomIds,
+      startDates,
+      endDates,
       merchant_uid,
       ...rest
     });
@@ -98,25 +112,32 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
 
     let discountAmount = 0;
     let expectedFinalAmount = totalOriginalPrice;
+    const mongoose = require('mongoose');
+    // ObjectId 변환 함수
+    const toObjectId = id => {
+      return mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : null;
+    };
 
     // ✅ 쿠폰 검증
     if (couponId) {
       console.log('📌 [서버] 쿠폰 검증 시작 - couponId:', couponId, 'userId:', userId);
 
-      const mongoose = require('mongoose');
       const userCoupon = await UserCoupon.findOne({
-        _id: new mongoose.Types.ObjectId(couponId),
-        user: new mongoose.Types.ObjectId(userId),
+        _id: toObjectId(couponId), // 쿠폰 ID 변환
+        user: toObjectId(userId), // 사용자 ID 변환
         isUsed: false,
-        expiresAt: {$gt: new Date()} // ✅ 만료되지 않은 쿠폰
-      }).populate('coupon');
+        expiresAt: {$gte: new Date()}
+      }).populate('coupon'); // ✅ 실제 쿠폰 데이터 가져오기
 
       console.log('📌 [서버] 조회된 UserCoupon:', userCoupon);
 
-      if (!userCoupon) {
+      if (!userCoupon || !userCoupon.coupon) {
         console.error('❌ [서버] 쿠폰을 찾을 수 없음 또는 만료됨!');
         return {status: 400, message: '사용 가능한 쿠폰을 찾을 수 없습니다.'};
       }
+
+      const actualCouponId = userCoupon.coupon._id; // ✅ `UserCoupon`에서 `coupon._id`를 가져옴
+      console.log('📌 [서버] 변환된 실제 쿠폰 ID:', actualCouponId);
 
       const coupon = userCoupon.coupon;
 
@@ -164,12 +185,15 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
 
     await Promise.all(
       bookings.map(async booking => {
-        const {types, productIds, counts} = booking;
+        const {types, productIds, counts, roomIds, startDates, endDates} = booking;
 
         if (
           !Array.isArray(types) ||
           !Array.isArray(productIds) ||
-          !Array.isArray(counts)
+          !Array.isArray(counts) ||
+          !Array.isArray(roomIds) ||
+          !Array.isArray(startDates) ||
+          !Array.isArray(endDates)
         ) {
           throw new Error('예약 데이터 배열이 올바르지 않습니다.');
         }
@@ -194,13 +218,60 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
                 product.availableSeats -= counts[index];
                 break;
 
-              case 'accommodation':
-                product = await Room.findById(booking.roomId);
-                product.reservedDates.push({
-                  date: booking.startDate,
-                  count: counts[index]
-                });
+              case 'accommodation': {
+                if (!roomIds[index])
+                  return {status: 400, message: '객실 정보가 누락되었습니다.'};
+
+                product = await Room.findById(roomIds[index]);
+                if (!product)
+                  return {status: 404, message: '객실 정보를 찾을 수 없습니다.'};
+
+                const startDate = new Date(startDates[index]);
+                const endDate = new Date(endDates[index]);
+                let currentDate = new Date(startDate);
+
+                while (currentDate < endDate) {
+                  const dateStr = currentDate.toISOString().split('T')[0];
+
+                  // ✅ 해당 날짜의 예약 개수 가져오기
+                  let reservedIndex = product.reservedDates.findIndex(
+                    d => d.date.toISOString().split('T')[0] === dateStr
+                  );
+                  let reservedCountOnDate =
+                    reservedIndex !== -1 ? product.reservedDates[reservedIndex].count : 0;
+
+                  // ✅ 예약 가능 여부 체크
+                  if (reservedCountOnDate + counts[index] > product.availableCount) {
+                    console.error(`❌ ${dateStr} 날짜에 예약 가능한 객실 부족!`);
+                    return {
+                      status: 400,
+                      message: `${dateStr} 날짜에 예약 가능한 객실이 부족합니다.`
+                    };
+                  }
+
+                  // ✅ 예약 반영
+                  if (reservedIndex !== -1) {
+                    product.reservedDates[reservedIndex].count += counts[index];
+                  } else {
+                    product.reservedDates.push({
+                      date: new Date(dateStr),
+                      count: counts[index]
+                    });
+                  }
+
+                  currentDate.setDate(currentDate.getDate() + 1);
+                }
+
+                // ✅ 객실 가용 여부 업데이트 (availableCount 반영)
+                const totalReserved = product.reservedDates.reduce(
+                  (acc, d) => acc + d.count,
+                  0
+                );
+                product.available = totalReserved < product.availableCount;
+
+                await product.save();
                 break;
+              }
 
               case 'travelItem':
                 product = await TravelItem.findById(productId);
