@@ -75,14 +75,19 @@ const getQnaBoardById = async (req, res) => {
 const deleteQnaBoard = async (req, res) => {
   try {
     const {qnaBoardId} = req.params;
-    const userId = req.user.id;
-    const isAdmin = req.user.role === 'admin'; // 관리자 여부 확인
+    const userId = req.user._id; // 🔥 req.user에서 가져옴
+    const isAdmin = req.user.roles.includes('admin');
+
+    console.log(`🛠 게시글 삭제 요청:`, {
+      boardId: qnaBoardId,
+      userId,
+      roles: req.user.roles
+    });
 
     const result = await qnaService.deleteQnaBoard(qnaBoardId, userId, isAdmin);
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
-    console.error('❌ Error deleting QnA Board:', error);
-    res.status(403).json({error: error.message});
+    return res.status(403).json({error: error.message});
   }
 };
 
@@ -125,18 +130,20 @@ const getQnaComments = async (req, res) => {
   }
 };
 
-// ✅ QnA 댓글 삭제 (작성자 또는 관리자만 가능)
+// QnA 댓글 삭제 (작성자 또는 관리자만 가능)
 const deleteQnaComment = async (req, res) => {
   try {
     const {commentId} = req.params;
-    const userId = req.user.id;
-    const isAdmin = req.user.role === 'admin'; // 관리자 여부 확인
+    const userId = req.user._id; // JWT에서 가져온 사용자 ID
+    const userRoles = req.user.roles; // JWT에서 가져온 사용자 역할 (admin 여부)
 
-    const result = await qnaService.deleteQnaComment(commentId, userId, isAdmin);
-    res.status(200).json(result);
+    console.log('🛠 댓글 삭제 요청:', {commentId, userId, userRoles});
+
+    const result = await qnaService.deleteQnaComment(commentId, userId, userRoles);
+    return res.status(200).json(result);
   } catch (error) {
     console.error('❌ Error deleting QnA Comment:', error);
-    res.status(403).json({error: error.message});
+    return res.status(403).json({error: error.message});
   }
 };
 

@@ -41,8 +41,7 @@ const QnaBoardList = () => {
     <div className="qna-board-container">
       <h1>고객 문의</h1>
 
-      {/* 🔹 고객 문의 등록 버튼 (관리자가 아닐 경우에만 표시) */}
-      {user && !user.roles.includes('admin') && (
+      {user && (
         <button className="qna-create-button" onClick={() => navigate('/qna/write')}>
           ✏️ 고객 문의 등록
         </button>

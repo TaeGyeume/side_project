@@ -72,16 +72,17 @@ export const getQnaBoardById = async qnaBoardId => {
   }
 };
 
-// ✅ QnA 게시글 삭제 (본인 또는 관리자)
+// ✅ QnA 게시글 삭제 요청 (userId 직접 전달 X)
 export const deleteQnaBoard = async qnaBoardId => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/${qnaBoardId}`, {
-      withCredentials: true
-    });
+    const response = await axios.delete(
+      `${process.env.REACT_APP_API_URL}/qna/${qnaBoardId}`,
+      {withCredentials: true} // ✅ 쿠키 인증 포함
+    );
     return response.data;
   } catch (error) {
-    console.error('❌ QnA 게시글 삭제 오류:', error.response?.data || error.message);
-    throw error;
+    console.error('❌ QnA 게시글 삭제 오류:', error);
+    throw error.response?.data || {error: 'QnA 게시글 삭제 중 오류 발생'};
   }
 };
 

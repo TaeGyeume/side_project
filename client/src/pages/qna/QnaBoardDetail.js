@@ -65,49 +65,76 @@ const QnaBoardDetail = () => {
   // ✅ QnA 게시글 삭제
   const handleDeleteQnaBoard = async () => {
     if (!user) return alert('로그인이 필요합니다.');
+
     if (window.confirm('정말로 삭제하시겠습니까?')) {
       try {
-        await deleteQnaBoard(qnaBoardId);
+        console.log('🛠 게시글 삭제 요청:', {
+          boardId: qnaBoardId,
+          userId: user._id, // 현재 로그인한 사용자 ID
+          roles: user.roles // 현재 사용자 역할
+        });
+
+        await deleteQnaBoard(qnaBoardId, user._id);
         alert('게시글이 삭제되었습니다.');
-        navigate('/qna');
+        navigate('/qna'); // 목록으로 이동
       } catch (error) {
-        console.error('QnA 게시글 삭제 오류:', error);
+        console.error('❌ QnA 게시글 삭제 오류:', error);
+        alert('게시글 삭제 중 오류 발생');
       }
     }
   };
 
-  // ✅ 댓글 작성
+  //  댓글 작성
   const handleCreateComment = async () => {
     if (!user) return alert('로그인이 필요합니다.');
     if (!newComment.trim()) return alert('댓글을 입력하세요.');
 
     setCommentLoading(true);
     try {
-      const comment = await createQnaComment(qnaBoardId, newComment);
-      setComments(prevComments => [comment, ...prevComments]);
+      const response = await createQnaComment(qnaBoardId, newComment);
+      console.log('✅ 새 댓글:', response.qnaComment);
+
+      //  새 댓글을 기존 목록에 추가하여 즉시 반영
+      setComments(prevComments => [
+        {
+          ...response.qnaComment,
+          user: {
+            _id: user._id,
+            username: user.username,
+            email: user.email
+          }
+        },
+        ...prevComments
+      ]);
+
       setNewComment('');
     } catch (error) {
-      console.error('QnA 댓글 작성 오류:', error);
+      console.error('❌ QnA 댓글 작성 오류:', error);
     }
     setCommentLoading(false);
   };
 
-  // ✅ 댓글 삭제
+  // 댓글 삭제
   const handleDeleteComment = async commentId => {
     if (!user) return alert('로그인이 필요합니다.');
+
+    console.log('🛠 댓글 삭제 요청:', {commentId, userId: user._id, roles: user.roles});
+
     if (window.confirm('정말로 댓글을 삭제하시겠습니까?')) {
       try {
-        await deleteQnaComment(commentId);
+        await deleteQnaComment(commentId, user._id, user.roles);
         setComments(prevComments =>
           prevComments.filter(comment => comment._id !== commentId)
         );
       } catch (error) {
-        console.error('QnA 댓글 삭제 오류:', error);
+        console.error('❌ QnA 댓글 삭제 오류:', error);
+        alert('댓글 삭제 중 오류 발생');
       }
     }
   };
 
   if (loading) return <p>로딩 중...</p>;
+
   if (!qnaBoard) return <p>게시글을 찾을 수 없습니다.</p>;
 
   return (
@@ -116,7 +143,8 @@ const QnaBoardDetail = () => {
       <p>카테고리: {qnaBoard.category}</p>
       {/* 작성자: 이름 우선, 없으면 이메일 표시 */}
       <p>
-        작성자: <strong>{qnaBoard.user?.name || qnaBoard.user?.email || '익명'}</strong>
+        작성자: <strong>{qnaBoard.user?.username || '익명'}</strong>
+        {qnaBoard.user?.email && ` (${qnaBoard.user.email})`}
       </p>
       <p>
         작성일:{' '}
@@ -158,7 +186,9 @@ const QnaBoardDetail = () => {
         {comments.map(comment => (
           <div key={comment._id || Math.random()} className="qna-comment">
             <p>
-              <strong>{comment.user?.username || '알 수 없음'}</strong>{' '}
+              <strong>
+                {comment.user?.username || comment.user?.email || '알 수 없음'}
+              </strong>
               {comment.isAdmin && <span>(관리자)</span>}
             </p>
             <p>{comment.content}</p>
@@ -167,13 +197,14 @@ const QnaBoardDetail = () => {
                 ? new Date(comment.createdAt).toLocaleString()
                 : '날짜 없음'}
             </p>
-            {user && (user.id === comment.user?._id || user.roles?.includes('admin')) && (
-              <button
-                onClick={() => handleDeleteComment(comment._id)}
-                className="delete-comment">
-                삭제
-              </button>
-            )}
+            {user &&
+              (user._id === comment.user?._id || user.roles?.includes('admin')) && (
+                <button
+                  onClick={() => handleDeleteComment(comment._id)}
+                  className="delete-comment">
+                  삭제
+                </button>
+              )}
           </div>
         ))}
       </div>
