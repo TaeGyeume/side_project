@@ -1,0 +1,41 @@
+.qna-write-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+}
+
+.qna-write-container h2 {
+  text-align: center;
+}
+
+.qna-write-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.qna-write-container label {
+  margin-top: 10px;
+}
+
+.qna-write-container select,
+.qna-write-container input,
+.qna-write-container textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.qna-write-container button {
+  margin-top: 20px;
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.qna-write-container button:disabled {
+  background-color: #ccc;
+}
