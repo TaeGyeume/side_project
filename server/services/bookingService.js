@@ -417,11 +417,15 @@ exports.cancelBooking = async bookingIds => {
 
     await Promise.all(
       bookings.map(async booking => {
-        const {types, productIds, counts, userCouponId} = booking;
+        const {types, productIds, counts, roomIds, startDates, endDates, userCouponId} =
+          booking;
 
         const prodIds = Array.isArray(productIds) ? productIds : [productIds];
         const prodTypes = Array.isArray(types) ? types : [types];
         const prodCounts = Array.isArray(counts) ? counts : [counts];
+        const bookingRoomIds = Array.isArray(roomIds) ? roomIds : [roomIds];
+        const bookingStartDates = Array.isArray(startDates) ? startDates : [startDates];
+        const bookingEndDates = Array.isArray(endDates) ? endDates : [endDates];
 
         await Promise.all(
           prodIds.map(async (productId, index) => {
@@ -440,13 +444,49 @@ exports.cancelBooking = async bookingIds => {
                   break;
 
                 case 'accommodation':
-                  product = await Room.findById(booking.roomIds[index]);
-                  product.reservedDates = product.reservedDates.filter(
-                    d =>
-                      d.date.toISOString().split('T')[0] !==
-                      booking.startDates[index].toISOString().split('T')[0]
-                  );
+                  product = await Room.findById(bookingRoomIds[index]);
+                  if (!product) {
+                    console.error(
+                      `❌ [서버] 객실 정보 찾을 수 없음 - roomId: ${bookingRoomIds[index]}`
+                    );
+                    return;
+                  }
 
+                  const startDate = new Date(bookingStartDates[index]);
+                  const endDate = new Date(bookingEndDates[index]);
+                  let currentDate = new Date(startDate);
+
+                  while (currentDate < endDate) {
+                    const dateStr = currentDate.toISOString().split('T')[0];
+
+                    // ✅ 해당 날짜의 예약 개수 가져오기
+                    let reservedIndex = product.reservedDates.findIndex(
+                      d => d.date.toISOString().split('T')[0] === dateStr
+                    );
+
+                    if (reservedIndex !== -1) {
+                      product.reservedDates[reservedIndex].count -= prodCounts[index];
+
+                      // ✅ 만약 0개가 되면 해당 날짜 데이터를 제거
+                      if (product.reservedDates[reservedIndex].count <= 0) {
+                        product.reservedDates.splice(reservedIndex, 1);
+                      }
+                    }
+
+                    currentDate.setDate(currentDate.getDate() + 1);
+                  }
+
+                  // ✅ 객실 가용 여부 업데이트
+                  const totalReserved = product.reservedDates.reduce(
+                    (acc, d) => acc + d.count,
+                    0
+                  );
+                  product.available = totalReserved < product.availableCount;
+
+                  await product.save();
+                  console.log(
+                    `✅ [서버] 객실 예약 취소 완료 - roomId: ${bookingRoomIds[index]}`
+                  );
                   break;
 
                 case 'travelItem':
