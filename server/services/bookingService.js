@@ -78,7 +78,7 @@ exports.createBooking = async bookingData => {
     });
 
     await newBooking.save();
-    console.log('📌 [서버] 예약 생성 완료:', newBooking);
+    // console.log('📌 [서버] 예약 생성 완료:', newBooking);
     exports.scheduleAutoConfirm(newBooking._id, newBooking.createdAt);
 
     return {status: 200, booking: newBooking, message: '예약 생성 완료'};
