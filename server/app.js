@@ -64,7 +64,7 @@ app.use('/api', routes);
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', socialAuthRoutes); // 소셜 로그인 라우트 추가
 app.use('/api/flights', flightRoutes); // 항공편 관련 API
-app.use('/api/user-mileages', userMileageRoutes); // 마일리지 API
+app.use('/api/mileage', userMileageRoutes); // 마일리지 API
 app.use('/api/travelItems', travelItemRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/user-coupons', userCouponRoutes);

@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {authAPI} from '../../api/auth';
 import {useAuthStore} from '../../store/authStore';
+import {useNavigate} from 'react-router-dom';
 
 const Profile = () => {
   const [userData, setUserData] = useState({
@@ -22,6 +23,7 @@ const Profile = () => {
   const [editingField, setEditingField] = useState('');
 
   const {checkAuth} = useAuthStore();
+  const navigate = useNavigate();
 
   //  사용자 프로필 불러오기
   useEffect(() => {
@@ -128,6 +130,11 @@ const Profile = () => {
     setShowModal(true);
   };
 
+  // ✅ 마일리지 관리 페이지로 이동
+  const goToMileagePage = () => {
+    navigate('/mileage'); // `/mileage` 페이지로 이동
+  };
+
   if (loading) return <p className="text-center">프로필 불러오는 중...</p>;
 
   return (
@@ -144,12 +151,22 @@ const Profile = () => {
             <p className="mb-0">
               <strong>{fieldNames[key] || key}:</strong> {value || '미등록'}
             </p>
-            {key !== 'membershipLevel' && key !== 'mileage' && (
+
+            {/* 마일리지 항목에만 "마일리지 관리" 버튼 추가 */}
+            {key === 'mileage' ? (
               <button
-                className="btn btn-outline-primary btn-sm"
-                onClick={() => openModal(key)}>
-                수정
+                className="btn btn-outline-success btn-sm"
+                onClick={goToMileagePage}>
+                상세정보
               </button>
+            ) : (
+              key !== 'membershipLevel' && (
+                <button
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={() => openModal(key)}>
+                  수정
+                </button>
+              )
             )}
           </div>
         ))}
