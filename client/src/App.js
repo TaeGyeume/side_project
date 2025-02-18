@@ -62,6 +62,7 @@ import FavoriteList from './components/user/FavoriteList'; // 즐겨찾기 목�
 import QnaBoardList from './pages/qna/QnaBoardList';
 import QnaBoardDetail from './pages/qna/QnaBoardDetail';
 import QnaBoardWrite from './pages/qna/QnaBoardWrite';
+import ReviewComponent from './components/review/Review';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
@@ -121,6 +122,7 @@ const App = () => {
             path="/accommodations/:accommodationId/detail"
             element={<AccommodationDetail />}
           />
+
           {/* ✈️ 항공편 목록 페이지 추가 */}
           <Route path="/flights" element={<Flights />} />
           <Route path="/flights/results" element={<FlightResults />} />
@@ -133,6 +135,7 @@ const App = () => {
           <Route path="/travelItems/:itemId" element={<TravelItemDetail />} />
 
           <Route path="/tourTicket/*" element={<UserTourTicketPage />} />
+          <Route path="/:productType/reviews" element={<ReviewComponent />} />
           {/* 🔐 인증된 사용자만 접근 가능 */}
           <Route element={<PrivateRoute />}>
             {/* <Route path="/reservation/:flightId" element={<Reservation />} /> */}

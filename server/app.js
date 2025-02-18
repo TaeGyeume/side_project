@@ -27,6 +27,7 @@ const couponRoutes = require('./routes/couponRoutes');
 const userCouponRoutes = require('./routes/userCouponRoutes');
 const userMileageRoutes = require('./routes/userMileageRoutes');
 const qnaRoutes = require('./routes/qnaRoutes'); //
+const reviewRoutes = require('./routes/reviewRoutes');
 
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -71,6 +72,7 @@ app.use('/uploads', express.static('uploads'));
 app.use('/tourTicket', userTourTicketRoutes);
 app.use('/booking', bookingRoutes);
 app.use('/api/qna', qnaRoutes);
+app.use('/:productType/reviews', reviewRoutes);
 
 //테스트용
 app.post('/api/admin', authMiddleware, authorizeRoles('admin'), (req, res) => {

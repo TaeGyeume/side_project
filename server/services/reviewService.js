@@ -19,3 +19,8 @@ exports.getReviewsByProduct = async productId => {
 exports.updateReview = async (id, data) => {
   return await Review.findByIdAndUpdate(id, data, {new: true});
 };
+
+exports.deleteReview = async id => {
+  await Review.findByIdAndDelete(id);
+  await Comment.deleteMany({reviewId: id});
+};

@@ -524,7 +524,7 @@ exports.scheduleAutoConfirm = async (bookingId, createdAt) => {
   // createdAt이 KST로 저장되어 있으므로, UTC로 변환
   const utcCreatedAt = new Date(createdAt.getTime() - 9 * 60 * 60 * 1000);
 
-  const confirmTime = new Date(utcCreatedAt.getTime() + 3 * 60 * 1000); // 3분 뒤 구매 확정으로 바뀜
+  const confirmTime = new Date(utcCreatedAt.getTime() + 5 * 24 * 60 * 60 * 1000); // 5일 뒤 구매 확정으로 바뀜
   console.log(`⏰ UTC 변환된 예약 확인 스케줄 시간: ${confirmTime}`);
 
   try {
