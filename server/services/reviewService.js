@@ -1,5 +1,4 @@
 const Review = require('../models/Review');
-const Comment = require('../models/Comment');
 const Booking = require('../models/Booking');
 const fs = require('fs');
 const path = require('path');
@@ -30,6 +29,20 @@ exports.getReviewsByProduct = async productId => {
   return reviews;
 };
 
+exports.toggleLike = async (reviewId, userId) => {
+  const review = await Review.findById(reviewId);
+  if (!review) throw new Error('리뷰를 찾을 수 없습니다.');
+
+  const index = review.likes.indexOf(userId);
+  if (index === -1) {
+    review.likes.push(userId);
+  } else {
+    review.likes.splice(index, 1);
+  }
+  await review.save();
+  return review;
+};
+
 exports.updateReview = async (id, data, files) => {
   console.log('📌 [서버] 리뷰 수정 서비스 호출 - id:', id, 'data:', data);
   const imagePaths = files ? files.map(file => `/uploads/${file.filename}`) : [];
@@ -44,4 +57,16 @@ exports.deleteReview = async id => {
   await Review.findByIdAndDelete(id);
   await Comment.deleteMany({reviewId: id});
   console.log('✅ [서버] 리뷰 및 댓글 삭제 성공');
+};
+
+// 댓글 추가 (관리자만)
+exports.addComment = async (reviewId, userId, content) => {
+  const comment = new Comment({reviewId, userId, content});
+  await comment.save();
+  return comment;
+};
+
+// 댓글 삭제
+exports.deleteComment = async commentId => {
+  await Comment.findByIdAndDelete(commentId);
 };

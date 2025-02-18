@@ -10,8 +10,8 @@ export const createReview = async formData => {
   });
 };
 
-export const getReviews = async (productType, productId) => {
-  const response = await axios.get(`${BASE_URL}/${productType}/reviews/${productId}`);
+export const getReviews = async productId => {
+  const response = await axios.get(`${BASE_URL}/${productId}`);
   return response.data;
 };
 
@@ -25,5 +25,20 @@ export const updateReview = async (productType, reviewId, updatedData) => {
 
 export const deleteReview = async (productType, reviewId) => {
   const response = await axios.delete(`${BASE_URL}/${productType}/reviews/${reviewId}`);
+  return response.data;
+};
+
+export const likeReview = async reviewId => {
+  const response = await axios.post(`${BASE_URL}/${reviewId}/like`);
+  return response.data;
+};
+
+export const addComment = async (reviewId, content) => {
+  const response = await axios.post(`${BASE_URL}/${reviewId}/comment`, {content});
+  return response.data;
+};
+
+export const deleteComment = async commentId => {
+  const response = await axios.delete(`${BASE_URL}/comment/${commentId}`);
   return response.data;
 };

@@ -64,6 +64,7 @@ import QnaBoardList from './pages/qna/QnaBoardList';
 import QnaBoardDetail from './pages/qna/QnaBoardDetail';
 import QnaBoardWrite from './pages/qna/QnaBoardWrite';
 import ReviewForm from './components/review/ReviewForm';
+import ReviewList from './components/review/ReviewList';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
