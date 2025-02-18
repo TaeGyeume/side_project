@@ -1,16 +1,16 @@
 import React, {useEffect, useState} from 'react';
-import {getQnaBoards} from '../../api/qna/qnaBoardService';
+import {getQnaBoards, deleteQnaBoard} from '../../api/qna/qnaBoardService';
 import {useNavigate} from 'react-router-dom';
 import {getUserProfile} from '../../api/user/user';
 import './styles/QnaBoardList.css';
 
 const QnaBoardList = () => {
   const [qnaBoards, setQnaBoards] = useState([]);
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState(''); // 카테고리 필터링
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [user, setUser] = useState(null);
+  const [page, setPage] = useState(1); // 현재 페이지
+  const [totalPages, setTotalPages] = useState(1); // 전체 페이지 수
+  const [user, setUser] = useState(null); // 로그인된 사용자 정보
 
   const navigate = useNavigate();
 
@@ -19,14 +19,14 @@ const QnaBoardList = () => {
       try {
         setLoading(true);
 
-        // ✅ 사용자 정보 가져오기
+        // 사용자 정보 가져오기
         const userResponse = await getUserProfile();
         setUser(userResponse.data);
 
-        // ✅ QnA 게시글 목록 가져오기
-        const response = await getQnaBoards(page, category);
+        // QnA 게시글 목록 가져오기 (페이징 및 카테고리 필터링을 함께 처리)
+        const response = await getQnaBoards(page, 10, category); // `page`, `limit`, `category` 값을 전달
         setQnaBoards(response.qnaBoards);
-        setTotalPages(response.totalPages || 1);
+        setTotalPages(response.totalPages || 1); // 총 페이지 수
       } catch (error) {
         console.error('❌ 데이터 로드 중 오류 발생:', error);
       } finally {
@@ -35,7 +35,31 @@ const QnaBoardList = () => {
     };
 
     fetchUserAndBoards();
-  }, [page, category]);
+  }, [page, category]); // page나 category가 바뀔 때마다 API 호출
+
+  // 게시글 삭제 처리
+  const handleDeleteQnaBoard = async qnaBoardId => {
+    if (!user) return alert('로그인이 필요합니다.');
+
+    if (window.confirm('정말로 삭제하시겠습니까?')) {
+      try {
+        // QnA 게시글 삭제 요청
+        await deleteQnaBoard(qnaBoardId);
+
+        // 삭제된 게시글을 목록에서 즉시 제외하여 UI 갱신
+        setQnaBoards(prevBoards => prevBoards.filter(qna => qna._id !== qnaBoardId));
+        alert('게시글이 삭제되었습니다.');
+      } catch (error) {
+        console.error('❌ 게시글 삭제 오류:', error);
+        alert('게시글 삭제 중 오류가 발생했습니다.');
+      }
+    }
+  };
+
+  // 게시글 수정 페이지로 이동
+  const handleEditQnaBoard = qnaBoardId => {
+    navigate(`/qna/edit/${qnaBoardId}`);
+  };
 
   return (
     <div className="qna-board-container">
@@ -71,7 +95,8 @@ const QnaBoardList = () => {
               <div
                 key={qna._id}
                 className="qna-board-item"
-                onClick={() => navigate(`/qna/${qna._id}`)}>
+                onClick={() => navigate(`/qna/${qna._id}`)} // 게시글 상세보기로 이동
+              >
                 <h3>{qna.title}</h3>
                 <p>{qna.category}</p>
 
@@ -84,6 +109,30 @@ const QnaBoardList = () => {
                 </p>
 
                 <p>작성일: {new Date(qna.createdAt).toLocaleDateString()}</p>
+
+                {/* 🔹 수정 및 삭제 버튼 (현재 사용자만 수정, 관리자는 삭제 가능) */}
+                {user && (user._id === qna.user?._id || user.roles.includes('admin')) && (
+                  <div className="qna-board-actions">
+                    {user._id === qna.user?._id && (
+                      <button
+                        onClick={e => {
+                          e.stopPropagation(); // 클릭 시 상세 페이지 이동을 방지하고 수정으로만 이동
+                          handleEditQnaBoard(qna._id);
+                        }}
+                        className="edit-button">
+                        수정
+                      </button>
+                    )}
+                    <button
+                      onClick={e => {
+                        e.stopPropagation(); // 클릭 시 상세 페이지 이동을 방지하고 삭제로만 이동
+                        handleDeleteQnaBoard(qna._id);
+                      }}
+                      className="delete-button">
+                      삭제
+                    </button>
+                  </div>
+                )}
               </div>
             ))
           ) : (

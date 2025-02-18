@@ -16,7 +16,7 @@ const FavoriteList = () => {
       // console.log('📡 즐겨찾기 목록 데이터:', response.favorites);
       setFavorites(response.favorites.map(fav => ({...fav, isFavorite: true})));
     } catch (error) {
-      console.error('❌ 즐겨찾기 목록 가져오기 오류:', error);
+      // console.error('❌ 즐겨찾기 목록 가져오기 오류:', error);
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,17 @@
 import React, {useState} from 'react';
+import {
+  Box,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
+  Button,
+  Typography
+} from '@mui/material';
 
 const CouponForm = ({onSubmit}) => {
   const [coupon, setCoupon] = useState({
@@ -37,80 +50,125 @@ const CouponForm = ({onSubmit}) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="coupon-form">
-      <label>쿠폰 이름</label>
-      <input
-        type="text"
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{
+        maxWidth: 500,
+        mx: 'auto',
+        p: 3,
+        boxShadow: 3,
+        borderRadius: 2,
+        bgcolor: 'white'
+      }}>
+      <Typography variant="h5" sx={{mb: 2}}>
+        쿠폰 생성
+      </Typography>
+
+      <TextField
+        fullWidth
+        label="쿠폰 이름"
         name="name"
         value={coupon.name}
         onChange={handleChange}
         required
+        sx={{mb: 2}}
       />
 
-      <label>쿠폰 설명</label>
-      <textarea name="description" value={coupon.description} onChange={handleChange} />
+      <TextField
+        fullWidth
+        label="쿠폰 설명"
+        name="description"
+        value={coupon.description}
+        onChange={handleChange}
+        multiline
+        rows={3}
+        sx={{mb: 2}}
+      />
 
-      <label>할인 유형</label>
-      <select name="discountType" value={coupon.discountType} onChange={handleChange}>
-        <option value="percentage">퍼센트 할인</option>
-        <option value="fixed">정액 할인</option>
-      </select>
+      <FormControl fullWidth sx={{mb: 2}} variant="outlined">
+        <InputLabel id="discount-type-label" shrink>
+          할인 유형
+        </InputLabel>
+        <Select
+          labelId="discount-type-label"
+          name="discountType"
+          value={coupon.discountType}
+          onChange={handleChange}
+          label="할인 유형" // 추가: Select 요소에 라벨을 직접 적용
+        >
+          <MenuItem value="percentage">퍼센트 할인</MenuItem>
+          <MenuItem value="fixed">정액 할인</MenuItem>
+        </Select>
+      </FormControl>
 
-      <label>할인 값</label>
-      <input
+      <TextField
+        fullWidth
+        label="할인 값"
         type="number"
         name="discountValue"
         value={coupon.discountValue}
         onChange={handleChange}
         required
+        sx={{mb: 2}}
       />
 
       {coupon.discountType === 'percentage' && (
-        <>
-          <label>최대 할인 금액</label>
-          <input
-            type="number"
-            name="maxDiscountAmount"
-            value={coupon.maxDiscountAmount}
-            onChange={handleChange}
-          />
-        </>
+        <TextField
+          fullWidth
+          label="최대 할인 금액"
+          type="number"
+          name="maxDiscountAmount"
+          value={coupon.maxDiscountAmount}
+          onChange={handleChange}
+          sx={{mb: 2}}
+        />
       )}
 
-      <label>최소 구매 금액</label>
-      <input
+      <TextField
+        fullWidth
+        label="최소 구매 금액"
         type="number"
         name="minPurchaseAmount"
         value={coupon.minPurchaseAmount}
         onChange={handleChange}
+        sx={{mb: 2}}
       />
 
-      <label>적용 대상 멤버십</label>
-      <div className="membership-options">
-        {membershipOptions.map(membership => (
-          <label key={membership}>
-            <input
-              type="checkbox"
-              value={membership}
-              checked={coupon.applicableMemberships.includes(membership)}
-              onChange={() => handleMembershipChange(membership)}
+      <FormControl component="fieldset" sx={{mb: 2}}>
+        <Typography variant="body1">적용 대상 멤버십</Typography>
+        <FormGroup>
+          {membershipOptions.map(membership => (
+            <FormControlLabel
+              key={membership}
+              control={
+                <Checkbox
+                  checked={coupon.applicableMemberships.includes(membership)}
+                  onChange={() => handleMembershipChange(membership)}
+                />
+              }
+              label={membership}
             />
-            {membership}
-          </label>
-        ))}
-      </div>
+          ))}
+        </FormGroup>
+      </FormControl>
 
-      <label>쿠폰 만료일</label>
-      <input
+      <TextField
+        fullWidth
+        label="쿠폰 만료일"
         type="datetime-local"
         name="expiresAt"
         value={coupon.expiresAt}
         onChange={handleChange}
         required
+        InputLabelProps={{shrink: true}} // 추가: 라벨이 겹치지 않도록 함
+        sx={{mb: 3}}
       />
 
-      <button type="submit">쿠폰 생성</button>
-    </form>
+      <Button type="submit" variant="contained" color="primary" fullWidth>
+        쿠폰 생성
+      </Button>
+    </Box>
   );
 };
 
