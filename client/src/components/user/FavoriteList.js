@@ -13,7 +13,7 @@ const FavoriteList = () => {
   const fetchFavorites = async () => {
     try {
       const response = await getUserFavorites();
-      console.log('📡 즐겨찾기 목록 데이터:', response.favorites);
+      // console.log('📡 즐겨찾기 목록 데이터:', response.favorites);
       setFavorites(response.favorites.map(fav => ({...fav, isFavorite: true})));
     } catch (error) {
       console.error('❌ 즐겨찾기 목록 가져오기 오류:', error);
@@ -28,7 +28,7 @@ const FavoriteList = () => {
 
   // ✅ 즐겨찾기 상태를 즉시 UI에 반영하는 함수
   const updateFavoriteStatus = (itemId, newStatus) => {
-    console.log(`🔹 업데이트된 즐겨찾기 상태 (${itemId}):`, newStatus);
+    // console.log(`🔹 업데이트된 즐겨찾기 상태 (${itemId}):`, newStatus);
 
     setFavorites(prevFavorites =>
       prevFavorites.map(item =>
@@ -75,7 +75,7 @@ const FavoriteList = () => {
         <div className="favorite-list">
           {favorites.length > 0 ? (
             favorites.map(item => {
-              console.log('🛠 즐겨찾기 아이템:', item);
+              // console.log('🛠 즐겨찾기 아이템:', item);
 
               return (
                 <div

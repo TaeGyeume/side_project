@@ -53,7 +53,7 @@ const getQnaBoards = async (req, res) => {
     );
     res.status(200).json(result);
   } catch (error) {
-    console.error('❌ Error fetching QnA Boards:', error);
+    // console.error('❌ Error fetching QnA Boards:', error);
     res.status(500).json({error: error.message});
   }
 };
@@ -66,7 +66,7 @@ const getQnaBoardById = async (req, res) => {
     const qnaBoard = await qnaService.getQnaBoardById(qnaBoardId);
     res.status(200).json(qnaBoard);
   } catch (error) {
-    console.error('❌ Error fetching QnA Board:', error);
+    // console.error('❌ Error fetching QnA Board:', error);
     res.status(404).json({error: error.message});
   }
 };
@@ -125,7 +125,7 @@ const getQnaComments = async (req, res) => {
     );
     res.status(200).json(result);
   } catch (error) {
-    console.error('❌ Error fetching QnA Comments:', error);
+    // console.error('❌ Error fetching QnA Comments:', error);
     res.status(500).json({error: error.message});
   }
 };

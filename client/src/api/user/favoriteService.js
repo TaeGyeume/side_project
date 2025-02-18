@@ -39,7 +39,7 @@ export const getUserFavorites = async () => {
     // console.log('📥 Fetched favorites:', response.data.favorites);
     return response.data;
   } catch (error) {
-    console.error('❌ Error fetching favorites:', error.response?.data || error.message);
+    // console.error('❌ Error fetching favorites:', error.response?.data || error.message);
     throw new Error(
       error.response?.data?.message || error.message || 'Failed to fetch user favorites'
     );

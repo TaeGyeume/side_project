@@ -60,7 +60,7 @@ const getQnaBoards = async (page = 1, limit = 10, category = null) => {
 
     return {qnaBoards, total, totalPages: Math.ceil(total / limit)};
   } catch (error) {
-    console.error('❌ Error fetching QnA Boards:', error);
+    // console.error('❌ Error fetching QnA Boards:', error);
     throw new Error('QnA 게시글 목록 조회 중 오류 발생');
   }
 };
@@ -75,7 +75,7 @@ const getQnaBoardById = async qnaBoardId => {
     if (!qnaBoard) throw new Error('QnA 게시글을 찾을 수 없습니다.');
     return qnaBoard;
   } catch (error) {
-    console.error('❌ Error fetching QnA Board:', error);
+    // console.error('❌ Error fetching QnA Board:', error);
     throw new Error('QnA 게시글 조회 중 오류 발생');
   }
 };
@@ -142,7 +142,7 @@ const getQnaComments = async (qnaBoardId, page = 1, limit = 5) => {
 
     return {comments, total, totalPages: Math.ceil(total / limit)};
   } catch (error) {
-    console.error('❌ Error fetching QnA Comments:', error);
+    // console.error('❌ Error fetching QnA Comments:', error);
     throw new Error('QnA 댓글 조회 중 오류 발생');
   }
 };
