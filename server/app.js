@@ -28,6 +28,7 @@ const userCouponRoutes = require('./routes/userCouponRoutes');
 const userMileageRoutes = require('./routes/userMileageRoutes');
 const qnaRoutes = require('./routes/qnaRoutes'); //
 const reviewRoutes = require('./routes/reviewRoutes');
+const viewsRoutes = require('./routes/viewsRoutes');
 
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -63,10 +64,11 @@ app.use('/api', routes);
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', socialAuthRoutes); // 소셜 로그인 라우트 추가
 app.use('/api/flights', flightRoutes); // 항공편 관련 API
-app.use('/api/user-mileages', userMileageRoutes); // 마일리지 API
+app.use('/api/mileage', userMileageRoutes); // 마일리지 API
 app.use('/api/travelItems', travelItemRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/user-coupons', userCouponRoutes);
+app.use('/api/views', viewsRoutes);
 app.use('/product', productRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/tourTicket', userTourTicketRoutes);

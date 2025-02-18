@@ -1,4 +1,5 @@
 const userMileageService = require('../services/userMileageService');
+const User = require('../models/User');
 
 // ✅ 마일리지 조회 (User 스키마의 mileage 반환)
 exports.getUserMileage = async (req, res) => {

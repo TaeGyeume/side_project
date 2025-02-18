@@ -124,6 +124,11 @@ const Header = () => {
                         </Link>
                       </li>
                       <li>
+                        <Link className="dropdown-item" to="/mileage">
+                          내 마일리지
+                        </Link>
+                      </li>
+                      <li>
                         <Link className="dropdown-item" to="/favorite-list">
                           즐겨찾기
                         </Link>

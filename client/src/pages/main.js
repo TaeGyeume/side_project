@@ -1,5 +1,6 @@
 import React from 'react';
 import TourTicketList from '../components/tourTicket/TourTicketList';
+import PopularProductsSlider from '../components/views/PopularProductsSlider';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Main = () => {
@@ -13,6 +14,9 @@ const Main = () => {
         <div className="main-content">
           <h3>지역 필수 티켓</h3>
           <TourTicketList />
+        </div>
+        <div>
+          <PopularProductsSlider />
         </div>
       </div>
     </div>
