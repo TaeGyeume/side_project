@@ -86,13 +86,15 @@ const deleteQnaBoard = async (qnaBoardId, userId, isAdmin = false) => {
     const qnaBoard = await QnaBoard.findById(qnaBoardId);
     if (!qnaBoard) throw new Error('QnA 게시글을 찾을 수 없습니다.');
 
-    // ✅ 삭제 권한 체크 (관리자이거나 본인이 작성한 경우)
+    // 삭제 권한 체크 (관리자이거나 본인이 작성한 경우)
     if (!isAdmin && qnaBoard.user.toString() !== userId) {
       throw new Error('삭제 권한이 없습니다.');
     }
 
+    // 게시글 삭제
     await QnaBoard.deleteOne({_id: qnaBoardId});
-    await QnaComment.deleteMany({qnaBoard: qnaBoardId}); // 관련 댓글 삭제
+    // 관련 댓글 삭제
+    await QnaComment.deleteMany({qnaBoard: qnaBoardId});
 
     return {message: 'QnA 게시글이 삭제되었습니다.'};
   } catch (error) {

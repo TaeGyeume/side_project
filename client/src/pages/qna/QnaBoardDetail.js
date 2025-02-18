@@ -152,7 +152,6 @@ const QnaBoardDetail = () => {
           : '알 수 없음'}
       </p>
       <p>{qnaBoard.content}</p>
-
       {/* 이미지 & 파일 첨부 */}
       {qnaBoard.images && qnaBoard.images.length > 0 && (
         <div className="qna-images">
@@ -161,7 +160,6 @@ const QnaBoardDetail = () => {
           ))}
         </div>
       )}
-
       {qnaBoard.attachments && qnaBoard.attachments.length > 0 && (
         <div className="qna-attachments">
           {qnaBoard.attachments.map((file, index) => (
@@ -172,13 +170,11 @@ const QnaBoardDetail = () => {
         </div>
       )}
 
-      {/* 관리자 또는 작성자만 삭제 가능 */}
-      {user && (user.id === qnaBoard.user?._id || user.roles?.includes('admin')) && (
+      {user && (user._id === qnaBoard.user?._id || user.roles?.includes('admin')) && (
         <button onClick={handleDeleteQnaBoard} className="delete-button">
           게시글 삭제
         </button>
       )}
-
       {/* 🔹 댓글 목록 */}
       <div className="qna-comments">
         <h3>댓글 ({comments.length})</h3>
@@ -207,7 +203,6 @@ const QnaBoardDetail = () => {
           </div>
         ))}
       </div>
-
       {/* 🔹 댓글 작성 */}
       <div className="comment-input">
         <textarea

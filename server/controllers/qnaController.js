@@ -75,7 +75,7 @@ const getQnaBoardById = async (req, res) => {
 const deleteQnaBoard = async (req, res) => {
   try {
     const {qnaBoardId} = req.params;
-    const userId = req.user._id; // 🔥 req.user에서 가져옴
+    const userId = req.user.id; // 🔥 req.user에서 가져옴
     const isAdmin = req.user.roles.includes('admin');
 
     console.log(`🛠 게시글 삭제 요청:`, {
