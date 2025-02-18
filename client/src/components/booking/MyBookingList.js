@@ -7,6 +7,7 @@ import {
 } from '../../api/booking/bookingService';
 import {getReviews} from '../../api/review/reviewService';
 import {useReviewContext} from '../../contexts/ReviewContext';
+import {useAuthStore} from '../../store/authStore';
 import './styles/MyBookingList.css';
 
 const MyBookingList = ({status}) => {
@@ -15,30 +16,40 @@ const MyBookingList = ({status}) => {
   const [error, setError] = useState(null);
   const {reviewStatus, setReviewStatus} = useReviewContext();
   const navigate = useNavigate();
-  const userId = localStorage.getItem('userId');
 
+  const {user} = useAuthStore(); // authStore에서 user 정보 가져오기
+  const userId = user?._id; // user 객체에서 userId 추출
   console.log('setReviewStatus:', setReviewStatus);
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
         const data = await getMyBookings();
-        if (!data || data.length === 0) {
-          return;
-        }
+        if (!data || data.length === 0) return;
 
         const reviewsStatus = {};
 
-        for (let booking of data) {
-          if (!booking.productIds || booking.productIds.length === 0) continue;
-          for (let productId of booking.productIds) {
-            const reviews = await getReviews(productId.toString());
-            reviewsStatus[productId] = reviews.some(
-              r => r.productId === productId && r.userId?._id === userId
+        await Promise.all(
+          data.map(async booking => {
+            await Promise.all(
+              booking.productIds.map(async product => {
+                const productId = product._id || product;
+                console.log('Fetching reviews for productId:', productId);
+                const reviews = await getReviews(productId.toString());
+
+                const hasReview = reviews.some(
+                  r => String(r.userId._id || r.userId) === String(userId)
+                );
+
+                reviewsStatus[productId] = hasReview;
+              })
             );
-          }
-        }
+          })
+        );
+
+        console.log('Final reviewsStatus:', reviewsStatus);
         setReviewStatus(reviewsStatus);
+
         setBookings(data);
       } catch (err) {
         setError('예약 정보를 불러오는 중 오류 발생');

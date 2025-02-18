@@ -11,8 +11,14 @@ export const createReview = async formData => {
 };
 
 export const getReviews = async productId => {
-  const response = await axios.get(`${BASE_URL}/${productId}`);
-  return response.data;
+  try {
+    const response = await axios.get(`${BASE_URL}/${encodeURIComponent(productId)}`);
+    console.log('Fetched reviews:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    throw error;
+  }
 };
 
 export const updateReview = async (productType, reviewId, updatedData) => {
