@@ -6,11 +6,11 @@ import './styles/QnaBoardList.css';
 
 const QnaBoardList = () => {
   const [qnaBoards, setQnaBoards] = useState([]);
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState(''); // 카테고리 필터링
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [user, setUser] = useState(null);
+  const [page, setPage] = useState(1); // 현재 페이지
+  const [totalPages, setTotalPages] = useState(1); // 전체 페이지 수
+  const [user, setUser] = useState(null); // 로그인된 사용자 정보
 
   const navigate = useNavigate();
 
@@ -19,14 +19,14 @@ const QnaBoardList = () => {
       try {
         setLoading(true);
 
-        // ✅ 사용자 정보 가져오기
+        // 사용자 정보 가져오기
         const userResponse = await getUserProfile();
         setUser(userResponse.data);
 
-        // ✅ QnA 게시글 목록 가져오기 (페이징 및 카테고리 필터링을 함께 처리)
-        const response = await getQnaBoards(page, category);
+        // QnA 게시글 목록 가져오기 (페이징 및 카테고리 필터링을 함께 처리)
+        const response = await getQnaBoards(page, 10, category); // `page`, `limit`, `category` 값을 전달
         setQnaBoards(response.qnaBoards);
-        setTotalPages(response.totalPages || 1);
+        setTotalPages(response.totalPages || 1); // 총 페이지 수
       } catch (error) {
         console.error('❌ 데이터 로드 중 오류 발생:', error);
       } finally {
