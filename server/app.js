@@ -72,7 +72,7 @@ app.use('/uploads', express.static('uploads'));
 app.use('/tourTicket', userTourTicketRoutes);
 app.use('/booking', bookingRoutes);
 app.use('/api/qna', qnaRoutes);
-app.use('/:productType/reviews', reviewRoutes);
+app.use('/reviews', reviewRoutes);
 
 //테스트용
 app.post('/api/admin', authMiddleware, authorizeRoles('admin'), (req, res) => {

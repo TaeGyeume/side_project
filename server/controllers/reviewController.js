@@ -1,11 +1,25 @@
-const ReviewService = require('../services/reviewService');
+const reviewService = require('../services/reviewService');
+const upload = require('../middleware/uploadMiddleware');
 
 exports.createReview = async (req, res) => {
   try {
-    const review = await ReviewService.createReview(req.body);
-    res.status(201).json(review);
+    const {bookingId, productId, rating, content} = req.body;
+    const imagePaths = req.files
+      ? req.files.map(file => `/uploads/${file.filename}`)
+      : [];
+
+    const newReview = await reviewService.createReview({
+      bookingId,
+      productId,
+      rating,
+      content,
+      images: imagePaths
+    });
+    
+    res.status(201).json(newReview);
   } catch (error) {
-    res.status(500).json({message: error.message});
+    console.error('리뷰 등록 오류:', error);
+    res.status(400).json({message: error.message});
   }
 };
 
@@ -19,12 +33,15 @@ exports.getReviews = async (req, res) => {
 };
 
 exports.updateReview = async (req, res) => {
-  try {
-    const review = await ReviewService.updateReview(req.params.id, req.body);
-    res.json(review);
-  } catch (error) {
-    res.status(500).json({message: error.message});
-  }
+  upload(req, res, async err => {
+    if (err) return res.status(400).json({message: err.message});
+    try {
+      const review = await ReviewService.updateReview(req.params.id, req.body, req.files);
+      res.json(review);
+    } catch (error) {
+      res.status(500).json({message: error.message});
+    }
+  });
 };
 
 exports.deleteReview = async (req, res) => {

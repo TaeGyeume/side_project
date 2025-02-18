@@ -509,13 +509,21 @@ exports.getUserBookings = async userId => {
 exports.confirmBooking = async bookingId => {
   try {
     const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      // 예약이 존재하지 않는 경우
+      return {status: 404, message: '예약을 찾을 수 없습니다.'};
+    }
+    
     if (booking.paymentStatus === 'COMPLETED') {
       booking.paymentStatus = 'CONFIRMED';
+      booking.finalPrice = booking.finalPrice || booking.totalPrice; // 기본값 설정
       await booking.save();
       return {status: 200, message: '구매 확정 완료'};
     }
+
     return {status: 400, message: '구매 확정 불가 상태'};
   } catch (error) {
+    console.error('구매 확정 오류:', error); // 오류 출력 추가
     return {status: 500, message: '구매 확정 중 오류 발생'};
   }
 };
