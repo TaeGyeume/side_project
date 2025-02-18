@@ -63,6 +63,7 @@ import FavoriteList from './components/user/FavoriteList'; // 즐겨찾기 목�
 import QnaBoardList from './pages/qna/QnaBoardList';
 import QnaBoardDetail from './pages/qna/QnaBoardDetail';
 import QnaBoardWrite from './pages/qna/QnaBoardWrite';
+import QnaBoardEdit from './pages/qna/QnaBoardEdit';
 import ReviewForm from './components/review/ReviewForm';
 import ReviewList from './components/review/ReviewList';
 
@@ -158,6 +159,7 @@ const App = () => {
               path="/travelItems/purchase/:itemId"
               element={<TravelItemPurchaseForm />}
             />
+            <Route path="/qna/edit/:qnaBoardId" element={<QnaBoardEdit />} />
             <Route path="/booking/my" element={<MyBookingPage />} />
             <Route path="/coupons/my" element={<MyCouponsPage />} />
             <Route path="/mileage" element={<MileagePage />} />

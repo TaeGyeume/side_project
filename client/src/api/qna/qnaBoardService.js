@@ -127,3 +127,44 @@ export const deleteQnaComment = async commentId => {
     throw error;
   }
 };
+
+// ✅ QnA 게시글 수정 (파일이 있을 경우 `FormData`, 없을 경우 `JSON`)
+export const updateQnaBoard = async (qnaBoardId, data, isMultipart = false) => {
+  try {
+    let headers = {'Content-Type': 'application/json'}; // 기본적으로 JSON 요청
+    let requestData = data;
+
+    // ✅ FormData로 변환이 필요한 경우
+    if (isMultipart) {
+      headers['Content-Type'] = 'multipart/form-data';
+      const formData = new FormData();
+
+      formData.append('category', data.category);
+      formData.append('title', data.title);
+      formData.append('content', data.content);
+
+      if (data.images) {
+        Array.from(data.images).forEach(file => formData.append('images', file));
+      }
+      if (data.attachments) {
+        Array.from(data.attachments).forEach(file =>
+          formData.append('attachments', file)
+        );
+      }
+
+      requestData = formData;
+    }
+
+    console.log('📡 요청 데이터:', requestData);
+
+    const response = await axios.put(`${API_BASE_URL}/${qnaBoardId}`, requestData, {
+      headers,
+      withCredentials: true
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('❌ QnA 게시글 수정 오류:', error.response?.data || error.message);
+    throw error;
+  }
+};

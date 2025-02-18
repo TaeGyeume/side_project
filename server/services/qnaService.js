@@ -76,7 +76,7 @@ const getQnaBoardById = async qnaBoardId => {
     return qnaBoard;
   } catch (error) {
     // console.error('❌ Error fetching QnA Board:', error);
-    throw new Error('QnA 게시글 조회 중 오류 발생');
+    // throw new Error('QnA 게시글 조회 중 오류 발생');
   }
 };
 
@@ -86,13 +86,15 @@ const deleteQnaBoard = async (qnaBoardId, userId, isAdmin = false) => {
     const qnaBoard = await QnaBoard.findById(qnaBoardId);
     if (!qnaBoard) throw new Error('QnA 게시글을 찾을 수 없습니다.');
 
-    // ✅ 삭제 권한 체크 (관리자이거나 본인이 작성한 경우)
+    // 삭제 권한 체크 (관리자이거나 본인이 작성한 경우)
     if (!isAdmin && qnaBoard.user.toString() !== userId) {
       throw new Error('삭제 권한이 없습니다.');
     }
 
+    // 게시글 삭제
     await QnaBoard.deleteOne({_id: qnaBoardId});
-    await QnaComment.deleteMany({qnaBoard: qnaBoardId}); // 관련 댓글 삭제
+    // 관련 댓글 삭제
+    await QnaComment.deleteMany({qnaBoard: qnaBoardId});
 
     return {message: 'QnA 게시글이 삭제되었습니다.'};
   } catch (error) {
@@ -168,6 +170,43 @@ const deleteQnaComment = async (commentId, userId, userRoles) => {
   }
 };
 
+// QnA 게시글 수정
+const updateQnaBoard = async (
+  qnaBoardId,
+  userId,
+  category,
+  title,
+  content,
+  images = [],
+  attachments = []
+) => {
+  try {
+    // 게시글 찾기
+    const qnaBoard = await QnaBoard.findById(qnaBoardId);
+    if (!qnaBoard) throw new Error('QnA 게시글을 찾을 수 없습니다.');
+
+    // 수정 권한 체크 (본인이 작성한 경우 또는 관리자)
+    if (qnaBoard.user.toString() !== userId) {
+      throw new Error('수정 권한이 없습니다.');
+    }
+
+    // 게시글 수정
+    qnaBoard.category = category || qnaBoard.category;
+    qnaBoard.title = title || qnaBoard.title;
+    qnaBoard.content = content || qnaBoard.content;
+    qnaBoard.images = images.length > 0 ? images : qnaBoard.images;
+    qnaBoard.attachments = attachments.length > 0 ? attachments : qnaBoard.attachments;
+
+    // 저장
+    await qnaBoard.save();
+
+    return {message: 'QnA 게시글이 수정되었습니다.', qnaBoard};
+  } catch (error) {
+    console.error('❌ Error updating QnA Board:', error);
+    throw new Error('QnA 게시글 수정 중 오류 발생');
+  }
+};
+
 module.exports = {
   createQnaBoard,
   getQnaBoards,
@@ -175,5 +214,6 @@ module.exports = {
   deleteQnaBoard,
   createQnaComment,
   getQnaComments,
-  deleteQnaComment
+  deleteQnaComment,
+  updateQnaBoard
 };

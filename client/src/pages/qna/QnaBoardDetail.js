@@ -25,12 +25,9 @@ const QnaBoardDetail = () => {
   // ✅ 현재 로그인한 사용자 정보를 가져오기
   const fetchUser = async () => {
     try {
-      // console.log('🚀 사용자 정보 요청 시작');
       const response = await getUserProfile();
-      // console.log('✅ 사용자 정보 응답:', response.data);
       setUser(response.data);
     } catch (error) {
-      // console.error('❌ 사용자 정보를 가져오는 중 오류 발생:', error);
       setUser(null);
     }
   };
@@ -41,26 +38,31 @@ const QnaBoardDetail = () => {
         const data = await getQnaBoardById(qnaBoardId);
         console.log('📥 QnA 게시글 데이터:', data);
         setQnaBoard(data);
+        setLoading(false);
       } catch (error) {
-        console.error('QnA 게시글 조회 오류:', error);
+        if (error.response?.status === 404) {
+          // 게시글이 삭제된 경우
+          // alert('게시글을 찾을 수 없습니다.');
+          navigate('/qna'); // 목록 페이지로 리디렉션
+        } else {
+          // console.error('❌ QnA 게시글 조회 오류:', error);
+        }
       }
     };
 
     const fetchComments = async () => {
       try {
         const response = await getQnaComments(qnaBoardId);
-        // console.log('📥 댓글 데이터:', response.comments);
         setComments(response.comments);
       } catch (error) {
-        // console.error('QnA 댓글 조회 오류:', error);
+        console.error('❌ QnA 댓글 조회 오류:', error);
       }
     };
 
     fetchUser();
     fetchQnaBoard();
     fetchComments();
-    setLoading(false);
-  }, [qnaBoardId]);
+  }, [qnaBoardId, navigate]);
 
   // ✅ QnA 게시글 삭제
   const handleDeleteQnaBoard = async () => {
@@ -74,12 +76,12 @@ const QnaBoardDetail = () => {
           roles: user.roles // 현재 사용자 역할
         });
 
-        await deleteQnaBoard(qnaBoardId, user._id);
-        alert('게시글이 삭제되었습니다.');
+        await deleteQnaBoard(qnaBoardId);
+        // alert('게시글이 삭제되었습니다.');
         navigate('/qna'); // 목록으로 이동
       } catch (error) {
-        console.error('❌ QnA 게시글 삭제 오류:', error);
-        alert('게시글 삭제 중 오류 발생');
+        // console.error('❌ QnA 게시글 삭제 오류:', error);
+        // alert('게시글 삭제 중 오류 발생');
       }
     }
   };
@@ -93,7 +95,7 @@ const QnaBoardDetail = () => {
     try {
       const response = await createQnaComment(qnaBoardId, newComment);
 
-      //  새 댓글을 기존 목록에 추가하여 즉시 반영
+      // 새 댓글을 기존 목록에 추가하여 즉시 반영
       setComments(prevComments => [
         {
           ...response.qnaComment,
@@ -108,7 +110,7 @@ const QnaBoardDetail = () => {
 
       setNewComment('');
     } catch (error) {
-      // console.error('❌ QnA 댓글 작성 오류:', error);
+      console.error('❌ QnA 댓글 작성 오류:', error);
     }
     setCommentLoading(false);
   };
@@ -117,8 +119,6 @@ const QnaBoardDetail = () => {
   const handleDeleteComment = async commentId => {
     if (!user) return alert('로그인이 필요합니다.');
 
-    // console.log('🛠 댓글 삭제 요청:', {commentId, userId: user._id, roles: user.roles});
-
     if (window.confirm('정말로 댓글을 삭제하시겠습니까?')) {
       try {
         await deleteQnaComment(commentId, user._id, user.roles);
@@ -126,7 +126,7 @@ const QnaBoardDetail = () => {
           prevComments.filter(comment => comment._id !== commentId)
         );
       } catch (error) {
-        // console.error('❌ QnA 댓글 삭제 오류:', error);
+        console.error('❌ QnA 댓글 삭제 오류:', error);
         alert('댓글 삭제 중 오류 발생');
       }
     }
@@ -140,7 +140,6 @@ const QnaBoardDetail = () => {
     <div className="qna-detail-container">
       <h1>{qnaBoard.title}</h1>
       <p>카테고리: {qnaBoard.category}</p>
-      {/* 작성자: 이름 우선, 없으면 이메일 표시 */}
       <p>
         작성자: <strong>{qnaBoard.user?.username || '익명'}</strong>
         {qnaBoard.user?.email && ` (${qnaBoard.user.email})`}
@@ -152,8 +151,6 @@ const QnaBoardDetail = () => {
           : '알 수 없음'}
       </p>
       <p>{qnaBoard.content}</p>
-
-      {/* 이미지 & 파일 첨부 */}
       {qnaBoard.images && qnaBoard.images.length > 0 && (
         <div className="qna-images">
           {qnaBoard.images.map((img, index) => (
@@ -161,7 +158,6 @@ const QnaBoardDetail = () => {
           ))}
         </div>
       )}
-
       {qnaBoard.attachments && qnaBoard.attachments.length > 0 && (
         <div className="qna-attachments">
           {qnaBoard.attachments.map((file, index) => (
@@ -172,22 +168,18 @@ const QnaBoardDetail = () => {
         </div>
       )}
 
-      {/* 관리자 또는 작성자만 삭제 가능 */}
-      {user && (user.id === qnaBoard.user?._id || user.roles?.includes('admin')) && (
+      {user && (user._id === qnaBoard.user?._id || user.roles?.includes('admin')) && (
         <button onClick={handleDeleteQnaBoard} className="delete-button">
           게시글 삭제
         </button>
       )}
 
-      {/* 🔹 댓글 목록 */}
       <div className="qna-comments">
         <h3>댓글 ({comments.length})</h3>
         {comments.map(comment => (
           <div key={comment._id || Math.random()} className="qna-comment">
             <p>
-              <strong>
-                {comment.user?.username || comment.user?.email || '알 수 없음'}
-              </strong>
+              <strong>{comment.user?.username || '알 수 없음'}</strong>
               {comment.isAdmin && <span>(관리자)</span>}
             </p>
             <p>{comment.content}</p>
@@ -208,7 +200,6 @@ const QnaBoardDetail = () => {
         ))}
       </div>
 
-      {/* 🔹 댓글 작성 */}
       <div className="comment-input">
         <textarea
           placeholder="댓글을 입력하세요..."

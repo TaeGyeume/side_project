@@ -36,4 +36,7 @@ router.get('/:qnaBoardId/comments', qnaController.getQnaComments);
 // ✅ QnA 댓글 삭제 (작성자 또는 관리자만 가능)
 router.delete('/comments/:commentId', authMiddleware, qnaController.deleteQnaComment);
 
+// ✅ QnA 게시글 수정 (작성자만 수정 가능)
+router.put('/:qnaBoardId', authMiddleware, qnaController.updateQnaBoard);
+
 module.exports = router;
