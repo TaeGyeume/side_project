@@ -146,6 +146,28 @@ const deleteQnaComment = async (req, res) => {
   }
 };
 
+// ✅ QnA 게시글 수정 (작성자만 수정 가능)
+const updateQnaBoard = async (req, res) => {
+  try {
+    const {qnaBoardId} = req.params;
+    const {category, title, content, images, attachments} = req.body;
+    const userId = req.user.id; // JWT 인증을 통해 가져온 사용자 ID
+
+    const result = await qnaService.updateQnaBoard(
+      qnaBoardId,
+      userId,
+      category,
+      title,
+      content,
+      images,
+      attachments
+    );
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(403).json({error: error.message});
+  }
+};
+
 // ✅ 파일 업로드 포함한 라우트 (Multer 사용)
 module.exports = {
   createQnaBoard: [
@@ -160,5 +182,6 @@ module.exports = {
   deleteQnaBoard,
   createQnaComment,
   getQnaComments,
-  deleteQnaComment
+  deleteQnaComment,
+  updateQnaBoard
 };
