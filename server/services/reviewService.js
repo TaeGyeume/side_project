@@ -11,10 +11,20 @@ exports.createReview = async reviewData => {
       throw new Error('구매 확정된 예약만 리뷰 작성이 가능합니다!');
     }
 
+    // 리뷰 중복 확인
+    const existingReview = await Review.findOne({
+      userId: booking.userId,
+      productId: reviewData.productId
+    });
+
     const review = new Review({
       ...reviewData,
       userId: booking.userId
     });
+
+    if (existingReview) {
+      throw new Error('이미 해당 상품에 대한 리뷰를 작성하셨습니다!');
+    }
 
     return await review.save();
   } catch (error) {
@@ -23,9 +33,7 @@ exports.createReview = async reviewData => {
 };
 
 exports.getReviewsByProduct = async productId => {
-  console.log('📌 [서버] 리뷰 조회 서비스 호출 - productId:', productId);
-  const reviews = await Review.find({productId});
-  console.log('✅ [서버] 조회된 리뷰:', reviews);
+  const reviews = await Review.find({productId}).populate('userId', 'username');
   return reviews;
 };
 
