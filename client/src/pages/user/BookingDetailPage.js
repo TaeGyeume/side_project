@@ -13,6 +13,17 @@ const translateType = type => {
   return translations[type] || type;
 };
 
+// 결제 상태 한글 변환 함수
+const translatePaymentStatus = status => {
+  const translations = {
+    PENDING: '결제 대기',
+    COMPLETED: '결제 완료',
+    CANCELED: '결제 취소',
+    CONFIRMED: '예약 확정'
+  };
+  return translations[status] || status;
+};
+
 const BookingDetail = () => {
   const {bookingId} = useParams();
   const [booking, setBooking] = useState(null);
@@ -47,7 +58,7 @@ const BookingDetail = () => {
     <div className="container mt-3">
       <h2>예약 상세 정보</h2>
       <p>
-        <strong>예약 ID:</strong> {booking._id || '정보 없음'}
+        <strong>예약 번호:</strong> {booking.merchant_uid || '정보 없음'}
       </p>
       <p>
         <strong>상품 유형:</strong>{' '}
@@ -56,7 +67,8 @@ const BookingDetail = () => {
           : '정보 없음'}
       </p>
       <p>
-        <strong>결제 상태:</strong> {booking.paymentStatus || '정보 없음'}
+        <strong>결제 상태:</strong>{' '}
+        {translatePaymentStatus(booking.paymentStatus) || '정보 없음'}
       </p>
       <p>
         <strong>총 금액:</strong> ₩{booking.totalPrice?.toLocaleString() || 0}
@@ -68,48 +80,68 @@ const BookingDetail = () => {
         <strong>최종 결제 금액:</strong> ₩{booking.finalPrice?.toLocaleString() || 0}
       </p>
 
-      {/* 숙소 정보 */}
-      {booking.types?.includes('accommodation') && booking.roomIds?.length > 0 ? (
+      {/* ✅ 숙소 정보 (Accommodation) - roomIds + productIds 포함 */}
+      {booking.types?.includes('accommodation') && (
         <>
-          <h4>객실 정보</h4>
-          {booking.roomIds.map(room => (
-            <div key={room._id} className="card p-2 mb-2">
-              <p>
-                <strong>객실명:</strong> {room.name}
-              </p>
-              <p>
-                <strong>가격:</strong> ₩{room.pricePerNight?.toLocaleString()} / 박
-              </p>
-            </div>
-          ))}
+          <h4>숙소 정보</h4>
+          {/* roomIds에서 가져온 숙소 정보 */}
+          {booking.productIds?.length > 0 &&
+            booking.productIds
+              .filter(product => booking.types.includes('accommodation'))
+              .map((product, index) => (
+                <div key={product._id} className="card p-2 mb-2">
+                  <p>
+                    <strong>숙소 상품명:</strong> {product.name || '정보 없음'}
+                  </p>
+                  {/* <p>
+                    <strong>가격:</strong> ₩
+                    {product.price?.toLocaleString() || '정보 없음'}
+                  </p>
+                  <p>
+                    <strong>구매 수량:</strong> {booking.counts?.[index] || '정보 없음'}
+                  </p> */}
+                </div>
+              ))}
+          {booking.roomIds?.length > 0 &&
+            booking.roomIds.map(room => (
+              <div key={room._id} className="card p-2 mb-2">
+                <p>
+                  <strong>객실명:</strong> {room.name}
+                </p>
+                <p>
+                  <strong>가격:</strong> ₩{room.pricePerNight?.toLocaleString()} / 박
+                </p>
+              </div>
+            ))}
+          {/* productIds에서 가져온 숙소 상품 정보 */}
         </>
-      ) : (
-        <p>객실 정보 없음</p>
       )}
 
-      {/* 투어/티켓 정보 */}
-      {/* {booking.types?.includes('tourTicket') && booking.productIds?.length > 0 && (
+      {/* ✅ 투어/티켓 정보 (Tour Ticket) */}
+      {booking.types?.includes('tourTicket') && booking.productIds?.length > 0 && (
         <>
           <h4>투어/티켓 정보</h4>
-          {booking.productIds.map(product => (
+          {booking.productIds.map((product, index) => (
             <div key={product._id} className="card p-2 mb-2">
               <p>
                 <strong>상품명:</strong> {product.name || '정보 없음'}
               </p>
               <p>
-                <strong>티켓 가격:</strong> ₩
-                {product.price?.toLocaleString() || '정보 없음'}
+                <strong>가격:</strong> ₩{product.price?.toLocaleString() || '정보 없음'}
+              </p>
+              <p>
+                <strong>구매 수량:</strong> {booking.counts?.[index] || '정보 없음'}
               </p>
             </div>
           ))}
         </>
-      )} */}
+      )}
 
-      {/* 여행 용품 정보 */}
-      {/* {booking.types?.includes('travelItem') && booking.productIds?.length > 0 && (
+      {/* ✅ 여행 용품 정보 (Travel Item) */}
+      {booking.types?.includes('travelItem') && booking.productIds?.length > 0 && (
         <>
           <h4>여행 용품 정보</h4>
-          {booking.productIds.map(product => (
+          {booking.productIds.map((product, index) => (
             <div key={product._id} className="card p-2 mb-2">
               <p>
                 <strong>상품명:</strong> {product.name || '정보 없음'}
@@ -118,36 +150,12 @@ const BookingDetail = () => {
                 <strong>가격:</strong> ₩{product.price?.toLocaleString() || '정보 없음'}
               </p>
               <p>
-                <strong>구매 수량:</strong>{' '}
-                {booking.counts[booking.productIds.indexOf(product)] || '정보 없음'}
+                <strong>구매 수량:</strong> {booking.counts?.[index] || '정보 없음'}
               </p>
             </div>
           ))}
         </>
-      )} */}
-
-      {/* 항공권 정보 */}
-      {/* {booking.types?.includes('flight') && booking.productIds?.length > 0 && (
-        <>
-          <h4>항공권 정보</h4>
-          {booking.productIds.map(product => (
-            <div key={product._id} className="card p-2 mb-2">
-              <p>
-                <strong>항공사:</strong> {product.airline || '정보 없음'}
-              </p>
-              <p>
-                <strong>출발지:</strong> {product.departure || '정보 없음'}
-              </p>
-              <p>
-                <strong>도착지:</strong> {product.arrival || '정보 없음'}
-              </p>
-              <p>
-                <strong>가격:</strong> ₩{product.price?.toLocaleString() || '정보 없음'}
-              </p>
-            </div>
-          ))}
-        </>
-      )} */}
+      )}
 
       {/* 예약자 정보 */}
       {booking.reservationInfo ? (

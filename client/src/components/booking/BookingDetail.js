@@ -68,7 +68,7 @@ const BookingDetail = ({booking}) => {
           {booking.productIds.map(product => (
             <div key={product._id} className="card p-2 mb-2">
               <p>
-                <strong>상품명:</strong> {product.name || '정보 없음'}
+                <strong>상품명:</strong> {product.title || '정보 없음'}
               </p>
               <p>
                 <strong>티켓 가격:</strong> ₩
@@ -94,29 +94,6 @@ const BookingDetail = ({booking}) => {
               <p>
                 <strong>구매 수량:</strong>{' '}
                 {booking.counts[booking.productIds.indexOf(product)] || '정보 없음'}
-              </p>
-            </div>
-          ))}
-        </>
-      )}
-
-      {booking.types.includes('flight') && booking.productIds.length > 0 && (
-        <>
-          <h4>항공권 정보</h4>
-          {booking.productIds.map(product => (
-            <div key={product._id} className="card p-2 mb-2">
-              <p>
-                <strong>항공사:</strong> {product.airline || '정보 없음'}
-              </p>
-              <p>
-                <strong>출발지:</strong> {product.departure || '정보 없음'}
-              </p>
-              <p>
-                <strong>도착지:</strong> {product.arrival || '정보 없음'}
-              </p>
-              <p>
-                <strong>가격:</strong> ₩
-                {product.price ? product.price.toLocaleString() : '정보 없음'}
               </p>
             </div>
           ))}

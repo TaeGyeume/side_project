@@ -574,7 +574,7 @@ exports.scheduleAutoConfirm = async (bookingId, createdAt) => {
   // createdAt이 KST로 저장되어 있으므로, UTC로 변환
   const utcCreatedAt = new Date(createdAt.getTime() - 9 * 60 * 60 * 1000);
 
-  const confirmTime = new Date(utcCreatedAt.getTime() + 3 * 60 * 1000); // 3분 뒤 구매 확정으로 바뀜
+  const confirmTime = new Date(utcCreatedAt.getTime() + 5 * 24 * 60 * 60 * 1000); // 3분 뒤 구매 확정으로 바뀜
   console.log(`⏰ UTC 변환된 예약 확인 스케줄 시간: ${confirmTime}`);
 
   try {
@@ -614,21 +614,27 @@ exports.getBookingDetails = async bookingId => {
       return {status: 404, message: '예약 정보를 찾을 수 없습니다.'};
     }
 
-    // ✅ productIds를 동적으로 populate
+    // ✅ productIds를 동적으로 populate (투어티켓이면 title 가져오기)
     const populatedProducts = await Promise.all(
       booking.productIds.map(async (productId, index) => {
-        const model = booking.types[index]; // 현재 productId의 타입 가져오기 (동일 인덱스)
+        const model = booking.types[index]; // 현재 productId의 타입 가져오기
         if (!model) return null; // 모델이 없으면 null 반환
-        return await mongoose
-          .model(model)
-          .findById(productId)
-          .select('name price airline departure arrival');
+
+        const product = await mongoose.model(model).findById(productId);
+
+        if (!product) return null;
+
+        return {
+          _id: product._id,
+          name: model === 'tourTicket' ? product.title : product.name, // ✅ 투어티켓이면 title, 그 외 name
+          price: product.price
+        };
       })
     );
 
     // `toObject()`로 Mongoose 객체를 일반 JavaScript 객체로 변환
     const bookingData = booking.toObject();
-    bookingData.productIds = populatedProducts; // ✅ productIds에 각 모델에서 가져온 실제 데이터 추가
+    bookingData.productIds = populatedProducts.filter(p => p !== null); // ✅ productIds에 각 모델에서 가져온 실제 데이터 추가
 
     return {status: 200, data: bookingData};
   } catch (error) {
