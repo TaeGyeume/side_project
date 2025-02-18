@@ -99,3 +99,12 @@ exports.confirmBooking = async (req, res) => {
   const result = await bookingService.confirmBooking(bookingId);
   res.status(result.status).json(result);
 };
+
+// 예약 상세 정보 조회
+exports.getBookingDetails = async (req, res) => {
+  const {bookingId} = req.params;
+
+  const result = await bookingService.getBookingDetails(bookingId);
+
+  return res.status(result.status).json(result);
+};

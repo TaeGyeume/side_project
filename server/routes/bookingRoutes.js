@@ -18,4 +18,7 @@ router.get('/my', authMiddleware, bookingController.getMyBookings);
 // 구매 확정
 router.post('/confirm/:bookingId', authMiddleware, bookingController.confirmBooking);
 
+// 예약 상세 조회 API
+router.get('/:bookingId', bookingController.getBookingDetails);
+
 module.exports = router;

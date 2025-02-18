@@ -17,7 +17,12 @@ const RoundTripConfirm = () => {
   const {id} = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const {selectedDeparture, selectedReturn, passengers} = location.state || {};
+  const {
+    selectedDeparture,
+    selectedReturn,
+    selectedFlight,
+    passengers = location.state?.passengers || 1
+  } = location.state || {};
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -32,11 +37,15 @@ const RoundTripConfirm = () => {
     fetchUser();
   }, []);
 
-  if (!selectedDeparture || !selectedReturn) {
+  if (!selectedDeparture && !selectedReturn && !selectedFlight) {
     return <p className="text-center text-danger">🚫 예약할 항공편이 없습니다.</p>;
   }
 
-  const totalPrice = (selectedDeparture.price + selectedReturn.price) * passengers;
+  const totalPrice =
+    ((selectedDeparture?.price || 0) +
+      (selectedReturn?.price || 0) +
+      (selectedFlight?.price || 0)) *
+    passengers;
 
   const handleConfirm = async () => {
     if (!user) {
@@ -44,21 +53,34 @@ const RoundTripConfirm = () => {
       return;
     }
 
-    const selectedProducts = [
-      {
+    const selectedProducts = [];
+
+    if (selectedFlight?._id) {
+      selectedProducts.push({
+        type: 'flight',
+        productId: selectedFlight._id,
+        count: passengers,
+        price: selectedFlight.price
+      });
+    }
+
+    if (selectedDeparture?._id) {
+      selectedProducts.push({
         type: 'flight',
         productId: selectedDeparture._id,
         count: passengers,
         price: selectedDeparture.price
-      },
-      {
+      });
+    }
+
+    if (selectedReturn?._id) {
+      selectedProducts.push({
         type: 'flight',
         productId: selectedReturn._id,
         count: passengers,
         price: selectedReturn.price
-      }
-      // 필요 시 추가 상품 push
-    ];
+      });
+    }
 
     const totalAmount = selectedProducts.reduce(
       (sum, item) => sum + item.count * item.price,
@@ -76,7 +98,7 @@ const RoundTripConfirm = () => {
     const bookingData = {
       types: selectedProducts.map(item => item.type),
       productIds: selectedProducts.map(item => item.productId),
-      counts: selectedProducts.map(item => item.count),
+      counts: selectedProducts.map(item => passengers),
       totalPrice: totalAmount,
       userId: user._id,
       reservationInfo: {name: user.username, email: user.email, phone: user.phone},
@@ -106,7 +128,8 @@ const RoundTripConfirm = () => {
             console.log('✅ 결제 성공:', rsp);
             const verifyResponse = await verifyPayment({
               imp_uid: rsp.imp_uid,
-              merchant_uid
+              merchant_uid,
+              userId: user._id
             });
             console.log('✅ 결제 검증 응답:', verifyResponse);
             if (verifyResponse.message === '결제 검증 성공') {
@@ -129,8 +152,9 @@ const RoundTripConfirm = () => {
         <h4 className="fw-bold">👥 인원수: {passengers}명</h4>
       </div>
       <div className="row justify-content-center">
-        <FlightCard flight={selectedDeparture} />
-        <FlightCard flight={selectedReturn} />
+        {selectedFlight && <FlightCard flight={selectedFlight} />}
+        {selectedDeparture && <FlightCard flight={selectedDeparture} />}
+        {selectedReturn && <FlightCard flight={selectedReturn} />}
         <div className="col-12 text-center mt-3">
           <h4 className="fw-bold">💰 총 예약 비용: {totalPrice.toLocaleString()}원</h4>
         </div>

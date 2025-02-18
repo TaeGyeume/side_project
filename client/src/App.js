@@ -55,6 +55,7 @@ import TourTicketBookingPage from './pages/booking/TourTicketBookingPage';
 import AccommodationBookingPage from './pages/booking/AccommodationBookingPage';
 import TravelItemPurchaseForm from './components/booking/TravelItemPurchasePage';
 import MyBookingPage from './pages/user/MyBookingPage';
+import BookingDetailPage from './pages/user/BookingDetailPage';
 import ChannelTalk from './components/channelTalk/ChannelTalk';
 import MileagePage from './pages/mileage/MileagePage';
 import '@fortawesome/fontawesome-free/css/all.min.css'; // FontAwesome 아이콘 스타일 불러오기
@@ -159,6 +160,7 @@ const App = () => {
             <Route path="/booking/my" element={<MyBookingPage />} />
             <Route path="/coupons/my" element={<MyCouponsPage />} />
             <Route path="/user/mileage" element={<MileagePage />} />
+            <Route path="/booking/detail/:bookingId" element={<BookingDetailPage />} />
             <Route path="/reviews/create" element={<ReviewForm />} />
           </Route>
           {/* 🔒 어드민 전용 페이지 */}
