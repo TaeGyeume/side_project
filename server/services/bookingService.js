@@ -123,7 +123,7 @@ exports.createBooking = async bookingData => {
     });
 
     await newBooking.save();
-    console.log('📌 [서버] 예약 생성 완료:', newBooking);
+    // console.log('📌 [서버] 예약 생성 완료:', newBooking);
     exports.scheduleAutoConfirm(newBooking._id, newBooking.createdAt);
 
     return {status: 200, booking: newBooking, message: '예약 생성 완료'};
@@ -577,13 +577,21 @@ exports.getUserBookings = async userId => {
 exports.confirmBooking = async bookingId => {
   try {
     const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      // 예약이 존재하지 않는 경우
+      return {status: 404, message: '예약을 찾을 수 없습니다.'};
+    }
+    
     if (booking.paymentStatus === 'COMPLETED') {
       booking.paymentStatus = 'CONFIRMED';
+      booking.finalPrice = booking.finalPrice || booking.totalPrice; // 기본값 설정
       await booking.save();
       return {status: 200, message: '구매 확정 완료'};
     }
+
     return {status: 400, message: '구매 확정 불가 상태'};
   } catch (error) {
+    console.error('구매 확정 오류:', error); // 오류 출력 추가
     return {status: 500, message: '구매 확정 중 오류 발생'};
   }
 };
@@ -592,7 +600,7 @@ exports.scheduleAutoConfirm = async (bookingId, createdAt) => {
   // createdAt이 KST로 저장되어 있으므로, UTC로 변환
   const utcCreatedAt = new Date(createdAt.getTime() - 9 * 60 * 60 * 1000);
 
-  const confirmTime = new Date(utcCreatedAt.getTime() + 5 * 24 * 60 * 60 * 1000); // 3분 뒤 구매 확정으로 바뀜
+  const confirmTime = new Date(utcCreatedAt.getTime() + 5 * 24 * 60 * 60 * 1000); // 5일 뒤 구매 확정으로 바뀜
   console.log(`⏰ UTC 변환된 예약 확인 스케줄 시간: ${confirmTime}`);
 
   try {
