@@ -6,4 +6,6 @@ const upload = require('../middleware/uploadMiddleware');
 
 router.post('/create', upload, reviewController.createReview);
 
+router.get('/:productId', reviewController.getReviews);
+
 module.exports = router;

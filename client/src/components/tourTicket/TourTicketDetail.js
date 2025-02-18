@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {getTourTicketById} from '../../api/tourTicket/tourTicketService';
 import {useParams, useNavigate} from 'react-router-dom';
 import './styles/TourTicketDetail.css'; // 일반 유저용 스타일
+import ReviewList from '../../components/review/ReviewList';
 
 const TourTicketDetail = () => {
   const {id} = useParams();
@@ -89,6 +90,11 @@ const TourTicketDetail = () => {
       <button onClick={handleReserve} className="reserve-btn">
         예약하기
       </button>
+
+      <div>
+        <h1>리뷰</h1>
+        <ReviewList productId={id} />
+      </div>
     </div>
   );
 };
