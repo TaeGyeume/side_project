@@ -28,6 +28,7 @@ const userCouponRoutes = require('./routes/userCouponRoutes');
 const userMileageRoutes = require('./routes/userMileageRoutes');
 const qnaRoutes = require('./routes/qnaRoutes'); //
 const reviewRoutes = require('./routes/reviewRoutes');
+const viewsRoutes = require('./routes/viewsRoutes');
 
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -67,6 +68,7 @@ app.use('/api/mileage', userMileageRoutes); // 마일리지 API
 app.use('/api/travelItems', travelItemRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/user-coupons', userCouponRoutes);
+app.use('/api/views', viewsRoutes);
 app.use('/product', productRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/tourTicket', userTourTicketRoutes);

@@ -11,7 +11,7 @@ import 'slick-carousel/slick/slick-theme.css';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-Modal.setAppElement('#root');
+// Modal.setAppElement('#root');
 
 // ✅ 기본 날짜 설정 함수 (오늘 + n일)
 const getFormattedDate = (daysToAdd = 0) => {
