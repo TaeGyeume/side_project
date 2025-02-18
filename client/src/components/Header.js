@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import {useAuthStore} from '../store/authStore';
 
@@ -6,6 +6,7 @@ const Header = () => {
   const {user, isAuthenticated, fetchUserProfile, logout} = useAuthStore();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   //  로그인된 경우에만 프로필 불러오기 (401 방지)
   useEffect(() => {
@@ -27,6 +28,23 @@ const Header = () => {
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
+
+  // 다른 영역 클릭 시 드롭다운 닫기
+  useEffect(() => {
+    const handleClickOutside = event => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
@@ -97,7 +115,7 @@ const Header = () => {
                 )}
 
                 {/* 다른 사용자들도 접근 가능한 메뉴 */}
-                <li className="nav-item dropdown">
+                <li className="nav-item dropdown" ref={dropdownRef}>
                   <button
                     className="nav-link dropdown-toggle"
                     onClick={toggleDropdown}

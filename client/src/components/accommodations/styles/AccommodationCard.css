@@ -1,28 +1,27 @@
-/* client/src/components/accommodations/styles/AccommodationCard.css */
-
 .accommodation-card {
-  width: 300px; /* 카드 전체 크기 조절 */
+  width: 100%; /* 카드 가로폭 전체 차지 */
+  max-width: 100%;
 }
 
 .accommodation-image-container {
-  position: relative; /* ✅ 즐겨찾기 버튼 배치를 위해 relative 설정 */
+  position: relative;
   width: 100%;
 }
 
 .accommodation-image {
-  width: 100%; /* 카드의 너비에 맞춤 */
-  height: 180px; /* 이미지 높이 조정 */
-  object-fit: cover; /* 비율 유지하며 자르기 */
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
 }
 
-/* ✅ 즐겨찾기 아이콘 스타일 (이미지 내부 우측 상단에 배치) */
+/* ✅ 즐겨찾기 아이콘 스타일 */
 .favorite-icon-container {
   position: absolute;
-  top: 12px; /* 상단 여백 */
-  right: 12px; /* 오른쪽 여백 */
+  top: 12px;
+  right: 12px;
   padding: 6px;
   border-radius: 50%;
-  z-index: 10; /* 다른 요소 위에 배치 */
+  z-index: 10;
 }
 
 .favorite-icon-container button {
@@ -30,9 +29,9 @@
   border: none;
   cursor: pointer;
   font-size: 22px;
-  color: #ffcc00; /* 기본 색상 */
+  color: #ffcc00;
 }
 
 .favorite-icon-container button.active {
-  color: #ffcc00; /* 활성화된 경우 */
+  color: #ffcc00;
 }

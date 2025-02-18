@@ -4,9 +4,10 @@ import {fetchTravelItemDetail} from '../../api/travelItem/travelItemService';
 import './styles/TravelItemDetailPage.css';
 
 const TravelItemDetailPage = () => {
-  const {itemId} = useParams(); // ✅ URL에서 itemId 가져오기
+  const {itemId} = useParams();
   const navigate = useNavigate();
   const [item, setItem] = useState(null);
+  const [imageError, setImageError] = useState(false); // ✅ 이미지 오류 상태 추가
   const SERVER_URL = 'http://localhost:5000';
 
   console.log('✅ itemId:', itemId);
@@ -28,14 +29,14 @@ const TravelItemDetailPage = () => {
     return <p className="text-center">⏳ 상품 정보를 불러오는 중...</p>;
   }
 
-  // ✅ 기본 이미지 설정
+  // ✅ 기본 이미지 설정 (이미지 에러 발생 시 변경)
   let imageUrl = '/default-image.jpg';
-  if (Array.isArray(item.images) && item.images.length > 0) {
+  if (!imageError && Array.isArray(item.images) && item.images.length > 0) {
     imageUrl = item.images[0];
-  }
 
-  if (imageUrl.startsWith('/uploads/')) {
-    imageUrl = `${SERVER_URL}${imageUrl}`;
+    if (imageUrl.startsWith('/uploads/')) {
+      imageUrl = `${SERVER_URL}${imageUrl}`;
+    }
   }
 
   return (
@@ -49,15 +50,12 @@ const TravelItemDetailPage = () => {
           src={imageUrl}
           alt={item.name}
           className="travel-item-detail-image"
-          onError={e => {
-            e.target.src = '/default-image.jpg';
-          }}
+          onError={() => setImageError(true)} // ✅ 이미지 오류 시 상태 변경
         />
         <div className="card-body">
           <h2 className="card-title">{item.name}</h2>
           <p className="card-text">{item.description}</p>
           <p className="price-tag">💰 가격: {item.price?.toLocaleString() || '미정'}₩</p>
-          {/* ✅ 🛒 구매하기 버튼 추가 */}
           <button
             className="btn btn-primary mt-3"
             onClick={() => {
