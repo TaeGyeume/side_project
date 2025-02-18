@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {useParams} from 'react-router-dom';
+import {useParams, useNavigate} from 'react-router-dom';
 import {getBookingDetails} from '../../api/booking/bookingService';
 
 // 상품 유형 한글 변환 함수
@@ -29,6 +29,25 @@ const BookingDetail = () => {
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  // 숙소 상세 페이지로 이동하는 함수
+  const handleAccommodationClick = accommodation => {
+    if (!accommodation?._id) return; // ID가 없는 경우 이동하지 않음
+    navigate(`/accommodations/${accommodation._id}/detail`);
+  };
+
+  // 투어/티켓 상세 페이지 이동 함수
+  const handleTourTicketClick = ticket => {
+    if (!ticket?._id) return;
+    navigate(`/tourTicket/list/${ticket._id}`);
+  };
+
+  // 여행 용품 상세 페이지 이동 함수
+  const handleTravelItemClick = travelItem => {
+    if (!travelItem?._id) return;
+    navigate(`/travelItems/${travelItem._id}`);
+  };
 
   useEffect(() => {
     const fetchBookingDetails = async () => {
@@ -89,19 +108,18 @@ const BookingDetail = () => {
             booking.productIds
               .filter(product => booking.types.includes('accommodation'))
               .map((product, index) => (
-                <div key={product._id} className="card p-2 mb-2">
+                <div
+                  key={product._id}
+                  className="card p-2 mb-2"
+                  style={{cursor: 'pointer'}} // ✅ 마우스 올리면 클릭 가능 효과
+                  onClick={() => handleAccommodationClick(product)} // ✅ 클릭하면 상세 페이지 이동
+                >
                   <p>
                     <strong>숙소 상품명:</strong> {product.name || '정보 없음'}
                   </p>
-                  {/* <p>
-                    <strong>가격:</strong> ₩
-                    {product.price?.toLocaleString() || '정보 없음'}
-                  </p>
-                  <p>
-                    <strong>구매 수량:</strong> {booking.counts?.[index] || '정보 없음'}
-                  </p> */}
                 </div>
               ))}
+
           {booking.roomIds?.length > 0 &&
             booking.roomIds.map(room => (
               <div key={room._id} className="card p-2 mb-2">
@@ -122,7 +140,11 @@ const BookingDetail = () => {
         <>
           <h4>투어/티켓 정보</h4>
           {booking.productIds.map((product, index) => (
-            <div key={product._id} className="card p-2 mb-2">
+            <div
+              key={product._id}
+              className="card p-2 mb-2"
+              style={{cursor: 'pointer'}}
+              onClick={() => handleTourTicketClick(product)}>
               <p>
                 <strong>상품명:</strong> {product.name || '정보 없음'}
               </p>
@@ -142,7 +164,11 @@ const BookingDetail = () => {
         <>
           <h4>여행 용품 정보</h4>
           {booking.productIds.map((product, index) => (
-            <div key={product._id} className="card p-2 mb-2">
+            <div
+              key={product._id}
+              className="card p-2 mb-2"
+              style={{cursor: 'pointer'}}
+              onClick={() => handleTravelItemClick(product)}>
               <p>
                 <strong>상품명:</strong> {product.name || '정보 없음'}
               </p>
