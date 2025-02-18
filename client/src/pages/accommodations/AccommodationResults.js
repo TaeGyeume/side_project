@@ -121,6 +121,27 @@ const AccommodationResults = () => {
     fetchFavorites(); // ✅ 즐겨찾기 목록도 가져오기
   }, [filters, fetchAccommodations]);
 
+  // ✅ 푸터 위에서 observer 감지하도록 설정
+  useEffect(() => {
+    fetchAccommodations(filters, 1, true);
+    fetchFavorites();
+  }, [filters, fetchAccommodations]);
+
+  // ✅ Intersection Observer (푸터보다 위에서 감지되도록 조정)
+  useEffect(() => {
+    if (!observerRef.current) return;
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && !loadingRef.current) {
+          fetchAccommodations(filters, page + 1);
+        }
+      },
+      {rootMargin: '100px'}
+    );
+    observer.observe(observerRef.current);
+    return () => observer.disconnect();
+  }, [filters, page, fetchAccommodations]);
+
   return (
     <div className="container mt-3">
       <h2>숙소 검색 결과</h2>

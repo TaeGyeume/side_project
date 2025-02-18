@@ -7,7 +7,7 @@ import {
   updateTravelItem
 } from '../../../api/travelItem/travelItemService';
 
-const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated}) => {
+const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}}) => {
   // ✅ isEdit과 itemId를 props에서 받음
   const navigate = useNavigate();
   const {itemId: paramItemId} = useParams(); // ✅ URL에서 itemId 가져오기 (수정 모드)
@@ -177,17 +177,18 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated}) => {
 
     try {
       if (isEdit) {
-        // ✅ 수정 요청 (PATCH)
         await updateTravelItem(finalItemId, data);
         console.log('✅ 상품 수정 성공');
       } else {
-        // ✅ 생성 요청 (POST)
         await createTravelItem(data);
         console.log('✅ 상품 등록 성공');
       }
 
       navigate('/product/travelItems/list');
-      onItemCreated();
+
+      if (onItemCreated) {
+        onItemCreated(); // ✅ 함수가 있을 경우에만 실행
+      }
     } catch (error) {
       console.error('❌ 상품 처리 실패:', error);
     }

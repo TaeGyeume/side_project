@@ -427,11 +427,15 @@ exports.cancelBooking = async bookingIds => {
 
     await Promise.all(
       bookings.map(async booking => {
-        const {types, productIds, counts, userCouponId} = booking;
+        const {types, productIds, counts, roomIds, startDates, endDates, userCouponId} =
+          booking;
 
         const prodIds = Array.isArray(productIds) ? productIds : [productIds];
         const prodTypes = Array.isArray(types) ? types : [types];
         const prodCounts = Array.isArray(counts) ? counts : [counts];
+        const bookingRoomIds = Array.isArray(roomIds) ? roomIds : [roomIds];
+        const bookingStartDates = Array.isArray(startDates) ? startDates : [startDates];
+        const bookingEndDates = Array.isArray(endDates) ? endDates : [endDates];
 
         await Promise.all(
           prodIds.map(async (productId, index) => {
@@ -450,13 +454,49 @@ exports.cancelBooking = async bookingIds => {
                   break;
 
                 case 'accommodation':
-                  product = await Room.findById(booking.roomIds[index]);
-                  product.reservedDates = product.reservedDates.filter(
-                    d =>
-                      d.date.toISOString().split('T')[0] !==
-                      booking.startDates[index].toISOString().split('T')[0]
-                  );
+                  product = await Room.findById(bookingRoomIds[index]);
+                  if (!product) {
+                    console.error(
+                      `❌ [서버] 객실 정보 찾을 수 없음 - roomId: ${bookingRoomIds[index]}`
+                    );
+                    return;
+                  }
 
+                  const startDate = new Date(bookingStartDates[index]);
+                  const endDate = new Date(bookingEndDates[index]);
+                  let currentDate = new Date(startDate);
+
+                  while (currentDate < endDate) {
+                    const dateStr = currentDate.toISOString().split('T')[0];
+
+                    // ✅ 해당 날짜의 예약 개수 가져오기
+                    let reservedIndex = product.reservedDates.findIndex(
+                      d => d.date.toISOString().split('T')[0] === dateStr
+                    );
+
+                    if (reservedIndex !== -1) {
+                      product.reservedDates[reservedIndex].count -= prodCounts[index];
+
+                      // ✅ 만약 0개가 되면 해당 날짜 데이터를 제거
+                      if (product.reservedDates[reservedIndex].count <= 0) {
+                        product.reservedDates.splice(reservedIndex, 1);
+                      }
+                    }
+
+                    currentDate.setDate(currentDate.getDate() + 1);
+                  }
+
+                  // ✅ 객실 가용 여부 업데이트
+                  const totalReserved = product.reservedDates.reduce(
+                    (acc, d) => acc + d.count,
+                    0
+                  );
+                  product.available = totalReserved < product.availableCount;
+
+                  await product.save();
+                  console.log(
+                    `✅ [서버] 객실 예약 취소 완료 - roomId: ${bookingRoomIds[index]}`
+                  );
                   break;
 
                 case 'travelItem':
@@ -534,7 +574,7 @@ exports.scheduleAutoConfirm = async (bookingId, createdAt) => {
   // createdAt이 KST로 저장되어 있으므로, UTC로 변환
   const utcCreatedAt = new Date(createdAt.getTime() - 9 * 60 * 60 * 1000);
 
-  const confirmTime = new Date(utcCreatedAt.getTime() + 3 * 60 * 1000); // 3분 뒤 구매 확정으로 바뀜
+  const confirmTime = new Date(utcCreatedAt.getTime() + 5 * 24 * 60 * 60 * 1000); // 3분 뒤 구매 확정으로 바뀜
   console.log(`⏰ UTC 변환된 예약 확인 스케줄 시간: ${confirmTime}`);
 
   try {
@@ -559,5 +599,46 @@ exports.scheduleAutoConfirm = async (bookingId, createdAt) => {
     });
   } catch (error) {
     console.error(`스케줄 설정 중 오류:`, error);
+  }
+};
+
+exports.getBookingDetails = async bookingId => {
+  try {
+    // 예약 정보 조회 + 연관된 데이터 가져오기
+    const booking = await Booking.findById(bookingId)
+      .populate('userId', 'name email phone') // 사용자 정보 포함
+      .populate('userCouponId', 'discountAmount') // 쿠폰 정보 포함
+      .populate('roomIds', 'name pricePerNight reservedDates'); // 객실 정보 포함
+
+    if (!booking) {
+      return {status: 404, message: '예약 정보를 찾을 수 없습니다.'};
+    }
+
+    // ✅ productIds를 동적으로 populate (투어티켓이면 title 가져오기)
+    const populatedProducts = await Promise.all(
+      booking.productIds.map(async (productId, index) => {
+        const model = booking.types[index]; // 현재 productId의 타입 가져오기
+        if (!model) return null; // 모델이 없으면 null 반환
+
+        const product = await mongoose.model(model).findById(productId);
+
+        if (!product) return null;
+
+        return {
+          _id: product._id,
+          name: model === 'tourTicket' ? product.title : product.name, // ✅ 투어티켓이면 title, 그 외 name
+          price: product.price
+        };
+      })
+    );
+
+    // `toObject()`로 Mongoose 객체를 일반 JavaScript 객체로 변환
+    const bookingData = booking.toObject();
+    bookingData.productIds = populatedProducts.filter(p => p !== null); // ✅ productIds에 각 모델에서 가져온 실제 데이터 추가
+
+    return {status: 200, data: bookingData};
+  } catch (error) {
+    console.error('❌ 예약 상세 조회 오류:', error);
+    return {status: 500, message: '서버 오류'};
   }
 };
