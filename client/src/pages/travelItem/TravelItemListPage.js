@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import axios from '../../api/axios';
 import TravelItemCard from '../../components/product/travelItems/TravelItemCard';
+import {getUserFavorites} from '../../api/user/favoriteService';
 
 const TravelItemListPage = () => {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ const TravelItemListPage = () => {
   const [subCategories, setSubCategories] = useState([]); // 하위 카테고리
   const [selectedCategory, setSelectedCategory] = useState(null); // 선택된 카테고리
   const [items, setItems] = useState([]); // 선택된 카테고리의 상품들
+  const [favorites, setFavorites] = useState([]); // 🔹 즐겨찾기 목록 추가
 
   // ✅ 모든 카테고리 및 전체 상품 불러오기 (최초 실행)
   useEffect(() => {
@@ -28,13 +30,23 @@ const TravelItemListPage = () => {
       }
     };
 
+    // ✅ 사용자 즐겨찾기 목록 불러오기
+    const fetchFavorites = async () => {
+      try {
+        const response = await getUserFavorites();
+        setFavorites(response.favorites.map(fav => fav.itemId));
+      } catch (error) {
+        console.error('❌ 즐겨찾기 목록 가져오기 오류:', error);
+      }
+    };
+
     fetchCategoriesAndItems();
+    fetchFavorites();
   }, []);
 
   // ✅ 특정 카테고리에 속한 상품 불러오기
   const fetchItemsByCategory = async (categoryId = null) => {
     try {
-      // ✅ categoryId가 `null`이면 모든 상품 조회 API 호출
       const endpoint = categoryId
         ? `/travelItems/byCategory/${categoryId}`
         : '/travelItems/allItems';
@@ -49,15 +61,21 @@ const TravelItemListPage = () => {
   // ✅ 최상위 카테고리 선택 시, 해당 카테고리와 모든 하위 카테고리 상품 표시
   const handleCategoryClick = categoryId => {
     setSelectedCategory(categoryId);
-
-    // ✅ 하위 카테고리 필터링 (빈 서브카테고리 제거)
     const filteredSubCategories = categories.filter(
       cat => cat.parentCategory?._id === categoryId && cat.subCategories.length > 0
     );
 
     setSubCategories(filteredSubCategories);
-
     fetchItemsByCategory(categoryId);
+  };
+
+  // ✅ 즐겨찾기 토글 핸들러 (클라이언트 상태 업데이트)
+  const handleFavoriteToggle = itemId => {
+    setFavorites(prevFavorites =>
+      prevFavorites.includes(itemId)
+        ? prevFavorites.filter(favId => favId !== itemId)
+        : [...prevFavorites, itemId]
+    );
   };
 
   return (
@@ -76,7 +94,7 @@ const TravelItemListPage = () => {
         ))}
       </div>
 
-      {/* ✅ 서브카테고리 버튼 (서브카테고리가 있는 경우만 렌더링) */}
+      {/* ✅ 서브카테고리 버튼 */}
       {subCategories.length > 0 && (
         <div className="d-flex flex-wrap gap-2 mb-3">
           {subCategories.map(subCategory => (
@@ -95,7 +113,11 @@ const TravelItemListPage = () => {
         {items.length > 0 ? (
           items.map(item => (
             <div key={item._id} className="col-md-4 mb-4">
-              <TravelItemCard travelItem={item} />
+              <TravelItemCard
+                travelItem={item}
+                isFavorite={favorites.includes(item._id)} // 🔹 즐겨찾기 상태 전달
+                onFavoriteToggle={handleFavoriteToggle} // 🔹 상태 업데이트 함수 전달
+              />
             </div>
           ))
         ) : (

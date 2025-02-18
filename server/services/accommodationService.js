@@ -113,12 +113,33 @@ exports.getAccommodationsBySearch = async ({
     const priceFilter =
       maxPrice >= 500000 ? {$gte: minPrice} : {$gte: minPrice, $lte: maxPrice};
 
-    // 4️⃣ **사용 가능한 숙소 필터링**
-    const availableRooms = await Room.find({
+    // 4️⃣ **예약된 객실을 제외하고 사용 가능한 숙소 필터링**
+    let availableRooms = await Room.find({
       maxGuests: {$gte: adults},
-      _id: {$nin: bookedRooms},
-      pricePerNight: priceFilter
-    }).select('_id accommodation maxGuests pricePerNight');
+      _id: {$nin: bookedRooms}, // ✅ 예약된 객실 제외
+      pricePerNight: priceFilter, // ✅ 가격 필터 적용
+      availableCount: {$gt: 0} // ✅ 예약 가능한 객실만 포함
+    }).select('_id accommodation maxGuests pricePerNight availableCount reservedDates');
+
+    // ✅ 예약된 객실 제거 후 다시 필터링
+    availableRooms = availableRooms.filter(room => {
+      let currentDate = new Date(startDate);
+      while (currentDate < new Date(endDate)) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+
+        // ✅ 예약된 날짜 목록에서 현재 날짜가 포함되어 있는지 확인
+        const reservedDates = room.reservedDates || [];
+        const reservedCountOnDate =
+          reservedDates.find(d => d.date.toISOString().split('T')[0] === dateStr)
+            ?.count || 0;
+
+        // ✅ 예약 가능 객실이 없으면 제외
+        if (reservedCountOnDate >= room.availableCount) return false;
+
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      return true;
+    });
 
     const availableAccommodationIds = [
       ...new Set(availableRooms.map(room => room.accommodation.toString()))
@@ -138,19 +159,25 @@ exports.getAccommodationsBySearch = async ({
       ...(category !== 'all' ? {category} : {})
     }).lean(); // `lean()`을 사용하여 JSON 데이터로 변환
 
-    // 6️⃣ **방 가격을 기준으로 minPrice 적용**
+    // 7️⃣ **예약 가능한 객실만 기준으로 `minPrice` 설정**
     accommodations = accommodations.map(accommodation => {
-      accommodation.rooms = availableRooms.filter(
+      // ✅ 해당 숙소의 예약 가능한 객실만 필터링
+      const filteredRooms = availableRooms.filter(
         room => room.accommodation.toString() === accommodation._id.toString()
       );
 
-      // ✅ 숙소의 `minPrice`를 실제 방의 최소 가격으로 설정
-      accommodation.minPrice = accommodation.rooms.length
-        ? Math.min(...accommodation.rooms.map(r => r.pricePerNight))
-        : Infinity; // 방이 없으면 가장 높은 가격으로 설정
+      // ✅ 숙소의 `minPrice`를 실제 예약 가능한 객실의 최저 가격으로 설정
+      accommodation.minPrice = filteredRooms.length
+        ? Math.min(...filteredRooms.map(r => r.pricePerNight))
+        : null; // ❗️ 예약 가능한 객실이 없으면 `null` 처리
 
       return accommodation;
     });
+
+    // ✅ **예약 가능한 객실이 있는 숙소만 남기기**
+    accommodations = accommodations.filter(
+      accommodation => accommodation.minPrice !== null
+    );
 
     // ✅ **정렬 적용 (가격 / 평점 / 기본 관련성)**
     if (sortBy === 'priceLow') {
@@ -163,7 +190,7 @@ exports.getAccommodationsBySearch = async ({
       accommodations.sort((a, b) => (b.score || 0) - (a.score || 0));
     }
 
-    // 7️⃣ **페이징 처리**
+    // 8️⃣ **페이징 처리**
     const paginatedAccommodations = accommodations.slice(
       (page - 1) * limit,
       page * limit
