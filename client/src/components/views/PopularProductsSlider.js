@@ -11,7 +11,7 @@ const SERVER_URL = 'http://localhost:5000';
 const PopularProductsSlider = () => {
   const [products, setProducts] = useState([]);
   const [imageErrors, setImageErrors] = useState({});
-  const [currentSlide, setCurrentSlide] = useState(0); // ✅ 현재 슬라이드 인덱스 저장
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -32,9 +32,8 @@ const PopularProductsSlider = () => {
     };
   }, []);
 
-  const totalSlides = Math.ceil(products.length / 4); // ✅ 총 슬라이드 수
+  const totalSlides = Math.ceil(products.length / 4);
 
-  // ✅ 이전 버튼 커스텀 (첫 번째 슬라이드일 때 숨김)
   const PrevArrow = ({onClick}) =>
     currentSlide > 0 && (
       <button className="custom-arrow custom-prev" onClick={onClick}>
@@ -42,7 +41,6 @@ const PopularProductsSlider = () => {
       </button>
     );
 
-  // ✅ 다음 버튼 커스텀 (마지막 슬라이드일 때 숨김)
   const NextArrow = ({onClick}) =>
     currentSlide < totalSlides - 1 && (
       <button className="custom-arrow custom-next" onClick={onClick}>
@@ -50,7 +48,6 @@ const PopularProductsSlider = () => {
       </button>
     );
 
-  // ✅ React Slick 설정 (현재 슬라이드 상태 업데이트 추가)
   const settings = {
     dots: false,
     infinite: false,
@@ -61,7 +58,7 @@ const PopularProductsSlider = () => {
     arrows: true,
     prevArrow: <PrevArrow />,
     nextArrow: <NextArrow />,
-    beforeChange: (oldIndex, newIndex) => setCurrentSlide(newIndex), // ✅ 슬라이드 변경 감지
+    beforeChange: (oldIndex, newIndex) => setCurrentSlide(newIndex),
     responsive: [
       {breakpoint: 1024, settings: {slidesToShow: 3, slidesToScroll: 3}},
       {breakpoint: 768, settings: {slidesToShow: 2, slidesToScroll: 2}},
@@ -78,10 +75,12 @@ const PopularProductsSlider = () => {
           let imageUrl = '/default-image.jpg';
 
           if (product.images?.length > 0 && !imageErrors[productId]) {
-            imageUrl =
-              product.type === 'tourTicket'
-                ? `${SERVER_URL}${product.images[0]}`
-                : product.images[0];
+            imageUrl = product.images[0];
+
+            // ✅ `/uploads/` 경로라면 서버 URL을 붙이기 (투어티켓 + 여행용품 모두 적용)
+            if (imageUrl.startsWith('/uploads/')) {
+              imageUrl = `${SERVER_URL}${imageUrl}`;
+            }
           }
 
           return (
@@ -106,7 +105,7 @@ const PopularProductsSlider = () => {
                 <div className="product-info">
                   <h3>{product.title || product.name}</h3>
                   <p>{product.price.toLocaleString()} 원</p>
-                  <p>조회수: {product.views}</p>
+                  <p>조회수: {product.views || 0}</p> {/* ✅ 조회수 없을 때 기본값 0 */}
                 </div>
               </Link>
             </div>
