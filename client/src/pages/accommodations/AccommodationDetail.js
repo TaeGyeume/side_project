@@ -5,10 +5,13 @@ import {fetchAccommodationDetail} from '../../api/accommodation/accommodationSer
 import RoomCard from '../../components/accommodations/RoomCard';
 import MapComponent from '../../components/accommodations/GoogleMapComponent';
 import Slider from 'react-slick'; // ✅ React Slick 추가
+import Modal from 'react-modal';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+
+// Modal.setAppElement('#root');
 
 // ✅ 기본 날짜 설정 함수 (오늘 + n일)
 const getFormattedDate = (daysToAdd = 0) => {
@@ -23,6 +26,8 @@ const AccommodationDetail = () => {
   const [accommodationData, setAccommodationData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [modalIsOpen, setModalIsOpen] = useState(false); // ✅ 모달 상태
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0); // ✅ 선택한 이미지 인덱스
 
   // ✅ `searchParams`에서 검색 조건 가져오되, 값이 없으면 기본값 사용
   const [startDate, setStartDate] = useState(
@@ -53,6 +58,11 @@ const AccommodationDetail = () => {
     loadAccommodationDetail();
   }, [accommodationId, startDate, endDate, adults, minPrice, maxPrice]);
 
+  // ✅ 모달이 정상적으로 표시되는지 확인하는 useEffect 추가
+  // useEffect(() => {
+  //   console.log(`📌 모달 상태 변경됨: ${modalIsOpen}`);
+  // }, [modalIsOpen]);
+
   if (loading) return <div>로딩 중...</div>;
   if (error) return <div>{error}</div>;
   if (!accommodationData) return <div>데이터가 없습니다.</div>;
@@ -71,6 +81,31 @@ const AccommodationDetail = () => {
     };
 
     setSearchParams(newParams); // ✅ URL 업데이트
+  };
+
+  // ✅ 이미지 클릭 시 모달 열기
+  const openModal = index => {
+    setSelectedImageIndex(index);
+    setModalIsOpen(true);
+  };
+
+  // ✅ 모달을 닫을 때 상태 변경 확인
+  const closeModal = () => {
+    setModalIsOpen(false);
+    console.log(`📌 모달이 닫혔습니다.`);
+  };
+
+  // ✅ 다음 이미지 보기
+  const nextImage = () => {
+    setSelectedImageIndex(prevIndex => (prevIndex + 1) % accommodation.images.length);
+  };
+
+  // ✅ 이전 이미지 보기
+  const prevImage = () => {
+    setSelectedImageIndex(
+      prevIndex =>
+        (prevIndex - 1 + accommodation.images.length) % accommodation.images.length
+    );
   };
 
   // ✅ React Slick 설정
@@ -161,7 +196,11 @@ const AccommodationDetail = () => {
             }
 
             return (
-              <div key={index} className="carousel-slide">
+              <div
+                key={index}
+                className="carousel-slide"
+                onClick={() => openModal(index)}
+                style={{cursor: 'pointer'}}>
                 <img
                   src={imageUrl}
                   alt={`${accommodation.name} 이미지 ${index + 1}`}
@@ -179,7 +218,10 @@ const AccommodationDetail = () => {
       ) : (
         // ✅ 이미지가 1개일 경우 그냥 단일 이미지 표시
         accommodation.images?.length === 1 && (
-          <div className="single-image">
+          <div
+            className="single-image"
+            onClick={() => openModal(0)}
+            style={{cursor: 'pointer'}}>
             <img
               src={
                 accommodation.images[0].startsWith('/uploads/')
@@ -197,6 +239,88 @@ const AccommodationDetail = () => {
           </div>
         )
       )}
+
+      {/* ✅ 모달 (Lightbox) */}
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        contentLabel="이미지 확대 보기"
+        shouldCloseOnOverlayClick={true} // 배경 클릭 시 닫힘
+        shouldCloseOnEsc={true}
+        style={{
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)', // 어두운 배경
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          },
+          content: {
+            position: 'relative',
+            border: 'none',
+            background: 'transparent',
+            overflow: 'hidden',
+            padding: '0',
+            width: 'auto',
+            height: 'auto',
+            inset: 'unset',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }
+        }}>
+        {/* 이전 버튼 */}
+        <button
+          onClick={prevImage}
+          style={{
+            position: 'absolute',
+            left: '10px',
+            background: 'rgba(0, 0, 0, 0.5)',
+            color: '#fff',
+            border: 'none',
+            padding: '10px 15px',
+            cursor: 'pointer',
+            fontSize: '20px',
+            borderRadius: '50%',
+            transition: 'background 0.3s'
+          }}
+          onMouseEnter={e => (e.target.style.background = 'rgba(0, 0, 0, 0.8)')}
+          onMouseLeave={e => (e.target.style.background = 'rgba(0, 0, 0, 0.5)')}>
+          ⬅
+        </button>
+
+        {/* 이미지 */}
+        <img
+          src={`${SERVER_URL}${accommodation.images[selectedImageIndex]}`}
+          alt="확대 이미지"
+          style={{
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+            objectFit: 'contain',
+            borderRadius: '10px',
+            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.3)'
+          }}
+        />
+
+        {/* 다음 버튼 */}
+        <button
+          onClick={nextImage}
+          style={{
+            position: 'absolute',
+            right: '10px',
+            background: 'rgba(0, 0, 0, 0.5)',
+            color: '#fff',
+            border: 'none',
+            padding: '10px 15px',
+            cursor: 'pointer',
+            fontSize: '20px',
+            borderRadius: '50%',
+            transition: 'background 0.3s'
+          }}
+          onMouseEnter={e => (e.target.style.background = 'rgba(0, 0, 0, 0.8)')}
+          onMouseLeave={e => (e.target.style.background = 'rgba(0, 0, 0, 0.5)')}>
+          ➡
+        </button>
+      </Modal>
 
       <h3>예약 가능한 객실</h3>
       {availableRooms?.length > 0 ? (

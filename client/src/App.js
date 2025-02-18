@@ -160,7 +160,7 @@ const App = () => {
             />
             <Route path="/booking/my" element={<MyBookingPage />} />
             <Route path="/coupons/my" element={<MyCouponsPage />} />
-            <Route path="/user/mileage" element={<MileagePage />} />
+            <Route path="/mileage" element={<MileagePage />} />
             <Route path="/booking/detail/:bookingId" element={<BookingDetailPage />} />
             <Route path="/reviews/create" element={<ReviewForm />} />
           </Route>
