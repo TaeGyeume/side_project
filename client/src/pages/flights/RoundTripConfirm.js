@@ -128,7 +128,8 @@ const RoundTripConfirm = () => {
             console.log('✅ 결제 성공:', rsp);
             const verifyResponse = await verifyPayment({
               imp_uid: rsp.imp_uid,
-              merchant_uid
+              merchant_uid,
+              userId: user._id
             });
             console.log('✅ 결제 검증 응답:', verifyResponse);
             if (verifyResponse.message === '결제 검증 성공') {
