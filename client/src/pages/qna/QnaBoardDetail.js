@@ -25,12 +25,12 @@ const QnaBoardDetail = () => {
   // ✅ 현재 로그인한 사용자 정보를 가져오기
   const fetchUser = async () => {
     try {
-      console.log('🚀 사용자 정보 요청 시작');
+      // console.log('🚀 사용자 정보 요청 시작');
       const response = await getUserProfile();
-      console.log('✅ 사용자 정보 응답:', response.data);
+      // console.log('✅ 사용자 정보 응답:', response.data);
       setUser(response.data);
     } catch (error) {
-      console.error('❌ 사용자 정보를 가져오는 중 오류 발생:', error);
+      // console.error('❌ 사용자 정보를 가져오는 중 오류 발생:', error);
       setUser(null);
     }
   };
@@ -49,10 +49,10 @@ const QnaBoardDetail = () => {
     const fetchComments = async () => {
       try {
         const response = await getQnaComments(qnaBoardId);
-        console.log('📥 댓글 데이터:', response.comments);
+        // console.log('📥 댓글 데이터:', response.comments);
         setComments(response.comments);
       } catch (error) {
-        console.error('QnA 댓글 조회 오류:', error);
+        // console.error('QnA 댓글 조회 오류:', error);
       }
     };
 
@@ -92,7 +92,6 @@ const QnaBoardDetail = () => {
     setCommentLoading(true);
     try {
       const response = await createQnaComment(qnaBoardId, newComment);
-      console.log('✅ 새 댓글:', response.qnaComment);
 
       //  새 댓글을 기존 목록에 추가하여 즉시 반영
       setComments(prevComments => [
@@ -109,7 +108,7 @@ const QnaBoardDetail = () => {
 
       setNewComment('');
     } catch (error) {
-      console.error('❌ QnA 댓글 작성 오류:', error);
+      // console.error('❌ QnA 댓글 작성 오류:', error);
     }
     setCommentLoading(false);
   };
@@ -118,7 +117,7 @@ const QnaBoardDetail = () => {
   const handleDeleteComment = async commentId => {
     if (!user) return alert('로그인이 필요합니다.');
 
-    console.log('🛠 댓글 삭제 요청:', {commentId, userId: user._id, roles: user.roles});
+    // console.log('🛠 댓글 삭제 요청:', {commentId, userId: user._id, roles: user.roles});
 
     if (window.confirm('정말로 댓글을 삭제하시겠습니까?')) {
       try {
@@ -127,7 +126,7 @@ const QnaBoardDetail = () => {
           prevComments.filter(comment => comment._id !== commentId)
         );
       } catch (error) {
-        console.error('❌ QnA 댓글 삭제 오류:', error);
+        // console.error('❌ QnA 댓글 삭제 오류:', error);
         alert('댓글 삭제 중 오류 발생');
       }
     }

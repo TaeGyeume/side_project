@@ -155,7 +155,7 @@ const deleteQnaComment = async (commentId, userId, userRoles) => {
       throw new Error('해당 댓글을 찾을 수 없습니다.');
     }
 
-    // ✅ 댓글 작성자이거나 관리자인 경우 삭제 가능하도록 수정
+    // 댓글 작성자이거나 관리자인 경우 삭제 가능
     if (comment.user.toString() !== userId && !userRoles.includes('admin')) {
       throw new Error('삭제 권한이 없습니다.');
     }

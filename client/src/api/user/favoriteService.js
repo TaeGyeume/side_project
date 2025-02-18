@@ -36,7 +36,7 @@ export const toggleFavorite = async (itemId, itemType) => {
 export const getUserFavorites = async () => {
   try {
     const response = await axios.get(API_BASE_URL, {withCredentials: true});
-    console.log('📥 Fetched favorites:', response.data.favorites);
+    // console.log('📥 Fetched favorites:', response.data.favorites);
     return response.data;
   } catch (error) {
     console.error('❌ Error fetching favorites:', error.response?.data || error.message);

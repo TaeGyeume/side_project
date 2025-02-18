@@ -134,8 +134,7 @@ const getQnaComments = async (req, res) => {
 const deleteQnaComment = async (req, res) => {
   try {
     const {commentId} = req.params;
-    const userId = req.user._id; // JWT에서 가져온 사용자 ID
-    const userRoles = req.user.roles; // JWT에서 가져온 사용자 역할 (admin 여부)
+    const {id: userId, roles: userRoles} = req.user; // `req.user`에서 id와 roles 가져오기
 
     console.log('🛠 댓글 삭제 요청:', {commentId, userId, userRoles});
 
