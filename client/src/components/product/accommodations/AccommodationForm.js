@@ -1,4 +1,21 @@
 import React, {useState, useEffect} from 'react';
+import {
+  TextField,
+  Select,
+  MenuItem,
+  Button,
+  FormControl,
+  InputLabel,
+  Paper,
+  Typography,
+  Chip,
+  Box,
+  IconButton,
+  ImageList,
+  ImageListItem
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import {createAccommodation} from '../../../api/accommodation/accommodationService';
 import {fetchCountries, fetchCities} from '../../../api/location/locationService';
 import {authAPI} from '../../../api/auth';
@@ -41,11 +58,6 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
     }
   };
 
-  // 도시 선택 핸들러
-  const handleCityChange = e => {
-    setFormData({...formData, location: e.target.value});
-  };
-
   // 🔹 입력값 변경 핸들러
   const handleChange = e => {
     const {name, value} = e.target;
@@ -84,22 +96,12 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
     setFormData({...formData, images: updatedImages});
   };
 
-  // 🔹 편의시설 추가 핸들러
-  const handleAddAmenity = () => {
-    setFormData({...formData, amenities: [...formData.amenities, '']});
-  };
-
   // 🔹 편의시설 삭제 핸들러
   const handleRemoveAmenity = index => {
-    const newAmenities = formData.amenities.filter((_, i) => i !== index);
-    setFormData({...formData, amenities: newAmenities});
-  };
-
-  // 🔹 편의시설 입력 변경 핸들러
-  const handleAmenityChange = (index, value) => {
-    const newAmenities = [...formData.amenities];
-    newAmenities[index] = value;
-    setFormData({...formData, amenities: newAmenities});
+    setFormData(prev => ({
+      ...prev,
+      amenities: prev.amenities.filter((_, i) => i !== index) // ✅ 정확한 인덱스의 값만 삭제
+    }));
   };
 
   // 🔹 폼 제출 핸들러
@@ -186,150 +188,188 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
   }, []);
 
   return (
-    <form onSubmit={handleSubmit} className="accommodation-form">
-      {/* 🔹 숙소명 */}
-      <div className="form-group">
-        <label>숙소명</label>
-        <input
-          type="text"
+    <Paper sx={{p: 4, maxWidth: 650, mx: 'auto', mt: 4, boxShadow: 4}}>
+      <Typography variant="h5" sx={{mb: 3, fontWeight: 'bold'}}>
+        숙소 등록
+      </Typography>
+
+      <form onSubmit={handleSubmit}>
+        <TextField
+          fullWidth
+          label="숙소명"
           name="name"
           value={formData.name}
           onChange={handleChange}
           required
+          sx={{mb: 2}}
         />
-      </div>
-
-      {/* 🔹 설명 */}
-      <div className="form-group">
-        <label>설명</label>
-        <textarea
+        <TextField
+          fullWidth
+          label="설명"
           name="description"
           value={formData.description}
           onChange={handleChange}
+          multiline
+          rows={3}
+          sx={{mb: 2}}
         />
-      </div>
 
-      {/* 🔹 위치 선택 (DB에서 불러오기) */}
-      <div className="form-group">
-        <label>국가 선택</label>
-        <select name="country" value={selectedCountry} onChange={handleCountryChange}>
-          <option value="">국가를 선택하세요</option>
-          {countries.map((country, index) => (
-            <option key={index} value={country}>
-              {country}
-            </option>
-          ))}
-        </select>
-      </div>
+        <FormControl fullWidth sx={{mb: 2}} variant="outlined">
+          <InputLabel id="country-label">국가 선택</InputLabel>
+          <Select
+            labelId="country-label"
+            value={selectedCountry}
+            onChange={handleCountryChange}
+            label="국가 선택" // ✅ label을 Select에 추가해야 InputLabel과 연동됨
+          >
+            {countries.map((country, index) => (
+              <MenuItem key={index} value={country}>
+                {country}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-      <div className="form-group">
-        <label>도시 선택</label>
-        <select
-          name="location"
-          value={formData.location}
-          onChange={handleCityChange}
-          required>
-          <option value="">도시를 선택하세요</option>
-          {cities.map(city => (
-            <option key={city._id} value={city._id}>
-              {city.name}
-            </option>
-          ))}
-        </select>
-      </div>
+        <FormControl fullWidth sx={{mb: 2}} variant="outlined">
+          <InputLabel id="city-label">도시 선택</InputLabel>
+          <Select
+            labelId="city-label"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            label="도시 선택">
+            {cities.map(city => (
+              <MenuItem key={city._id} value={city._id}>
+                {city.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-      {/* 🔹 좌표 입력 (경도, 위도) */}
-      <div className="form-group">
-        <label>경도 (Longitude)</label>
-        <input
-          type="number"
-          name="lng"
-          step="any"
-          value={formData.coordinates.lng}
-          onChange={handleCoordinateChange}
-          required
-        />
-      </div>
-      <div className="form-group">
-        <label>위도 (Latitude)</label>
-        <input
-          type="number"
-          name="lat"
-          step="any"
-          value={formData.coordinates.lat}
-          onChange={handleCoordinateChange}
-          required
-        />
-      </div>
-
-      {/* 🔹 주소 입력 */}
-      <div className="form-group">
-        <label>주소</label>
-        <input
-          type="text"
+        <TextField
+          fullWidth
+          label="주소"
           name="address"
           value={formData.address}
           onChange={handleChange}
           required
+          sx={{mb: 2}}
         />
-      </div>
 
-      {/* 🔹 카테고리 선택 */}
-      <div className="form-group">
-        <label>카테고리</label>
-        <select name="category" value={formData.category} onChange={handleChange}>
-          <option value="Hotel">호텔</option>
-          <option value="Pension">펜션</option>
-          <option value="Resort">리조트</option>
-          <option value="Motel">모텔</option>
-        </select>
-      </div>
+        <Box sx={{display: 'flex', gap: 2, mb: 2}}>
+          <TextField
+            fullWidth
+            label="경도"
+            name="lng"
+            type="number"
+            value={formData.coordinates.lng}
+            onChange={handleCoordinateChange}
+            required
+          />
+          <TextField
+            fullWidth
+            label="위도"
+            name="lat"
+            type="number"
+            value={formData.coordinates.lat}
+            onChange={handleCoordinateChange}
+            required
+          />
+        </Box>
 
-      {/* 🔹 편의시설 (배열) */}
-      <div className="form-group">
-        <label>편의시설</label>
-        {formData.amenities.map((amenity, index) => (
-          <div key={index}>
-            <input
-              type="text"
-              value={amenity}
-              onChange={e => handleAmenityChange(index, e.target.value)}
-              placeholder="편의시설 입력"
+        {/* 🔹 카테고리 선택 */}
+        <FormControl fullWidth sx={{mb: 3}} variant="outlined">
+          <InputLabel id="category-label">카테고리</InputLabel>
+          <Select
+            labelId="category-label"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            label="카테고리">
+            <MenuItem value="Hotel">호텔</MenuItem>
+            <MenuItem value="Pension">펜션</MenuItem>
+            <MenuItem value="Resort">리조트</MenuItem>
+            <MenuItem value="Motel">모텔</MenuItem>
+          </Select>
+        </FormControl>
+
+        <TextField
+          fullWidth
+          label="편의시설 추가 (Enter 입력)"
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              e.preventDefault(); // ✅ 엔터 입력 시 폼 제출 방지
+              if (e.target.value.trim()) {
+                setFormData(prev => ({
+                  ...prev,
+                  amenities: [...prev.amenities, e.target.value.trim()]
+                }));
+                e.target.value = ''; // 입력창 초기화
+              }
+            }
+          }}
+        />
+        <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2}}>
+          {formData.amenities.map((amenity, index) => (
+            <Chip
+              key={index}
+              label={amenity}
+              onDelete={() => handleRemoveAmenity(index)} // ✅ 인덱스를 전달하여 삭제
+              sx={{bgcolor: 'lightgray', color: 'black'}}
             />
-            <button type="button" onClick={() => handleRemoveAmenity(index)}>
-              X
-            </button>
-          </div>
-        ))}
-        <button type="button" onClick={handleAddAmenity}>
-          + 추가
-        </button>
-      </div>
-
-      {/* 🔹 숙소 이미지 업로드 */}
-      <div className="form-group">
-        <label>숙소 이미지</label>
-        <input type="file" name="images" multiple onChange={handleFileChange} />
-      </div>
-
-      {/* 🔹 업로드한 이미지 미리보기 및 삭제 */}
-      {previewImages.length > 0 && (
-        <div className="image-preview">
-          {previewImages.map((image, index) => (
-            <div key={index} className="preview-container">
-              <img src={image} alt={`preview-${index}`} className="preview-image" />
-              <button type="button" onClick={() => handleRemoveImage(index)}>
-                ×
-              </button>
-            </div>
           ))}
-        </div>
-      )}
+        </Box>
 
-      <button type="submit" className="form-button">
-        숙소 등록
-      </button>
-    </form>
+        {/* 🔹 숙소 이미지 업로드 */}
+        <Box sx={{mb: 3}}>
+          <Button
+            variant="contained"
+            component="label"
+            startIcon={<UploadFileIcon />}
+            sx={{mb: 2}}>
+            이미지 업로드
+            <input
+              type="file"
+              name="images"
+              multiple
+              onChange={handleFileChange}
+              hidden
+            />
+          </Button>
+
+          {/* 🔹 업로드한 이미지 미리보기 */}
+          {previewImages.length > 0 && (
+            <ImageList cols={3} rowHeight={100}>
+              {previewImages.map((image, index) => (
+                <ImageListItem key={index}>
+                  <img
+                    src={image}
+                    alt={`preview-${index}`}
+                    style={{borderRadius: '8px'}}
+                  />
+                  <IconButton
+                    sx={{
+                      position: 'absolute',
+                      top: 5,
+                      right: 5,
+                      bgcolor: 'rgba(0,0,0,0.5)',
+                      color: 'white'
+                    }}
+                    size="small"
+                    onClick={() => handleRemoveImage(index)}>
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </ImageListItem>
+              ))}
+            </ImageList>
+          )}
+        </Box>
+
+        <Button type="submit" variant="contained" fullWidth sx={{mt: 3}}>
+          숙소 등록
+        </Button>
+      </form>
+    </Paper>
   );
 };
 

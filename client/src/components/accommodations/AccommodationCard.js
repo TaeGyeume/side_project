@@ -1,10 +1,8 @@
-// src/components/accommodations/AccommodationCard.js
 import React from 'react';
 import {createSearchParams} from 'react-router-dom';
-import FavoriteButton from '../user/FavoriteButton'; // ✅ 즐겨찾기 버튼 추가
-import './styles/AccommodationCard.css';
+import {Card, CardMedia, CardContent, Typography, Box} from '@mui/material';
+import FavoriteButton from '../user/FavoriteButton';
 
-// ✅ 기본 날짜 설정 함수 (오늘 + n일)
 const getFormattedDate = (daysToAdd = 0) => {
   const date = new Date();
   date.setDate(date.getDate() + daysToAdd);
@@ -17,11 +15,10 @@ const AccommodationCard = ({
   isFavorite,
   onFavoriteToggle
 }) => {
-  // ✅ 기본 필터값 설정 (queryOptions가 없을 경우 적용)
   const params = {
     city: queryOptions.city || '서울',
-    startDate: queryOptions.startDate || getFormattedDate(1), // 내일
-    endDate: queryOptions.endDate || getFormattedDate(2), // 모레
+    startDate: queryOptions.startDate || getFormattedDate(1),
+    endDate: queryOptions.endDate || getFormattedDate(2),
     adults: queryOptions.adults || 1,
     minPrice: queryOptions.minPrice || 0,
     maxPrice: queryOptions.maxPrice || 500000,
@@ -29,55 +26,73 @@ const AccommodationCard = ({
     sortBy: queryOptions.sortBy || 'default'
   };
 
-  // ✅ 카드 클릭 시 상세 페이지로 이동
   const handleCardClick = () => {
     const url = `/accommodations/${accommodation._id}/detail?${createSearchParams(params)}`;
-    window.open(url, '_blank'); // 새 탭에서 열기
+    window.open(url, '_blank');
   };
 
-  // ✅ 이미지 URL 변환 로직 추가
   const SERVER_URL = 'http://localhost:5000';
   let imageUrl = accommodation.images?.[0] || '/default-image.jpg';
 
-  // 이미지가 상대 경로(`/uploads/...`)일 경우, 서버 주소 추가
   if (imageUrl.startsWith('/uploads/')) {
     imageUrl = `${SERVER_URL}${imageUrl}`;
   }
 
   return (
-    <div
-      className="card accommodation-card mb-3"
-      onClick={handleCardClick}
-      style={{cursor: 'pointer'}}>
-      {/* ✅ 이미지 컨테이너 */}
-      <div className="accommodation-image-container">
-        {/* ✅ 숙소 이미지 */}
-        <img
-          src={imageUrl}
-          className="card-img-top accommodation-image"
-          alt={accommodation.name}
+    <Card
+      sx={{
+        display: 'flex',
+        width: '100%',
+        height: '200px', // 높이 유지
+        cursor: 'pointer',
+        mb: 2, // 카드 간격 조정
+        position: 'relative' // ✅ 즐겨찾기 버튼 위치 조정을 위해 relative 설정
+      }}
+      onClick={handleCardClick}>
+      {/* ✅ 왼쪽 이미지 */}
+      <CardMedia
+        component="img"
+        image={imageUrl}
+        alt={accommodation.name}
+        sx={{
+          width: '300px', // 기존 이미지 크기 유지
+          height: '100%', // 카드 높이에 맞춤
+          objectFit: 'cover'
+        }}
+      />
+
+      {/* ✅ 오른쪽 정보 */}
+      <CardContent sx={{display: 'flex', flexDirection: 'column', flex: 1, p: 2}}>
+        <Typography variant="h6" sx={{fontWeight: 'bold', mb: 1}}>
+          {accommodation.name}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{flexGrow: 1, mb: 1}}>
+          {accommodation.description}
+        </Typography>
+        <Typography variant="body1" color="primary">
+          <strong>최저가:</strong> {accommodation.minPrice?.toLocaleString()}원 / 박
+        </Typography>
+      </CardContent>
+
+      {/* ✅ 즐겨찾기 버튼 (카드 내부에서 우측 상단에 배치) */}
+      <Box
+        sx={{
+          position: 'absolute', // ✅ 이제 Card 내부에서 배치됨
+          top: 8, // 상단 여백
+          right: 8, // 오른쪽 여백
+          zIndex: 10,
+          backgroundColor: 'rgba(255, 255, 255, 0.8)', // 배경 추가 (더 잘 보이도록)
+          borderRadius: '50%',
+          padding: '4px'
+        }}>
+        <FavoriteButton
+          itemId={accommodation._id}
+          itemType="Accommodation"
+          initialFavoriteStatus={isFavorite}
+          onFavoriteToggle={onFavoriteToggle}
         />
-
-        {/* ✅ 즐겨찾기 버튼 (이미지 내부 우측 상단에 배치) */}
-        <div className="favorite-icon-container">
-          <FavoriteButton
-            itemId={accommodation._id}
-            itemType="Accommodation"
-            initialFavoriteStatus={isFavorite}
-            onFavoriteToggle={onFavoriteToggle}
-          />
-        </div>
-      </div>
-
-      {/* ✅ 숙소 정보 */}
-      <div className="card-body">
-        <h5 className="card-title">{accommodation.name}</h5>
-        <p className="card-text">{accommodation.description}</p>
-        <p>
-          <strong>최저가:</strong> {accommodation.minPrice?.toLocaleString()}원
-        </p>
-      </div>
-    </div>
+      </Box>
+    </Card>
   );
 };
 
