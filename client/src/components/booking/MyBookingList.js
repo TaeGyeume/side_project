@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {
   getMyBookings,
   cancelBooking,
@@ -10,6 +11,7 @@ const MyBookingList = ({status}) => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -63,7 +65,11 @@ const MyBookingList = ({status}) => {
     }
   };
 
-  const handleReview = () => {};
+  const handleReview = (productId, bookingId) => {
+    navigate(
+      `/reviews/create?productId=${productId}&bookingId=${bookingId}`
+    );
+  };
 
   if (loading) return <p className="loading-text">로딩 중...</p>;
   if (error) return <p className="error-text">{error}</p>;
@@ -122,12 +128,17 @@ const MyBookingList = ({status}) => {
                     </button>
                   </div>
                 )}
-
+                
                 {status === 'completed' && booking.paymentStatus === 'CONFIRMED' && (
                   <div className="booking-buttons">
                     <button
                       className="review-button"
-                      onClick={() => handleReview(booking._id)}>
+                      onClick={() =>
+                        handleReview(
+                          booking.productIds[0]._id,
+                          booking._id,
+                        )
+                      }>
                       리뷰 작성
                     </button>
                   </div>
