@@ -60,12 +60,12 @@ const toggleFavorite = async (req, res) => {
 const getUserFavorites = async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log(`📥 Fetching favorites for user: ${userId}`);
+    // console.log(`📥 Fetching favorites for user: ${userId}`);
 
     const favorites = await favoriteService.getUserFavorites(userId);
     res.status(200).json({favorites});
   } catch (error) {
-    console.error('❌ Error fetching user favorites:', error.message);
+    // console.error('❌ Error fetching user favorites:', error.message);
     res.status(400).json({error: error.message});
   }
 };

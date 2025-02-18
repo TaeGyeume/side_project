@@ -70,7 +70,7 @@ const toggleFavorite = async (userId, itemId, itemType) => {
 // ✅ 사용자 즐겨찾기 목록 조회 (populate 적용)
 const getUserFavorites = async userId => {
   try {
-    console.log(`📥 Fetching favorites for user: ${userId}`);
+    // console.log(`📥 Fetching favorites for user: ${userId}`);
 
     const favorites = await Favorite.find({user: userId})
       .populate({
@@ -91,7 +91,7 @@ const getUserFavorites = async userId => {
       images: fav.item?.images || []
     }));
   } catch (error) {
-    console.error('❌ Error fetching user favorites:', error.message);
+    // console.error('❌ Error fetching user favorites:', error.message);
     throw new Error('Error fetching user favorites');
   }
 };
