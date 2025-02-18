@@ -5,18 +5,51 @@ import {
   cancelBooking,
   confirmBooking
 } from '../../api/booking/bookingService';
+import {getReviews} from '../../api/review/reviewService';
+import {useReviewContext} from '../../contexts/ReviewContext';
+import {useAuthStore} from '../../store/authStore';
 import './styles/MyBookingList.css';
 
 const MyBookingList = ({status}) => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const {reviewStatus, setReviewStatus} = useReviewContext();
   const navigate = useNavigate();
+
+  const {user} = useAuthStore(); // authStore에서 user 정보 가져오기
+  const userId = user?._id; // user 객체에서 userId 추출
+  console.log('setReviewStatus:', setReviewStatus);
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
         const data = await getMyBookings();
+        if (!data || data.length === 0) return;
+
+        const reviewsStatus = {};
+
+        await Promise.all(
+          data.map(async booking => {
+            await Promise.all(
+              booking.productIds.map(async product => {
+                const productId = product._id || product;
+                console.log('Fetching reviews for productId:', productId);
+                const reviews = await getReviews(productId.toString());
+
+                const hasReview = reviews.some(
+                  r => String(r.userId._id || r.userId) === String(userId)
+                );
+
+                reviewsStatus[productId] = hasReview;
+              })
+            );
+          })
+        );
+
+        console.log('Final reviewsStatus:', reviewsStatus);
+        setReviewStatus(reviewsStatus);
+
         setBookings(data);
       } catch (err) {
         setError('예약 정보를 불러오는 중 오류 발생');
@@ -24,14 +57,12 @@ const MyBookingList = ({status}) => {
         setLoading(false);
       }
     };
-
     fetchBookings();
-  }, []);
+  }, [setReviewStatus, userId]);
 
   const handleCancel = async bookingId => {
     try {
       const response = await cancelBooking(bookingId);
-
       if (response.status === 200) {
         alert('예약이 정상적으로 취소되었습니다.');
         setBookings(prev =>
@@ -66,9 +97,7 @@ const MyBookingList = ({status}) => {
   };
 
   const handleReview = (productId, bookingId) => {
-    navigate(
-      `/reviews/create?productId=${productId}&bookingId=${bookingId}`
-    );
+    navigate(`/reviews/create?productId=${productId}&bookingId=${bookingId}`);
   };
 
   if (loading) return <p className="loading-text">로딩 중...</p>;
@@ -90,7 +119,6 @@ const MyBookingList = ({status}) => {
   return (
     <div className="booking-list-container">
       <h2>{status === 'completed' ? '📌 예약 완료' : '❌ 예약 취소'}</h2>
-
       {filteredBookings.length === 0 ? (
         <p className="no-bookings">해당하는 예약이 없습니다.</p>
       ) : (
@@ -98,13 +126,7 @@ const MyBookingList = ({status}) => {
           {filteredBookings.map(booking => (
             <div
               key={booking._id}
-              className={`booking-card ${
-                status === 'canceled'
-                  ? 'canceled'
-                  : status === 'confirmed'
-                    ? 'confirmed'
-                    : ''
-              }`}>
+              className={`booking-card ${status === 'canceled' ? 'canceled' : status === 'confirmed' ? 'confirmed' : ''}`}>
               <div className="booking-header">
                 <span className="booking-date">
                   주문 일자:&nbsp;
@@ -113,7 +135,6 @@ const MyBookingList = ({status}) => {
                     .replace('T', ' | ')
                     .substring(0, 21)}
                 </span>
-
                 {status === 'completed' && booking.paymentStatus === 'COMPLETED' && (
                   <div className="booking-buttons">
                     <button
@@ -128,23 +149,24 @@ const MyBookingList = ({status}) => {
                     </button>
                   </div>
                 )}
-                
                 {status === 'completed' && booking.paymentStatus === 'CONFIRMED' && (
                   <div className="booking-buttons">
-                    <button
-                      className="review-button"
-                      onClick={() =>
-                        handleReview(
-                          booking.productIds[0]._id,
-                          booking._id,
-                        )
-                      }>
-                      리뷰 작성
-                    </button>
+                    {reviewStatus[booking.productIds[0]._id] ? ( // 작성된 리뷰가 있으면
+                      <button className="review-done-button" disabled>
+                        리뷰 작성 완료
+                      </button>
+                    ) : (
+                      <button
+                        className="review-button"
+                        onClick={() =>
+                          handleReview(booking.productIds[0]._id, booking._id)
+                        }>
+                        리뷰 작성
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
-
               {booking.productIds.map((product, idx) => (
                 <React.Fragment key={idx}>
                   {idx === 0 ? (
@@ -170,7 +192,6 @@ const MyBookingList = ({status}) => {
                   ) : null}
                 </React.Fragment>
               ))}
-
               <div className="booking-footer">
                 <a href={`/booking/detail/${booking._id}`} className="detail-link">
                   {'>> 상세 페이지로 이동'}
