@@ -31,7 +31,7 @@ const TourTicketList = () => {
         const response = await getUserFavorites();
         setFavorites(response.favorites); // 🔹 사용자 즐겨찾기 목록 저장
       } catch (error) {
-        console.error('즐겨찾기 목록 가져오기 오류:', error);
+        // console.error('즐겨찾기 목록 가져오기 오류:', error);
       }
     };
 
