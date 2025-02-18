@@ -4,12 +4,12 @@ const TravelItem = require('../models/TravelItem');
 exports.getPopularProducts = async (limit = 10) => {
   try {
     // ✅ 모든 투어 티켓 가져오기 (조회수 높은 순 정렬)
-    const topTourTickets = await TourTicket.find()
+    const topTourTickets = await TourTicket.find({stock: {$gt: 0}})
       .select('_id title location price images views')
       .lean();
 
     // ✅ 모든 여행 용품 가져오기 (조회수 높은 순 정렬)
-    const topTravelItems = await TravelItem.find()
+    const topTravelItems = await TravelItem.find({stock: {$gt: 0}})
       .select('_id name category price images views')
       .lean();
 
