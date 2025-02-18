@@ -1,99 +1,96 @@
 import React, {useEffect, useState} from 'react';
-import axios from 'axios';
+import {fetchMileage, fetchMileageHistory} from '../../api/mileage/mileageService';
+import MileageSummary from '../../components/mileage/MileageSummary';
+import MileageHistory from '../../components/mileage/MileageHistory';
 import {authAPI} from '../../api/auth';
 
 const MileagePage = () => {
-  const [mileage, setMileage] = useState(null);
-  const [mileageHistory, setMileageHistory] = useState([]);
-  const [error, setError] = useState('');
   const [userId, setUserId] = useState(null);
+  const [totalMileage, setTotalMileage] = useState(0);
+  const [mileageHistory, setMileageHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // ✅ 사용자 ID 및 마일리지 데이터 불러오기
+  // ✅ 유저 정보 가져오기
   useEffect(() => {
-    const fetchUserAndMileage = async () => {
+    const fetchUserProfile = async () => {
       try {
-        // 사용자 정보 가져오기
-        const user = await authAPI.getUserProfile();
-        console.log('🔍 사용자 정보:', user);
+        const userData = await authAPI.getUserProfile();
+        console.log('✅ 유저 정보:', userData);
 
-        if (user && user._id) {
-          setUserId(user._id);
-
-          // ✅ 전체 마일리지 및 적립 내역 조회
-          const [mileageResponse, historyResponse] = await Promise.all([
-            axios.get(`http://localhost:5000/api/user-mileages/${user._id}`),
-            axios.get(`http://localhost:5000/api/mileage/history/${user._id}`)
-          ]);
-
-          console.log('✅ 마일리지 조회 성공:', mileageResponse.data);
-          console.log('✅ 마일리지 내역 조회 성공:', historyResponse.data);
-
-          // ✅ 상태 업데이트
-          setMileage(mileageResponse.data.mileage);
-          setMileageHistory(historyResponse.data);
+        // ✅ 응답 형태가 올바른지 확인 후 userId 설정
+        if (userData && userData._id) {
+          setUserId(userData._id);
+        } else if (userData?.user?.id) {
+          setUserId(userData.user.id); // ✅ 응답 구조에 따른 예외 처리
         } else {
-          setError('사용자 정보가 올바르지 않습니다.');
+          throw new Error('유효한 유저 ID를 찾을 수 없습니다.');
         }
       } catch (err) {
-        console.error('🚨 마일리지 조회 실패:', err);
-        setError('마일리지 정보를 불러오는 중 오류가 발생했습니다.');
+        console.error('🚨 유저 정보 가져오기 실패:', err);
+        setError('유저 정보를 불러올 수 없습니다.');
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  // ✅ 마일리지 및 내역 불러오기
+  useEffect(() => {
+    if (!userId) return;
+
+    const loadMileageData = async () => {
+      try {
+        setLoading(true);
+        const mileageData = await fetchMileage(userId);
+        console.log('✅ 총 마일리지 API 응답:', mileageData);
+
+        if (!mileageData || typeof mileageData.mileage === 'undefined') {
+          throw new Error('마일리지 데이터가 유효하지 않습니다.');
+        }
+
+        setTotalMileage(mileageData.mileage || 0);
+
+        const historyData = await fetchMileageHistory(userId);
+        console.log('✅ 마일리지 내역 API 응답:', historyData);
+
+        if (!Array.isArray(historyData)) {
+          throw new Error('마일리지 내역 데이터가 유효하지 않습니다.');
+        }
+
+        setMileageHistory(historyData);
+      } catch (error) {
+        console.error(
+          '🚨 마일리지 데이터 불러오기 실패:',
+          error.response ?? error.message
+        );
+        setError('마일리지 정보를 불러올 수 없습니다.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserAndMileage();
-  }, []);
+    loadMileageData();
+  }, [userId]);
 
-  if (loading) return <p>⏳ 마일리지를 불러오는 중...</p>;
-  if (!userId) return <p>⚠️ 로그인 후 이용해 주세요.</p>;
+  if (loading) {
+    return <p className="text-center text-blue-500">⏳ 로딩 중...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-red-500">❌ {error}</p>;
+  }
 
   return (
-    <div className="mileage-container" style={{padding: '20px'}}>
-      <h2>✈️ 내 마일리지</h2>
-      {mileage !== null ? (
-        <h3>🎯 현재 마일리지: {mileage.toLocaleString()} 점</h3>
+    <div className="container mx-auto p-4 space-y-4">
+      <h1 className="text-2xl font-bold text-center mb-4">🚀 마일리지 관리</h1>
+      {userId ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <MileageSummary totalMileage={totalMileage} />
+          <MileageHistory history={mileageHistory} />
+        </div>
       ) : (
-        <p>⏳ 마일리지 정보를 불러오는 중...</p>
-      )}
-
-      {/* 마일리지 내역 리스트 */}
-      <div className="mileage-history" style={{marginTop: '30px'}}>
-        <h4>📜 마일리지 적립/사용 내역</h4>
-        {mileageHistory.length > 0 ? (
-          <ul style={{listStyle: 'none', padding: 0}}>
-            {mileageHistory.map(item => (
-              <li
-                key={item._id}
-                style={{padding: '10px', borderBottom: '1px solid #ccc'}}>
-                <strong>{item.description}</strong>
-                <span
-                  style={{
-                    color: item.type === 'earn' ? 'green' : 'red',
-                    fontWeight: 'bold',
-                    marginLeft: '10px'
-                  }}>
-                  {item.type === 'earn' ? '+' : '-'}
-                  {item.amount.toLocaleString()} 점
-                </span>
-                <div style={{fontSize: '12px', color: '#888'}}>
-                  {new Date(item.createdAt).toLocaleString()} | 잔액:{' '}
-                  {item.balanceAfter.toLocaleString()} 점
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>📂 아직 마일리지 내역이 없습니다.</p>
-        )}
-      </div>
-
-      {/* 오류 메시지 */}
-      {error && (
-        <p className="text-danger" style={{color: 'red'}}>
-          ⚠️ {error}
-        </p>
+        <p className="text-center text-red-500">❌ 유저 정보가 없습니다.</p>
       )}
     </div>
   );
