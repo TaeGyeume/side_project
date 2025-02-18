@@ -1,13 +1,79 @@
-// services/userMileageService.js
 const User = require('../models/User');
+const MileageHistory = require('../models/MileageHistory');
+const mongoose = require('mongoose');
 
-// ✅ 마일리지 조회 서비스
-exports.fetchUserMileage = async userId => {
+// ✅ 마일리지 적립 (User에 반영 + MileageHistory에 기록)
+exports.addMileageWithHistory = async (
+  userId,
+  amount,
+  description = '예약 결제 적립'
+) => {
   try {
     const user = await User.findById(userId);
-    return user ? user.mileage : null;
+    if (!user) throw new Error('사용자를 찾을 수 없습니다.');
+
+    // User 마일리지 업데이트
+    user.mileage = (user.mileage || 0) + amount;
+    await user.save();
+
+    // MileageHistory에 적립 내역 저장
+    const mileageRecord = new MileageHistory({
+      userId,
+      type: 'earn',
+      amount,
+      description,
+      balanceAfter: user.mileage
+    });
+    await mileageRecord.save();
+
+    console.log(`✅ ${userId}님에게 ${amount}점 적립 완료`);
+    return mileageRecord;
   } catch (error) {
-    console.error('🚨 마일리지 조회 서비스 오류:', error);
-    throw new Error('마일리지 조회 실패');
+    console.error('🚨 마일리지 적립 실패:', error);
+    throw new Error('마일리지 적립 실패');
+  }
+};
+
+// ✅ 마일리지 사용 (User에 반영 + MileageHistory에 기록)
+exports.useMileage = async (userId, amount, description = '마일리지 사용') => {
+  try {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    const user = await User.findById(userId).session(session);
+    if (!user) throw new Error('사용자를 찾을 수 없습니다.');
+    if (user.mileage < amount) throw new Error('마일리지가 부족합니다.');
+
+    user.mileage -= amount;
+    await user.save({session});
+
+    const mileageHistory = new MileageHistory({
+      userId,
+      type: 'use',
+      amount: -amount,
+      description,
+      balanceAfter: user.mileage
+    });
+    await mileageHistory.save({session});
+
+    await session.commitTransaction();
+    session.endSession();
+
+    console.log(`✅ ${userId}님이 마일리지 ${amount}점 사용 완료`);
+    return mileageHistory;
+  } catch (error) {
+    console.error('🚨 마일리지 사용 실패:', error);
+    throw new Error('마일리지 사용 실패');
+  }
+};
+
+// ✅ 마일리지 내역 조회
+exports.getMileageHistory = async userId => {
+  try {
+    const history = await MileageHistory.find({userId}).sort({createdAt: -1});
+    return history;
+  } catch (error) {
+    console.error('🚨 마일리지 내역 조회 실패:', error);
+    throw new Error('마일리지 내역 조회 실패');
   }
 };

@@ -8,6 +8,7 @@ const Flight = require('../models/Flight');
 const UserCoupon = require('../models/UserCoupon');
 const schedule = require('node-schedule');
 const mongoose = require('mongoose');
+const userMileageService = require('./userMileageService');
 
 let cachedToken = null;
 let tokenExpiration = null;
@@ -369,6 +370,23 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
         });
 
         await newPayment.save();
+
+        const totalPaidAmount = expectedFinalAmount;
+
+        // ✅ 새로운 구조에 맞춘 마일리지 적립
+        if (userId && totalPaidAmount > 0) {
+          try {
+            const mileageAmount = Math.floor(totalPaidAmount * 0.01);
+            await userMileageService.addMileageWithHistory(
+              userId,
+              mileageAmount,
+              `예약 결제 적립 (${totalPaidAmount.toLocaleString()}원 기준)`
+            );
+          } catch (mileageError) {
+            console.error('🚨 마일리지 적립 실패:', mileageError.message);
+          }
+        }
+
         booking.paymentStatus = 'COMPLETED';
         await booking.save();
       })
