@@ -32,7 +32,13 @@ const SearchBar = ({onSearch}) => {
     }
 
     const delayDebounceFn = setTimeout(async () => {
-      const results = await fetchSuggestions(searchTerm);
+      let results = await fetchSuggestions(searchTerm);
+
+      // ✅ 옵션을 객체 배열로 변환
+      if (Array.isArray(results)) {
+        results = results.map(item => (typeof item === 'string' ? {name: item} : item));
+      }
+
       setSuggestions(results);
     }, 300);
 
@@ -87,20 +93,25 @@ const SearchBar = ({onSearch}) => {
           {/* 여행지 입력 */}
           <Autocomplete
             freeSolo
-            options={suggestions} // ✅ 객체 리스트를 그대로 사용
-            getOptionLabel={option => option.name} // ✅ 이름만 표시
+            options={suggestions}
+            getOptionLabel={option =>
+              typeof option === 'string' ? option : option?.name || ''
+            }
             onInputChange={(event, newValue) => setSearchTerm(newValue)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <Typography>
-                  {highlightMatch(option.name, searchTerm)} {/* ✅ 하이라이트 적용 */}
-                </Typography>
-              </li>
-            )}
+            renderOption={(props, option) => {
+              const {key, ...restProps} = props; // ✅ key 속성을 분리
+              return (
+                <li key={option.id || option.name} {...restProps}>
+                  {' '}
+                  {/* ✅ key를 별도로 설정 */}
+                  <Typography>{highlightMatch(option.name, searchTerm)}</Typography>
+                </li>
+              );
+            }}
             renderInput={params => (
               <TextField {...params} label="여행지" variant="outlined" fullWidth />
             )}
-            sx={{flex: 1, minWidth: '250px'}} // 🔹 크기 조정
+            sx={{flex: 1, minWidth: '250px'}}
           />
 
           {/* 체크인 날짜 선택 */}
