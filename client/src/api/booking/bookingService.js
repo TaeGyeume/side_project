@@ -61,9 +61,14 @@ export const verifyPayment = async paymentData => {
 export const getMyBookings = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/my`);
-    // console.log('내 예약 내역:', response.data);
     return response.data;
   } catch (error) {
+    if (error.response && error.response.status === 404) {
+      // console.warn('예약 이력이 없습니다.');
+
+      return [];
+    }
+
     console.error('예약 내역 불러오기 실패:', error);
     throw error;
   }

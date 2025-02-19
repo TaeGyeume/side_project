@@ -62,7 +62,9 @@ const MyBookingList = ({status}) => {
 
         setBookings(data);
       } catch (err) {
-        setError('예약 정보를 불러오는 중 오류 발생');
+        if (err.response && err.response.status === 404)
+          setError('예약 내역이 없습니다.');
+        else setError('예약 내역 불러오기 실패');
       } finally {
         setLoading(false);
       }
