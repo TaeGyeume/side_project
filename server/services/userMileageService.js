@@ -37,16 +37,16 @@ exports.addMileageWithHistory = async (
 // ✅ 마일리지 사용 (User에 반영 + MileageHistory에 기록)
 exports.useMileage = async (userId, amount, description = '마일리지 사용') => {
   try {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
-    const user = await User.findById(userId).session(session);
+    // ✅ 사용자 찾기
+    const user = await User.findById(userId);
     if (!user) throw new Error('사용자를 찾을 수 없습니다.');
     if (user.mileage < amount) throw new Error('마일리지가 부족합니다.');
 
+    // ✅ 마일리지 차감 후 저장
     user.mileage -= amount;
-    await user.save({session});
+    await user.save();
 
+    // ✅ 마일리지 사용 내역 저장
     const mileageHistory = new MileageHistory({
       userId,
       type: 'use',
@@ -54,10 +54,7 @@ exports.useMileage = async (userId, amount, description = '마일리지 사용')
       description,
       balanceAfter: user.mileage
     });
-    await mileageHistory.save({session});
-
-    await session.commitTransaction();
-    session.endSession();
+    await mileageHistory.save();
 
     console.log(`✅ ${userId}님이 마일리지 ${amount}점 사용 완료`);
     return mileageHistory;

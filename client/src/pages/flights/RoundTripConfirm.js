@@ -24,6 +24,7 @@ const RoundTripConfirm = () => {
     passengers = location.state?.passengers || 1
   } = location.state || {};
   const [user, setUser] = useState(null);
+  const [usedMileage, setUsedMileage] = useState(0);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -100,6 +101,7 @@ const RoundTripConfirm = () => {
       productIds: selectedProducts.map(item => item.productId),
       counts: selectedProducts.map(item => passengers),
       totalPrice: totalAmount,
+      usedMileage,
       userId: user._id,
       reservationInfo: {name: user.username, email: user.email, phone: user.phone},
       merchant_uid
@@ -112,13 +114,15 @@ const RoundTripConfirm = () => {
       const {IMP} = window;
       IMP.init('imp22685348');
 
+      const paymentAmount = totalAmount - usedMileage;
+
       IMP.request_pay(
         {
           pg: 'html5_inicis.INIpayTest',
           pay_method: 'card',
           merchant_uid,
           name: '항공권 및 기타 상품 예약',
-          amount: totalAmount,
+          amount: paymentAmount, // ✅ 마일리지 적용된 최종 결제 금액
           buyer_email: user.email,
           buyer_name: user.username,
           buyer_tel: user.phone
@@ -129,7 +133,8 @@ const RoundTripConfirm = () => {
             const verifyResponse = await verifyPayment({
               imp_uid: rsp.imp_uid,
               merchant_uid,
-              userId: user._id
+              userId: user._id,
+              usedMileage // ✅ 결제 검증 시 사용한 마일리지도 함께 전달
             });
             console.log('✅ 결제 검증 응답:', verifyResponse);
             if (verifyResponse.message === '결제 검증 성공') {
@@ -158,6 +163,28 @@ const RoundTripConfirm = () => {
         <div className="col-12 text-center mt-3">
           <h4 className="fw-bold">💰 총 예약 비용: {totalPrice.toLocaleString()}원</h4>
         </div>
+
+        {/* ✅ 마일리지 입력 UI 추가 */}
+        <div className="col-12 text-center mt-3">
+          <label className="fw-bold me-2">🎯 사용할 마일리지:</label>
+          <input
+            type="number"
+            className="form-control d-inline-block w-auto"
+            value={usedMileage}
+            onChange={e => {
+              const inputMileage = Number(e.target.value);
+              setUsedMileage(
+                inputMileage > (user?.mileage || 0) ? user.mileage : inputMileage
+              );
+            }}
+            min="0"
+            max={user?.mileage || 0}
+          />
+          <small className="text-muted ms-2">
+            보유 마일리지: {user?.mileage?.toLocaleString() || 0}P
+          </small>
+        </div>
+
         <div className="col-12 text-center mt-3">
           <button className="btn btn-primary px-4 py-2" onClick={handleConfirm}>
             🚀 예약 확정

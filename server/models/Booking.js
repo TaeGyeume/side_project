@@ -20,6 +20,7 @@ const bookingSchema = new mongoose.Schema(
     totalPrice: {type: Number, required: true},
     discountAmount: {type: Number, default: 0}, // ✅ 할인 금액 저장
     finalPrice: {type: Number, required: true}, // ✅ 최종 결제 금액 저장
+    usedMileage: {type: Number, default: 0}, // ✅ 사용된 마일리지 필드 추가
     userId: {type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User'},
     userCouponId: {
       type: mongoose.Schema.Types.ObjectId,
