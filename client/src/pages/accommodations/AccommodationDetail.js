@@ -10,8 +10,7 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-
-// Modal.setAppElement('#root');
+import ReviewList from '../../components/review/ReviewList';
 
 // ✅ 기본 날짜 설정 함수 (오늘 + n일)
 const getFormattedDate = (daysToAdd = 0) => {
@@ -117,7 +116,16 @@ const AccommodationDetail = () => {
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 3000,
-    arrows: true
+    arrows: true,
+    beforeChange: (current, next) => {
+      document.querySelectorAll('.slick-slide').forEach(slide => {
+        if (slide.getAttribute('aria-hidden') === 'true') {
+          slide.setAttribute('tabindex', '-1'); // 포커스 방지
+        } else {
+          slide.removeAttribute('tabindex'); // 활성화된 슬라이드는 tabindex 제거
+        }
+      });
+    }
   };
 
   console.log('Accommodation Coordinates:', accommodation.coordinates);
@@ -199,7 +207,11 @@ const AccommodationDetail = () => {
               <div
                 key={index}
                 className="carousel-slide"
-                onClick={() => openModal(index)}
+                onClick={e => {
+                  if (e.currentTarget.getAttribute('aria-hidden') !== 'true') {
+                    openModal(index);
+                  }
+                }}
                 style={{cursor: 'pointer'}}>
                 <img
                   src={imageUrl}
@@ -252,7 +264,8 @@ const AccommodationDetail = () => {
             backgroundColor: 'rgba(0, 0, 0, 0.8)', // 어두운 배경
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
+            zIndex: 1300
           },
           content: {
             position: 'relative',
@@ -265,7 +278,8 @@ const AccommodationDetail = () => {
             inset: 'unset',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            zIndex: 1300
           }
         }}>
         {/* 이전 버튼 */}
@@ -328,6 +342,10 @@ const AccommodationDetail = () => {
       ) : (
         <p>예약 가능한 객실이 없습니다.</p>
       )}
+
+      {/* 리뷰 리스트 */}
+      <h2>📝 리뷰</h2>
+      <ReviewList productId={accommodationId} />
     </div>
   );
 };

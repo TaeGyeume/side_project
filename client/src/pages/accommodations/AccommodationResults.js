@@ -103,17 +103,14 @@ const AccommodationResults = () => {
   };
 
   // ✅ 필터 변경 시 API 요청 실행
-  const handleFilterChange = useCallback(
-    newFilters => {
-      setFilters(prev => {
-        const updatedFilters = {...prev, ...newFilters};
-        setSearchParams(updatedFilters);
-        fetchAccommodations(updatedFilters, 1, true);
-        return updatedFilters;
-      });
-    },
-    [setSearchParams, fetchAccommodations]
-  );
+  const handleFilterChange = useCallback(newFilters => {
+    setFilters(prev => ({...prev, ...newFilters}));
+  }, []);
+
+  useEffect(() => {
+    setSearchParams(filters); // ✅ 렌더링 후에 실행
+    fetchAccommodations(filters, 1, true); // ✅ 렌더링 후에 실행
+  }, [filters, setSearchParams, fetchAccommodations]);
 
   // ✅ 숙소 데이터를 불러올 때 즐겨찾기도 함께 불러오기
   useEffect(() => {

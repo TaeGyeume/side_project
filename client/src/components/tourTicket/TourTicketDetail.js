@@ -2,21 +2,31 @@ import React, {useEffect, useState} from 'react';
 import {getTourTicketById} from '../../api/tourTicket/tourTicketService';
 import {getReviews} from '../../api/review/reviewService';
 import {useParams, useNavigate} from 'react-router-dom';
-import {useReviewContext} from '../../contexts/ReviewContext'; // Context 가져오기
+import {useReviewContext} from '../../contexts/ReviewContext';
+import authAPI from '../../api/auth/auth';
 import './styles/TourTicketDetail.css';
 import ReviewList from '../../components/review/ReviewList';
 
 const TourTicketDetail = () => {
   const {id} = useParams();
   const {reviewStatus, setReviewStatus} = useReviewContext();
-
   const navigate = useNavigate();
-  const userId = localStorage.getItem('userId'); // 현재 로그인 사용자
 
   const [ticket, setTicket] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0); // 현재 이미지 인덱스
+  const [user, setUser] = useState(null); // 사용자 정보 저장
 
   useEffect(() => {
+    // 로그인된 사용자 정보 가져오기
+    const fetchUserProfile = async () => {
+      try {
+        const userProfile = await authAPI.getUserProfile();
+        setUser(userProfile);
+      } catch (error) {
+        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
+      }
+    };
+
     const fetchTicket = async () => {
       try {
         const data = await getTourTicketById(id);
@@ -29,22 +39,30 @@ const TourTicketDetail = () => {
     const fetchReviews = async () => {
       try {
         const data = await getReviews(id);
-        const userReview = data.find(review => review.userId._id === userId);
-        if (userReview) {
-          setReviewStatus(prev => ({...prev, [id]: true})); // 리뷰 작성 상태 저장
+
+        const updatedReviewStatus = {};
+
+        // 유저 정보가 있을 때만 리뷰 상태 확인
+        if (user && user._id) {
+          data.forEach(review => {
+            if (review.userId._id === user._id) {
+              const key = `${review.productId}_${review.bookingId}`;
+              updatedReviewStatus[key] = true;
+            }
+          });
         }
+
+        setReviewStatus(prev => ({...prev, ...updatedReviewStatus}));
       } catch (err) {
         console.error('리뷰 조회 오류:', err);
       }
     };
 
-    fetchTicket();
-    fetchReviews();
-  }, [id, userId, setReviewStatus]);
-
-  useEffect(() => {
-    if (!ticket || ticket.images.length <= 1) return; // 이미지가 하나면 슬라이드 X
-  }, [ticket]);
+    fetchUserProfile().then(() => {
+      fetchTicket();
+      fetchReviews();
+    });
+  }, [id, setReviewStatus]);
 
   if (!ticket) {
     return <p>상품 정보를 불러오는 중...</p>;
@@ -68,7 +86,10 @@ const TourTicketDetail = () => {
     navigate(`/tourTicket/booking/${id}`);
   };
 
-  const hasReview = reviewStatus[id]; // 해당 상품의 리뷰 여부 확인
+  // 현재 예약 건에 대한 리뷰 여부 체크
+  const hasReview = user
+    ? Object.keys(reviewStatus).some(key => key.startsWith(`${id}_`) && reviewStatus[key])
+    : false;
 
   return (
     <div className="tour-ticket-detail">
@@ -107,7 +128,7 @@ const TourTicketDetail = () => {
       <p>가격: {ticket.price.toLocaleString()}원</p>
 
       <button onClick={() => navigate('/tourTicket/list')}>상품 목록</button>
-      
+
       {hasReview ? (
         <button className="completed-btn" disabled>
           리뷰 작성 완료
@@ -119,7 +140,7 @@ const TourTicketDetail = () => {
       )}
 
       <div>
-        <h1>리뷰</h1>
+        <h2>📝 리뷰</h2>
         <ReviewList productId={id} />
       </div>
     </div>

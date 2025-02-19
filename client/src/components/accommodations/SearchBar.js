@@ -1,32 +1,30 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect} from 'react';
 import {fetchSuggestions} from '../../api/accommodation/accommodationService';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import './styles/SearchBar.css';
+import {
+  TextField,
+  Button,
+  Autocomplete,
+  IconButton,
+  Typography,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+  Stack,
+  Paper
+} from '@mui/material';
+import {LocalizationProvider, DatePicker} from '@mui/x-date-pickers';
+import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
+import {Add, Remove} from '@mui/icons-material';
 
 const SearchBar = ({onSearch}) => {
-  const [searchTerm, setSearchTerm] = useState('서울');
-  const [startDate, setStartDate] = useState(new Date()); // 체크인 날짜
+  const [searchTerm, setSearchTerm] = useState('');
+  const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(
     new Date(new Date().setDate(new Date().getDate() + 1))
-  ); // 체크아웃 날짜
-  const [adults, setAdults] = useState(1); // 기본 성인 1명
+  );
+  const [adults, setAdults] = useState(1);
+  const [suggestions, setSuggestions] = useState([]);
 
-  const [suggestions, setSuggestions] = useState([]); // 자동완성 목록
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const searchRef = useRef(null); // 🔹 입력 필드 및 자동완성 목록 감지용 ref
-
-  // 🔍 검색 실행
-  const handleSearch = () => {
-    onSearch({
-      searchTerm,
-      startDate: startDate.toISOString().split('T')[0], // yyyy-MM-dd 형식
-      endDate: endDate.toISOString().split('T')[0], // yyyy-MM-dd 형식
-      adults
-    });
-  };
-
-  // 🔎 자동완성 API 호출 (디바운싱 적용)
   useEffect(() => {
     if (searchTerm.length === 0) {
       setSuggestions([]);
@@ -34,122 +32,167 @@ const SearchBar = ({onSearch}) => {
     }
 
     const delayDebounceFn = setTimeout(async () => {
-      const results = await fetchSuggestions(searchTerm);
-      setSuggestions(results);
-    }, 300); // ⏳ 300ms 후 실행
+      let results = await fetchSuggestions(searchTerm);
 
-    return () => clearTimeout(delayDebounceFn); // 이전 요청 취소
+      // ✅ 옵션을 객체 배열로 변환
+      if (Array.isArray(results)) {
+        results = results.map(item => (typeof item === 'string' ? {name: item} : item));
+      }
+
+      setSuggestions(results);
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
 
-  // 🔹 자동완성 항목을 클릭하면 검색창에 반영
-  const handleSelectSuggestion = suggestion => {
-    setSearchTerm(suggestion.name); // 🔹 선택한 검색어 입력창에 반영
-    setShowSuggestions(false); // 🔹 자동완성 목록 닫기
+  // 🔹 검색 실행 함수
+  const handleSearch = () => {
+    onSearch({
+      searchTerm,
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
+      adults
+    });
   };
 
-  // 🔹 입력 필드 외부 클릭 시 자동완성 닫기
-  useEffect(() => {
-    const handleClickOutside = event => {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setShowSuggestions(false); // 🔹 검색창 바깥 클릭 시 닫기
-      } else {
-        setShowSuggestions(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  // 🔹 검색어와 일치하는 부분 강조
+  // 🔹 검색어 하이라이트 적용 (정확히 일치하는 부분만)
   const highlightMatch = (text, query) => {
     if (!query) return text;
     const regex = new RegExp(`(${query})`, 'gi');
-    return text.replace(regex, `<span class="highlight">$1</span>`);
+    const parts = text.split(regex);
+
+    return parts.map((part, index) =>
+      part.toLowerCase() === query.toLowerCase() ? (
+        <span key={index} style={{color: 'blue', fontWeight: 'bold'}}>
+          {part}
+        </span>
+      ) : (
+        <span key={index}>{part}</span>
+      )
+    );
   };
 
   return (
-    <div ref={searchRef} className="searchBar-container">
-      {/* 여행지 입력 */}
-      <div className="input-group">
-        <label>여행지</label>
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          onFocus={() => setShowSuggestions(true)}
-          className="input"
-        />
-        {showSuggestions && suggestions.length > 0 && (
-          <ul className="suggestions-list">
-            {suggestions.map((suggestion, index) => (
-              <li
-                key={index}
-                onMouseDown={e => {
-                  e.preventDefault();
-                  handleSelectSuggestion(suggestion);
-                }}
-                className="suggestion-item"
-                dangerouslySetInnerHTML={{
-                  __html: highlightMatch(suggestion.name, searchTerm)
-                }} // 🔹 검색어 하이라이트
-              />
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* 날짜 선택 */}
-      <div className="input-group">
-        <label>일정</label>
-        <div className="date-container">
-          <DatePicker
-            selected={startDate}
-            onChange={date => setStartDate(date)}
-            selectsStart
-            startDate={startDate}
-            endDate={endDate}
-            dateFormat="yyyy-MM-dd"
-            onKeyDown={e => e.preventDefault()} // 수동 입력 방지
-            className="date-picker"
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <Paper
+        elevation={3}
+        sx={{
+          width: '100%', // 🔹 전체 너비 적용
+          mx: 0, // 🔹 좌우 여백 제거
+          p: 3,
+          borderRadius: 0, // 🔹 둥근 모서리 제거하여 전체 너비 채우기
+          backgroundColor: '#f8f9fa'
+        }}>
+        <Stack
+          direction="row"
+          spacing={2}
+          alignItems="center"
+          justifyContent="space-between" // 🔹 좌우로 끝까지 배치
+          sx={{width: '100%', px: 3}} // 🔹 내부 요소도 너비를 채우도록 조정
+        >
+          {/* 여행지 입력 */}
+          <Autocomplete
+            freeSolo
+            options={suggestions}
+            getOptionLabel={option =>
+              typeof option === 'string' ? option : option?.name || ''
+            }
+            onInputChange={(event, newValue) => setSearchTerm(newValue)}
+            renderOption={(props, option) => {
+              const {key, ...restProps} = props; // ✅ key 속성을 분리
+              return (
+                <li key={option.id || option.name} {...restProps}>
+                  {' '}
+                  {/* ✅ key를 별도로 설정 */}
+                  <Typography>{highlightMatch(option.name, searchTerm)}</Typography>
+                </li>
+              );
+            }}
+            renderInput={params => (
+              <TextField {...params} label="여행지" variant="outlined" fullWidth />
+            )}
+            sx={{flex: 1, minWidth: '250px'}}
           />
+
+          {/* 체크인 날짜 선택 */}
           <DatePicker
-            selected={endDate}
-            onChange={date => setEndDate(date)}
-            selectsEnd
-            startDate={startDate}
-            endDate={endDate}
+            label="체크인"
+            value={startDate}
+            onChange={newDate => setStartDate(newDate)}
+            renderInput={params => <TextField {...params} fullWidth />}
+            sx={{flex: 1, minWidth: '180px'}} // 🔹 크기 조정
+          />
+
+          {/* 체크아웃 날짜 선택 */}
+          <DatePicker
+            label="체크아웃"
+            value={endDate}
+            onChange={newDate => setEndDate(newDate)}
+            renderInput={params => <TextField {...params} fullWidth />}
             minDate={startDate}
-            dateFormat="yyyy-MM-dd"
-            onKeyDown={e => e.preventDefault()} // 수동 입력 방지
-            className="date-picker"
+            sx={{flex: 1, minWidth: '180px'}} // 🔹 크기 조정
           />
-        </div>
-      </div>
 
-      {/* 숙박 인원 선택 */}
-      <div className="input-group">
-        <label>성인</label>
-        <div className="guest-selector">
-          <button
-            onClick={() => setAdults(prev => Math.max(1, prev - 1))}
-            className="button">
-            -
-          </button>
-          <span>{adults}</span>
-          <button onClick={() => setAdults(prev => prev + 1)} className="button">
-            +
-          </button>
-        </div>
-      </div>
+          {/* 성인 수 선택 */}
+          <FormControl sx={{flex: 1, minWidth: '160px'}}>
+            <InputLabel shrink htmlFor="adult-count">
+              성인
+            </InputLabel>
+            <OutlinedInput
+              id="adult-count"
+              notched
+              label="성인"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                height: '56px',
+                padding: '0 8px', // 내부 패딩 조정
+                borderRadius: '5px'
+              }}
+              startAdornment={
+                <IconButton
+                  onClick={() => setAdults(prev => Math.max(1, prev - 1))}
+                  size="small"
+                  sx={{padding: '4px'}} // 버튼 크기 줄임
+                >
+                  <Remove fontSize="small" />
+                </IconButton>
+              }
+              endAdornment={
+                <IconButton
+                  onClick={() => setAdults(prev => prev + 1)}
+                  size="small"
+                  sx={{padding: '4px'}} // 버튼 크기 줄임
+                >
+                  <Add fontSize="small" />
+                </IconButton>
+              }
+              inputProps={{
+                style: {
+                  textAlign: 'center',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  width: '24px' // 숫자가 중앙 정렬되도록 조정
+                }
+              }}
+              value={adults}
+              readOnly
+            />
+          </FormControl>
 
-      {/* 숙소 검색 버튼 */}
-      <button onClick={handleSearch} className="search-button">
-        숙소 검색
-      </button>
-    </div>
+          {/* 숙소 검색 버튼 */}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSearch}
+            sx={{flexShrink: 0, minWidth: '140px', height: '56px'}} // 🔹 버튼 크기 유지
+          >
+            숙소 검색
+          </Button>
+        </Stack>
+      </Paper>
+    </LocalizationProvider>
   );
 };
 
