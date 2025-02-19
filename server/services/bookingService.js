@@ -9,6 +9,7 @@ const UserCoupon = require('../models/UserCoupon');
 const schedule = require('node-schedule');
 const mongoose = require('mongoose');
 const userMileageService = require('./userMileageService');
+const User = require('../models/User');
 
 let cachedToken = null;
 let tokenExpiration = null;
@@ -65,6 +66,7 @@ exports.createBooking = async bookingData => {
       totalPrice,
       discountAmount,
       finalPrice,
+      usedMileage = 0,
       ...rest
     } = bookingData;
 
@@ -104,6 +106,22 @@ exports.createBooking = async bookingData => {
       }
     }
 
+    // ✅ 추가: 마일리지 차감 로직
+    const user = await User.findById(userId);
+    if (!user) {
+      return {status: 404, message: '사용자를 찾을 수 없습니다.'};
+    }
+
+    if (usedMileage > user.mileage) {
+      return {status: 400, message: '마일리지가 부족합니다.'};
+    }
+
+    // ✅ 최종 결제 금액 업데이트
+    const updatedFinalPrice = totalPrice - discountAmount - usedMileage;
+    if (updatedFinalPrice < 0) {
+      return {status: 400, message: '사용할 마일리지가 결제 금액보다 클 수 없습니다.'};
+    }
+
     // 하나의 예약 데이터로 생성
     const newBooking = new Booking({
       userId,
@@ -116,7 +134,8 @@ exports.createBooking = async bookingData => {
       merchant_uid,
       totalPrice: bookingData.totalPrice,
       discountAmount: discountAmount || 0,
-      finalPrice,
+      finalPrice: updatedFinalPrice, // ✅ 마일리지 반영된 최종 가격
+      usedMileage, // ✅ 사용한 마일리지 저장
       userCouponId: appliedCoupon, // ✅ 사용한 유저 쿠폰 저장
       paymentsStatus: 'PENDING',
       ...rest
@@ -147,6 +166,29 @@ exports.createBooking = async bookingData => {
       }
     }
 
+    // ✅ 오류 발생 시 마일리지 복구
+    if (usedMileage > 0) {
+      try {
+        const user = await User.findById(bookingData.userId);
+        if (user) {
+          user.mileage += usedMileage;
+          await user.save();
+          console.log(
+            `✅ [서버] 오류 발생으로 사용된 마일리지 복구 완료 - ${usedMileage}P`
+          );
+          // ✅ 사용된 마일리지를 복구하는 내역도 기록
+          await userMileageService.addMileageWithHistory(
+            user,
+            usedMileage,
+            `예약 오류로 마일리지 환불 (${usedMileage.toLocaleString()}P)`
+          );
+          console.log(`✅ [서버] 오류 발생 시 마일리지 복구 내역 저장 완료`);
+        }
+      } catch (mileageError) {
+        console.error(`❌ [서버] 마일리지 복구 중 오류 발생: ${mileageError.message}`);
+      }
+    }
+
     return {status: 500, message: '예약 생성 중 오류 발생'};
   }
 };
@@ -167,6 +209,11 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
 
     if (!bookings.length) throw new Error('예약 데이터를 찾을 수 없습니다.');
 
+    let totalUsedMileage = bookings.reduce(
+      (sum, booking) => sum + (booking.usedMileage || 0),
+      0
+    );
+
     // ✅ 전체 예약 가격 합산
     let totalOriginalPrice = bookings.reduce(
       (sum, booking) => sum + (booking.totalPrice || 0),
@@ -175,7 +222,10 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
     console.log('📌 [서버] 예약 총 가격:', totalOriginalPrice);
 
     let discountAmount = 0;
-    let expectedFinalAmount = totalOriginalPrice;
+
+    let expectedFinalAmount = totalOriginalPrice - discountAmount - totalUsedMileage;
+    console.log('📌 [서버] 예상 결제 금액:', expectedFinalAmount);
+
     const mongoose = require('mongoose');
     // ObjectId 변환 함수
     const toObjectId = id => {
@@ -235,6 +285,7 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
     console.log('📌 [서버] 결제 금액 검증:', {
       totalOriginalPrice,
       discountAmount,
+      totalUsedMileage,
       expectedFinalAmount,
       portOneAmount: paymentData.amount
     });
@@ -245,6 +296,16 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
       );
 
       return {status: 400, message: '결제 금액 불일치'};
+    }
+
+    // ✅ [1] 마일리지 사용 확정
+    if (totalUsedMileage > 0) {
+      console.log(`✅ [서버] 마일리지 ${totalUsedMileage}P 사용 확정`);
+      await userMileageService.useMileage(
+        userId,
+        totalUsedMileage,
+        `예약 결제 확정 (${totalUsedMileage.toLocaleString()}P 사용)`
+      );
     }
 
     await Promise.all(
@@ -358,6 +419,14 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
           })
         );
 
+        // ✅ [2] 마일리지 1% 적립
+        const earnedMileage = Math.floor(booking.totalPrice * 0.01);
+        await userMileageService.addMileageWithHistory(
+          userId,
+          earnedMileage,
+          `예약 결제 적립 (${booking.totalPrice.toLocaleString()}원 기준)`
+        );
+
         const newPayment = new Payment({
           bookingId: booking._id,
           imp_uid,
@@ -370,23 +439,6 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
         });
 
         await newPayment.save();
-
-        const totalPaidAmount = expectedFinalAmount;
-
-        // ✅ 새로운 구조에 맞춘 마일리지 적립
-        if (userId && totalPaidAmount > 0) {
-          try {
-            const mileageAmount = Math.floor(totalPaidAmount * 0.01);
-            await userMileageService.addMileageWithHistory(
-              userId,
-              mileageAmount,
-              `예약 결제 적립 (${totalPaidAmount.toLocaleString()}원 기준)`
-            );
-          } catch (mileageError) {
-            console.error('🚨 마일리지 적립 실패:', mileageError.message);
-          }
-        }
-
         booking.paymentStatus = 'COMPLETED';
         await booking.save();
       })
@@ -396,6 +448,30 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
     return {status: 200, message: '결제 검증 성공'};
   } catch (error) {
     console.error('결제 검증 오류:', error);
+
+    // ✅ 결제 실패 시 사용한 마일리지 복구 (중복 방지)
+    const bookings = await Booking.find({merchant_uid});
+    await Promise.all(
+      bookings.map(async booking => {
+        if (booking.usedMileage > 0) {
+          // ✅ 예약이 이미 취소된 상태면 복구 실행 안 함
+          if (booking.paymentStatus === 'CANCELED') {
+            console.log(
+              `⚠️ [서버] 예약 ${booking._id}은 취소 상태이므로 마일리지 복구 생략`
+            );
+            return;
+          }
+
+          await userMileageService.addMileageWithHistory(
+            booking.userId,
+            booking.usedMileage,
+            `결제 실패로 마일리지 환불 (${booking.usedMileage.toLocaleString()}P)`
+          );
+          console.log(`✅ [서버] 마일리지 복구 완료: ${booking.usedMileage}P`);
+        }
+      })
+    );
+
     // ✅ 결제 실패 시 쿠폰을 다시 사용 가능하게 복원
     const booking = await Booking.findOne({merchant_uid});
     if (booking && booking.userCouponId) {
@@ -445,8 +521,24 @@ exports.cancelBooking = async bookingIds => {
 
     await Promise.all(
       bookings.map(async booking => {
-        const {types, productIds, counts, roomIds, startDates, endDates, userCouponId} =
-          booking;
+        // ✅ 중복 복구 방지를 위한 체크
+        if (booking.paymentStatus === 'CANCELED') {
+          console.log(`⚠️ [서버] 이미 취소된 예약 - Booking ID: ${booking._id}`);
+          return;
+        }
+
+        const {
+          types,
+          productIds,
+          counts,
+          roomIds,
+          startDates,
+          endDates,
+          userCouponId,
+          usedMileage,
+          userId,
+          totalPrice
+        } = booking;
 
         const prodIds = Array.isArray(productIds) ? productIds : [productIds];
         const prodTypes = Array.isArray(types) ? types : [types];
@@ -468,7 +560,13 @@ exports.cancelBooking = async bookingIds => {
 
                 case 'flight':
                   product = await Flight.findById(productId);
-                  product.availableSeats += prodCounts[index];
+                  if (product) {
+                    product.seatsAvailable += prodCounts[index];
+                    await product.save();
+                    console.log(
+                      `✅ [서버] 항공편 좌석 복구 완료 - flightId: ${productId}, 복구 좌석 수: ${prodCounts[index]}`
+                    );
+                  }
                   break;
 
                 case 'accommodation':
@@ -546,7 +644,70 @@ exports.cancelBooking = async bookingIds => {
           }
         }
 
+        // ✅ 적립된 마일리지 차감 (중복 방지)
+        const earnedMileage = Math.floor(totalPrice * 0.01); // 적립된 마일리지 계산
+        if (earnedMileage > 0) {
+          try {
+            console.log(
+              `🔍 [서버] 예약 취소로 인해 적립된 마일리지 ${earnedMileage}P 차감`
+            );
+
+            await userMileageService.useMileage(
+              userId,
+              earnedMileage,
+              `예약 취소로 마일리지 적립 취소 (${earnedMileage.toLocaleString()}P)`
+            );
+
+            console.log(
+              `✅ [서버] 예약 취소로 적립된 마일리지 ${earnedMileage}P 차감 완료`
+            );
+          } catch (mileageError) {
+            console.error(
+              `❌ [서버] 적립된 마일리지 차감 중 오류 발생: ${mileageError.message}`
+            );
+          }
+        }
+
         booking.paymentStatus = 'CANCELED';
+
+        // ✅ 마일리지 복구 (중복 방지)
+        if (usedMileage > 0) {
+          try {
+            const user = await User.findById(userId);
+            if (user) {
+              // ✅ 결제 상태가 PENDING 또는 COMPLETED일 때만 복구 실행
+              if (['CANCELED'].includes(booking.paymentStatus)) {
+                console.log(
+                  `🔍 [서버] 사용자 ${userId} 현재 마일리지: ${user.mileage}, 복구 예정: ${usedMileage}`
+                );
+
+                // ✅ 사용자 마일리지 복구
+                // user.mileage += usedMileage;
+                await user.save();
+
+                // ✅ 마일리지 복구 내역 추가
+                await userMileageService.addMileageWithHistory(
+                  userId,
+                  usedMileage,
+                  `예약 취소로 마일리지 복구 (${usedMileage.toLocaleString()}P)`
+                );
+
+                console.log(
+                  `✅ [서버] 예약 취소 - 사용된 마일리지 ${usedMileage}P 복구 완료`
+                );
+              } else {
+                console.log(
+                  `⚠️ [서버] 예약 상태가 ${booking.paymentStatus}이므로 마일리지 복구 생략`
+                );
+              }
+            }
+          } catch (mileageError) {
+            console.error(
+              `❌ [서버] 마일리지 복구 중 오류 발생: ${mileageError.message}`
+            );
+          }
+        }
+
         booking.updatedAt = Date.now() + 9 * 60 * 60 * 1000;
         await booking.save();
       })
@@ -581,7 +742,7 @@ exports.confirmBooking = async bookingId => {
       // 예약이 존재하지 않는 경우
       return {status: 404, message: '예약을 찾을 수 없습니다.'};
     }
-    
+
     if (booking.paymentStatus === 'COMPLETED') {
       booking.paymentStatus = 'CONFIRMED';
       booking.finalPrice = booking.finalPrice || booking.totalPrice; // 기본값 설정
