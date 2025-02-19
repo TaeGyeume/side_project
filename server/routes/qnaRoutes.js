@@ -1,22 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const qnaController = require('../controllers/qnaController');
-const authMiddleware = require('../middleware/authMiddleware'); // JWT 인증 미들웨어
-const multer = require('multer');
+const authMiddleware = require('../middleware/authMiddleware');
 
-// ✅ Multer 설정 (파일 업로드 처리)
-const upload = multer({dest: 'uploads/'});
-
-// ✅ QnA 게시글 작성 (로그인 필요, 파일 업로드 가능)
-router.post(
-  '/',
-  authMiddleware,
-  upload.fields([
-    {name: 'images', maxCount: 3}, // 이미지 최대 3개 업로드
-    {name: 'attachments', maxCount: 5} // 첨부파일 최대 5개 업로드
-  ]),
-  qnaController.createQnaBoard
-);
+router.post('/', authMiddleware, qnaController.createQnaBoard);
 
 // ✅ QnA 게시글 목록 조회 (페이징 & 카테고리 필터 가능)
 router.get('/', qnaController.getQnaBoards);

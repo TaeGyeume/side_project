@@ -1,43 +1,119 @@
+const fs = require('fs');
+const path = require('path');
+const busboy = require('busboy');
 const qnaService = require('../services/qnaService');
-const multer = require('multer');
 
-// ✅ Multer 설정 (파일 업로드 경로 및 파일 필터링)
-const upload = multer({dest: 'uploads/'});
-
-// ✅ QnA 게시글 작성
 const createQnaBoard = async (req, res) => {
   try {
-    // ✅ 요청 데이터 확인 (디버깅용)
-    console.log('📌 Received QnA Data:', req.body);
-    console.log('📌 Uploaded Files:', req.files);
+    const bb = busboy({headers: req.headers});
+    const uploadDir = path.join(__dirname, '../uploads/qna');
 
-    const {category, title, content} = req.body;
-    const userId = req.user.id; // JWT 인증을 통해 가져온 사용자 ID
+    let formData = {
+      category: '',
+      title: '',
+      content: '',
+      images: [],
+      attachments: []
+    };
 
-    // ✅ 파일 업로드 처리 (이미지 & 첨부파일)
-    const images = req.files?.images ? req.files.images.map(file => file.path) : [];
-    const attachments = req.files?.attachments
-      ? req.files.attachments.map(file => file.path)
-      : [];
+    let fileUploadPromises = [];
+    let filesProcessed = 0;
 
-    // ✅ 필수 데이터 확인
-    if (!category || !title || !content) {
-      return res.status(400).json({error: '카테고리, 제목, 내용을 입력해야 합니다.'});
-    }
+    // ✅ 파일 저장
+    bb.on('file', (name, file, info) => {
+      console.log(`📌 파일 업로드 시작: ${info.filename}, 필드명: ${name}`);
+      const {filename} = info;
+      const saveTo = path.join(uploadDir, `${Date.now()}-${filename}`);
+      const stream = fs.createWriteStream(saveTo);
 
-    // ✅ 서비스 호출
-    const qnaBoard = await qnaService.createQnaBoard(
-      userId,
-      category,
-      title,
-      content,
-      images,
-      attachments
-    );
-    res.status(201).json({message: 'QnA 게시글이 성공적으로 등록되었습니다.', qnaBoard});
+      file.pipe(stream);
+
+      file.on('end', () => {
+        console.log(`✅ 파일 저장 완료: ${saveTo}`);
+
+        // if (name === 'images') {
+        // 'images' 또는 'images[]' 모두 허용
+        if (name.startsWith('images')) {
+          formData.images.push(`/uploads/qna/${path.basename(saveTo)}`);
+          console.log(`📌 images 배열 추가됨: ${formData.images}`);
+        } else if (name.startsWith('attachments')) {
+          formData.attachments.push(`/uploads/qna/${path.basename(saveTo)}`);
+        }
+      });
+
+      stream.on('error', err => {
+        console.error('❌ 파일 저장 오류:', err);
+      });
+
+      fileUploadPromises.push(
+        new Promise(resolve => {
+          stream.on('finish', () => {
+            console.log(`📌 파일 스트림 종료: ${saveTo}`);
+            filesProcessed++;
+            resolve();
+          });
+        })
+      );
+    });
+
+    // ✅ 텍스트 필드 처리
+    bb.on('field', (name, value) => {
+      console.log(`📌 폼 필드 수신: ${name} = ${value}`);
+      formData[name] = value;
+    });
+
+    // ✅ 모든 파일이 업로드될 때까지 기다린 후 데이터 처리
+    bb.on('finish', async () => {
+      try {
+        console.log('✅ 모든 파일과 필드 수신 완료');
+        await Promise.all(fileUploadPromises);
+
+        console.log('📌 최종 저장할 데이터:', formData);
+        const {category, title, content, images, attachments} = formData;
+        const userId = req.user?.id;
+
+        if (!category || !title || !content) {
+          return res.status(400).json({error: '카테고리, 제목, 내용을 입력해야 합니다.'});
+        }
+
+        const qnaBoard = await qnaService.createQnaBoard(
+          userId,
+          category,
+          title,
+          content,
+          images,
+          attachments
+        );
+
+        console.log('✅ MongoDB 저장 완료:', qnaBoard);
+
+        return res.status(201).json({
+          message: 'QnA 게시글이 성공적으로 등록되었습니다.',
+          qnaBoard
+        });
+      } catch (error) {
+        console.error('❌ QnA 게시글 생성 오류:', error);
+        return res.status(500).json({error: error.message});
+      }
+    });
+
+    bb.on('error', err => {
+      console.error('❌ Busboy 에러 발생:', err);
+      return res.status(500).json({error: '파일 업로드 중 오류가 발생했습니다.'});
+    });
+
+    bb.on('close', () => {
+      console.log('🚨 Busboy 스트림이 닫혔습니다.');
+    });
+
+    // ✅ 🚀 요청을 `busboy`로 전달
+    req.pipe(bb);
+    req.on('end', () => {
+      console.log("📌 요청 종료됨 (req.on('end') 실행됨)");
+    });
   } catch (error) {
-    console.error('❌ Error creating QnA Board:', error);
-    res.status(500).json({error: error.message});
+    console.error('❌ QnA 처리 중 오류 발생:', error);
+    return res.status(500).json({error: '서버 오류 발생'});
   }
 };
 
@@ -75,7 +151,7 @@ const getQnaBoardById = async (req, res) => {
 const deleteQnaBoard = async (req, res) => {
   try {
     const {qnaBoardId} = req.params;
-    const userId = req.user.id; // 🔥 req.user에서 가져옴
+    const userId = req.user.id;
     const isAdmin = req.user.roles.includes('admin');
 
     console.log(`🛠 게시글 삭제 요청:`, {
@@ -84,6 +160,34 @@ const deleteQnaBoard = async (req, res) => {
       roles: req.user.roles
     });
 
+    // ✅ 1. 삭제할 게시글 정보 가져오기
+    const qnaBoard = await qnaService.getQnaBoardById(qnaBoardId);
+    if (!qnaBoard) {
+      return res.status(404).json({error: '게시글을 찾을 수 없습니다.'});
+    }
+
+    // ✅ 2. 해당 게시글의 이미지 & 첨부파일 삭제
+    const uploadDir = path.join(__dirname, '../uploads/qna');
+
+    if (qnaBoard.images.length > 0) {
+      qnaBoard.images.forEach(filePath => {
+        const fullPath = path.join(uploadDir, path.basename(filePath));
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath);
+        }
+      });
+    }
+
+    if (qnaBoard.attachments.length > 0) {
+      qnaBoard.attachments.forEach(filePath => {
+        const fullPath = path.join(uploadDir, path.basename(filePath));
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath);
+        }
+      });
+    }
+
+    // ✅ 3. 게시글 삭제
     const result = await qnaService.deleteQnaBoard(qnaBoardId, userId, isAdmin);
     return res.status(200).json(result);
   } catch (error) {
@@ -146,13 +250,43 @@ const deleteQnaComment = async (req, res) => {
   }
 };
 
-// ✅ QnA 게시글 수정 (작성자만 수정 가능)
+//  QnA 게시글 수정 (작성자만 수정 가능)
 const updateQnaBoard = async (req, res) => {
   try {
     const {qnaBoardId} = req.params;
-    const {category, title, content, images, attachments} = req.body;
-    const userId = req.user.id; // JWT 인증을 통해 가져온 사용자 ID
+    const {
+      category,
+      title,
+      content,
+      images,
+      attachments,
+      deletedImages,
+      deletedAttachments
+    } = req.body;
+    const userId = req.user.id;
 
+    //  1. 기존 파일 삭제 (deletedImages, deletedAttachments 전달 시)
+    const uploadDir = path.join(__dirname, '../uploads/qna');
+
+    if (deletedImages && deletedImages.length > 0) {
+      deletedImages.forEach(filePath => {
+        const fullPath = path.join(uploadDir, path.basename(filePath));
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath); // 서버에서 이미지 삭제
+        }
+      });
+    }
+
+    if (deletedAttachments && deletedAttachments.length > 0) {
+      deletedAttachments.forEach(filePath => {
+        const fullPath = path.join(uploadDir, path.basename(filePath));
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath); // 서버에서 첨부파일 삭제
+        }
+      });
+    }
+
+    //  2. 게시글 업데이트
     const result = await qnaService.updateQnaBoard(
       qnaBoardId,
       userId,
@@ -162,6 +296,7 @@ const updateQnaBoard = async (req, res) => {
       images,
       attachments
     );
+
     return res.status(200).json(result);
   } catch (error) {
     return res.status(403).json({error: error.message});
@@ -170,13 +305,7 @@ const updateQnaBoard = async (req, res) => {
 
 // ✅ 파일 업로드 포함한 라우트 (Multer 사용)
 module.exports = {
-  createQnaBoard: [
-    upload.fields([
-      {name: 'images', maxCount: 3},
-      {name: 'attachments', maxCount: 5}
-    ]),
-    createQnaBoard
-  ],
+  createQnaBoard,
   getQnaBoards,
   getQnaBoardById,
   deleteQnaBoard,
