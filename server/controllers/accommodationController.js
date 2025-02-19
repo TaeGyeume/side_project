@@ -28,9 +28,8 @@ exports.createAccommodation = async (req, res) => {
       : [];
     accommodationData.images = imagePaths;
 
-    const newAccommodation = await accommodationService.createAccommodation(
-      accommodationData
-    );
+    const newAccommodation =
+      await accommodationService.createAccommodation(accommodationData);
 
     res.status(201).json({
       message: '숙소가 성공적으로 생성되었습니다.',
@@ -205,9 +204,8 @@ exports.getAccommodationById = async (req, res) => {
     const {accommodationId} = req.params;
     console.log('숙소 ID 조회 요청:', accommodationId);
 
-    const accommodation = await accommodationService.getAccommodationById(
-      accommodationId
-    );
+    const accommodation =
+      await accommodationService.getAccommodationById(accommodationId);
 
     res.status(200).json(accommodation);
   } catch (error) {
