@@ -1,21 +1,53 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import {useAuthStore} from '../store/authStore';
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Button,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Box,
+  Paper,
+  ClickAwayListener,
+  MenuList,
+  MenuItem
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import FlightIcon from '@mui/icons-material/Flight';
+import HomeIcon from '@mui/icons-material/Home';
+import HotelIcon from '@mui/icons-material/Hotel';
+import TourIcon from '@mui/icons-material/CardTravel';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
+import LogoutIcon from '@mui/icons-material/Logout';
+import LoginIcon from '@mui/icons-material/Login';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 const Header = () => {
   const {user, isAuthenticated, fetchUserProfile, logout} = useAuthStore();
   const navigate = useNavigate();
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  //  로그인된 경우에만 프로필 불러오기 (401 방지)
+  // 로그인된 경우에만 프로필 불러오기, 로그인 시 드롭다운 강제 닫기
   useEffect(() => {
-    if (isAuthenticated && !user) {
+    if (isAuthenticated) {
       fetchUserProfile();
+      setIsDropdownOpen(false); // 🔹 로그인 후 드롭다운 자동 열림 방지
     }
-  }, [isAuthenticated, user, fetchUserProfile]);
+  }, [isAuthenticated, fetchUserProfile]);
 
-  //  로그아웃 처리 (쿠키 삭제 + 상태 초기화 + 리디렉션)
+  // 로그아웃 처리
   const handleLogout = async () => {
     try {
       await logout();
@@ -25,169 +57,288 @@ const Header = () => {
     }
   };
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
+  // 사이드바 토글
+  const toggleDrawer = open => () => {
+    setDrawerOpen(open);
   };
 
-  // 다른 영역 클릭 시 드롭다운 닫기
-  useEffect(() => {
-    const handleClickOutside = event => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    };
+  // 프로필 드롭다운 토글
+  const toggleDropdown = () => {
+    setIsDropdownOpen(prev => !prev);
+  };
 
-    if (isDropdownOpen) {
-      document.addEventListener('click', handleClickOutside);
+  // 드롭다운을 닫기 위한 핸들러
+  const handleClickAway = event => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setIsDropdownOpen(false);
     }
-
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [isDropdownOpen]);
+  };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-      <div className="container">
-        <Link className="navbar-brand" to="/main">
-          Our Real Trip
-        </Link>
+    <>
+      <AppBar
+        position="sticky"
+        sx={{
+          backgroundImage:
+            'linear-gradient(90deg,rgb(200, 196, 255) 0%,rgb(162, 192, 255) 50%,rgb(218, 194, 255) 100%)',
+          boxShadow: 3
+        }}>
+        <Toolbar>
+          {/* 모바일 햄버거 메뉴 버튼 */}
+          <IconButton
+            edge="start"
+            color="inherit"
+            onClick={toggleDrawer(true)}
+            sx={{display: {md: 'none'}}}>
+            <MenuIcon />
+          </IconButton>
 
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation">
-          <span className="navbar-toggler-icon"></span>
-        </button>
+          {/* 로고 */}
+          <Typography
+            variant="h6"
+            component={Link}
+            to="/main"
+            sx={{
+              flexGrow: 1,
+              textDecoration: 'none',
+              color: 'white',
+              fontWeight: 'bold'
+            }}>
+            Our Real Trip
+          </Typography>
 
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto">
-            <li className="nav-item">
-              <Link className="nav-link" to="/main">
-                메인
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/flights">
-                항공
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/accommodations/search">
-                숙소 검색
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/tourTicket/list">
-                투어/티켓
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/travelItems">
-                여행 용품
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/notification">
-                알림
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/qna">
-                고객 문의
-              </Link>
-            </li>
-
-            {isAuthenticated && user ? (
-              <>
-                {/* 관리자(admin) 전용 메뉴 */}
-
-                {user?.roles.includes('admin') && (
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/product">
-                      +상품+
-                    </Link>
-                  </li>
-                )}
-
-                {/* 다른 사용자들도 접근 가능한 메뉴 */}
-                <li className="nav-item dropdown" ref={dropdownRef}>
-                  <button
-                    className="nav-link dropdown-toggle"
-                    onClick={toggleDropdown}
-                    style={{background: 'none', border: 'none', cursor: 'pointer'}}>
-                    프로필
-                  </button>
-
-                  {/* 드롭다운 메뉴 */}
-                  {isDropdownOpen && (
-                    <ul className="dropdown-menu show">
-                      <li>
-                        <Link className="dropdown-item" to="/profile">
-                          내 프로필
-                        </Link>
-                      </li>
-                      <li>
-                        <Link className="dropdown-item" to="/booking/my?status=completed">
-                          내 예약 목록
-                        </Link>
-                      </li>
-                      <li>
-                        <Link className="dropdown-item" to="/coupons/my">
-                          내 쿠폰함
-                        </Link>
-                      </li>
-                      <li>
-                        <Link className="dropdown-item" to="/mileage">
-                          내 마일리지
-                        </Link>
-                      </li>
-                      <li>
-                        <Link className="dropdown-item" to="/favorite-list">
-                          즐겨찾기
-                        </Link>
-                      </li>
-                    </ul>
-                  )}
-                </li>
-
-                {/* 사용자 이름 표시 */}
-                <li className="nav-item d-flex align-items-center">
-                  <span className="nav-link text-primary fw-bold">
-                    {user?.username}님
-                  </span>
-                </li>
-
-                {/* 로그아웃 버튼 */}
-                <li className="nav-item">
-                  <button className="btn btn-outline-danger" onClick={handleLogout}>
-                    로그아웃
-                  </button>
-                </li>
-              </>
-            ) : (
-              <>
-                {/* 비로그인 사용자 메뉴 */}
-                <li className="nav-item">
-                  <Link className="nav-link" to="/login">
-                    로그인
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/register">
-                    회원가입
-                  </Link>
-                </li>
-              </>
+          {/* 네비게이션 메뉴 */}
+          <Box sx={{display: {xs: 'none', md: 'flex'}, gap: 0.5}}>
+            <Button
+              component={Link}
+              to="/main"
+              startIcon={<HomeIcon />}
+              variant="contained"
+              color="#74b9ff"
+              sx={{whiteSpace: 'nowrap'}}>
+              메인
+            </Button>
+            <Button
+              component={Link}
+              to="/flights"
+              startIcon={<FlightIcon />}
+              variant="contained"
+              color="#74b9ff"
+              sx={{whiteSpace: 'nowrap'}}>
+              항공
+            </Button>
+            <Button
+              component={Link}
+              to="/accommodations/search"
+              startIcon={<HotelIcon />}
+              variant="contained"
+              color="#74b9ff"
+              sx={{whiteSpace: 'nowrap'}}>
+              숙소 검색
+            </Button>
+            <Button
+              component={Link}
+              to="/tourTicket/list"
+              startIcon={<TourIcon />}
+              variant="contained"
+              color="#74b9ff"
+              sx={{whiteSpace: 'nowrap'}}>
+              투어/티켓
+            </Button>
+            <Button
+              component={Link}
+              to="/travelItems"
+              startIcon={<ShoppingBagIcon />}
+              variant="contained"
+              color="#74b9ff"
+              sx={{whiteSpace: 'nowrap'}}>
+              여행 용품
+            </Button>
+            <Button
+              component={Link}
+              to="/notification"
+              startIcon={<NotificationsIcon />}
+              variant="contained"
+              color="#74b9ff"
+              sx={{whiteSpace: 'nowrap'}}>
+              알림
+            </Button>
+            <Button
+              component={Link}
+              to="/qna"
+              startIcon={<QuestionAnswerIcon />}
+              variant="contained"
+              color="#74b9ff"
+              sx={{whiteSpace: 'nowrap'}}>
+              고객 문의
+            </Button>
+            {user?.roles.includes('admin') && (
+              <Button
+                component={Link}
+                to="/product"
+                startIcon={<AdminPanelSettingsIcon />}
+                variant="contained"
+                color="error"
+                sx={{whiteSpace: 'nowrap'}}>
+                관리자
+              </Button>
             )}
-          </ul>
-        </div>
-      </div>
-    </nav>
+          </Box>
+
+          {/* 로그인 여부에 따른 UI 변경 */}
+          {isAuthenticated && user ? (
+            <>
+              {/* 프로필 아이콘 */}
+              <IconButton color="inherit" onClick={toggleDropdown} ref={dropdownRef}>
+                <AccountCircleIcon />
+              </IconButton>
+
+              {/* 프로필 드롭다운 */}
+              {isDropdownOpen && (
+                <ClickAwayListener onClickAway={handleClickAway}>
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 50,
+                      right: 20,
+                      zIndex: 10,
+                      minWidth: 180
+                    }}>
+                    <Paper sx={{boxShadow: 3, borderRadius: 1}}>
+                      <MenuList>
+                        <MenuItem
+                          component={Link}
+                          to="/profile"
+                          onClick={handleClickAway}>
+                          내 프로필
+                        </MenuItem>
+                        <MenuItem
+                          component={Link}
+                          to="/booking/my?status=completed"
+                          onClick={handleClickAway}>
+                          내 예약 목록
+                        </MenuItem>
+                        <MenuItem
+                          component={Link}
+                          to="/coupons/my"
+                          onClick={handleClickAway}>
+                          내 쿠폰함
+                        </MenuItem>
+                        <MenuItem
+                          component={Link}
+                          to="/mileage"
+                          onClick={handleClickAway}>
+                          내 마일리지
+                        </MenuItem>
+                        <MenuItem
+                          component={Link}
+                          to="/favorite-list"
+                          onClick={handleClickAway}>
+                          즐겨찾기
+                        </MenuItem>
+                        <Divider />
+                        <MenuItem onClick={handleLogout}>
+                          <LogoutIcon sx={{marginRight: 1}} />
+                          로그아웃
+                        </MenuItem>
+                      </MenuList>
+                    </Paper>
+                  </Box>
+                </ClickAwayListener>
+              )}
+            </>
+          ) : (
+            <>
+              <Button
+                component={Link}
+                to="/login"
+                startIcon={<LoginIcon />}
+                color="inherit">
+                로그인
+              </Button>
+              <Button
+                component={Link}
+                to="/register"
+                startIcon={<PersonAddIcon />}
+                color="inherit">
+                회원가입
+              </Button>
+            </>
+          )}
+        </Toolbar>
+      </AppBar>
+
+      {/* 모바일 사이드바 */}
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={toggleDrawer(false)}
+        ModalProps={{
+          keepMounted: true, // ✅ 성능 최적화 (필요 시 유지)
+          disableEnforceFocus: true // ✅ 강제 포커스 해제 (aria-hidden 문제 해결)
+        }}>
+        <Box sx={{width: 250}} role="presentation" onClick={toggleDrawer(false)}>
+          <List>
+            <ListItem
+              component={Link}
+              to="/main"
+              sx={{textDecoration: 'none', color: 'inherit'}}>
+              <HomeIcon sx={{marginRight: 1}} />
+              <ListItemText primary="메인" />
+            </ListItem>
+            <ListItem
+              component={Link}
+              to="/flights"
+              sx={{textDecoration: 'none', color: 'inherit'}}>
+              <FlightIcon sx={{marginRight: 1}} />
+              <ListItemText primary="항공" />
+            </ListItem>
+            <ListItem
+              component={Link}
+              to="/accommodations/search"
+              sx={{textDecoration: 'none', color: 'inherit'}}>
+              <HotelIcon sx={{marginRight: 1}} />
+              <ListItemText primary="숙소 검색" />
+            </ListItem>
+            <ListItem
+              component={Link}
+              to="/tourTicket/list"
+              sx={{textDecoration: 'none', color: 'inherit'}}>
+              <TourIcon sx={{marginRight: 1}} />
+              <ListItemText primary="투어/티켓" />
+            </ListItem>
+            <ListItem
+              component={Link}
+              to="/travelItems"
+              sx={{textDecoration: 'none', color: 'inherit'}}>
+              <ShoppingBagIcon sx={{marginRight: 1}} />
+              <ListItemText primary="여행 용품" />
+            </ListItem>
+            <ListItem
+              component={Link}
+              to="/notification"
+              sx={{textDecoration: 'none', color: 'inherit'}}>
+              <NotificationsIcon sx={{marginRight: 1}} />
+              <ListItemText primary="알림" />
+            </ListItem>
+            <ListItem
+              component={Link}
+              to="/qna"
+              sx={{textDecoration: 'none', color: 'inherit'}}>
+              <QuestionAnswerIcon sx={{marginRight: 1}} />
+              <ListItemText primary="고객 문의" />
+            </ListItem>
+            <ListItem
+              component={Link}
+              to="/product"
+              sx={{textDecoration: 'none', color: 'inherit'}}>
+              <AdminPanelSettingsIcon sx={{marginRight: 1}} />
+              <ListItemText primary="관리자" />
+            </ListItem>
+          </List>
+        </Box>
+      </Drawer>
+    </>
   );
 };
 

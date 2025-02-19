@@ -116,7 +116,16 @@ const AccommodationDetail = () => {
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 3000,
-    arrows: true
+    arrows: true,
+    beforeChange: (current, next) => {
+      document.querySelectorAll('.slick-slide').forEach(slide => {
+        if (slide.getAttribute('aria-hidden') === 'true') {
+          slide.setAttribute('tabindex', '-1'); // 포커스 방지
+        } else {
+          slide.removeAttribute('tabindex'); // 활성화된 슬라이드는 tabindex 제거
+        }
+      });
+    }
   };
 
   console.log('Accommodation Coordinates:', accommodation.coordinates);
@@ -198,7 +207,11 @@ const AccommodationDetail = () => {
               <div
                 key={index}
                 className="carousel-slide"
-                onClick={() => openModal(index)}
+                onClick={e => {
+                  if (e.currentTarget.getAttribute('aria-hidden') !== 'true') {
+                    openModal(index);
+                  }
+                }}
                 style={{cursor: 'pointer'}}>
                 <img
                   src={imageUrl}
