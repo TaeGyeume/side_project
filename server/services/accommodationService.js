@@ -187,7 +187,25 @@ exports.getAccommodationsBySearch = async ({
     } else if (sortBy === 'rating') {
       accommodations.sort((a, b) => b.rating - a.rating);
     } else if (sortBy === 'default') {
-      accommodations.sort((a, b) => (b.score || 0) - (a.score || 0));
+      accommodations.sort((a, b) => {
+        const nameA = a.name.toLowerCase();
+        const nameB = b.name.toLowerCase();
+        const cityLower = city.toLowerCase();
+
+        // 1️⃣ 검색어와 완전히 일치하는 경우 우선
+        if (nameA === cityLower) return -1;
+        if (nameB === cityLower) return 1;
+
+        // 2️⃣ 검색어가 포함된 경우 (앞쪽에 위치할수록 더 높은 순위)
+        const indexA = nameA.indexOf(cityLower);
+        const indexB = nameB.indexOf(cityLower);
+        if (indexA !== -1 && indexB === -1) return -1;
+        if (indexB !== -1 && indexA === -1) return 1;
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+
+        // 3️⃣ 기존 `score` (text index 점수) 기준 정렬
+        return (b.score || 0) - (a.score || 0);
+      });
     }
 
     // 8️⃣ **페이징 처리**
