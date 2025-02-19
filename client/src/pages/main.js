@@ -16,7 +16,7 @@ const Main = () => {
           <TourTicketList />
         </div>
         <div>
-          {/* <PopularProductsSlider /> */}
+          <PopularProductsSlider />
         </div>
       </div>
     </div>
