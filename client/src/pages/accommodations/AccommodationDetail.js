@@ -10,6 +10,7 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import ReviewList from '../../components/review/ReviewList';
 
 // Modal.setAppElement('#root');
 
@@ -328,6 +329,10 @@ const AccommodationDetail = () => {
       ) : (
         <p>예약 가능한 객실이 없습니다.</p>
       )}
+
+      {/* 리뷰 리스트 */}
+      <h2>📝 리뷰</h2>
+      <ReviewList productId={accommodationId} />
     </div>
   );
 };

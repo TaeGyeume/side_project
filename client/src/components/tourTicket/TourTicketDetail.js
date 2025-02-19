@@ -107,7 +107,7 @@ const TourTicketDetail = () => {
       <p>가격: {ticket.price.toLocaleString()}원</p>
 
       <button onClick={() => navigate('/tourTicket/list')}>상품 목록</button>
-      
+
       {hasReview ? (
         <button className="completed-btn" disabled>
           리뷰 작성 완료
@@ -119,7 +119,7 @@ const TourTicketDetail = () => {
       )}
 
       <div>
-        <h1>리뷰</h1>
+        <h2>📝 리뷰</h2>
         <ReviewList productId={id} />
       </div>
     </div>
