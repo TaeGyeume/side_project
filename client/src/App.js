@@ -20,6 +20,7 @@ import Unauthorized from './pages/Unauthorized'; // 권한 없음 페이지 추�
 import AccommodationSearch from './pages/accommodations/AccommodationSearch';
 import AccommodationResults from './pages/accommodations/AccommodationResults';
 import AccommodationDetail from './pages/accommodations/AccommodationDetail';
+import RoomDetail from './pages/accommodations/RoomDetail';
 import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이지 추가
 import FlightResults from './pages/flights/FlightResults';
 import RoundTripResults from './pages/flights/RoundTripResults';
@@ -65,11 +66,14 @@ import QnaBoardDetail from './pages/qna/QnaBoardDetail';
 import QnaBoardWrite from './pages/qna/QnaBoardWrite';
 import QnaBoardEdit from './pages/qna/QnaBoardEdit';
 import ReviewForm from './components/review/ReviewForm';
+import Modal from 'react-modal';
 
 const App = () => {
   const [serverMessage, setServerMessage] = useState('');
   const checkAuth = useAuthStore(state => state.checkAuth);
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+
+  Modal.setAppElement('#root');
 
   // 서버 메시지 및 인증 상태 확인
   useEffect(() => {
@@ -124,6 +128,7 @@ const App = () => {
             path="/accommodations/:accommodationId/detail"
             element={<AccommodationDetail />}
           />
+          <Route path="/accommodation/room/:roomId" element={<RoomDetail />} />
 
           {/* ✈️ 항공편 목록 페이지 추가 */}
           <Route path="/flights" element={<Flights />} />

@@ -12,8 +12,6 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import ReviewList from '../../components/review/ReviewList';
 
-// Modal.setAppElement('#root');
-
 // ✅ 기본 날짜 설정 함수 (오늘 + n일)
 const getFormattedDate = (daysToAdd = 0) => {
   const date = new Date();
@@ -253,7 +251,8 @@ const AccommodationDetail = () => {
             backgroundColor: 'rgba(0, 0, 0, 0.8)', // 어두운 배경
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
+            zIndex: 1300
           },
           content: {
             position: 'relative',
@@ -266,7 +265,8 @@ const AccommodationDetail = () => {
             inset: 'unset',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            zIndex: 1300
           }
         }}>
         {/* 이전 버튼 */}
