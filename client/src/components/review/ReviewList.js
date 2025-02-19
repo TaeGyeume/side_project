@@ -1,4 +1,3 @@
-// src/components/review/ReviewList.js
 import React, {useEffect, useState} from 'react';
 import {getReviews, likeReview} from '../../api/review/reviewService';
 import {AiOutlineLike} from 'react-icons/ai';
