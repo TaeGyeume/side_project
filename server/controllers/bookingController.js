@@ -15,7 +15,8 @@ exports.createBooking = async (req, res) => {
       endDates,
       discountAmount,
       finalPrice,
-      couponId
+      couponId,
+      usedMileage
     } = req.body;
 
     const bookingData = {
@@ -31,7 +32,8 @@ exports.createBooking = async (req, res) => {
       endDates,
       discountAmount,
       finalPrice,
-      couponId
+      couponId,
+      usedMileage
     };
 
     console.log('📌 [서버] 변환된 데이터:', bookingData);
@@ -51,7 +53,7 @@ exports.createBooking = async (req, res) => {
 exports.verifyPayment = async (req, res) => {
   try {
     console.log('📌 [서버] 결제 검증 요청 도착:', req.body);
-    const {imp_uid, merchant_uid, couponId, userId} = req.body;
+    const {imp_uid, merchant_uid, couponId, userId, usedMileage} = req.body;
 
     if (!imp_uid || !merchant_uid) {
       console.error('❌ [서버] 필수 결제 정보가 없습니다.');
@@ -62,7 +64,8 @@ exports.verifyPayment = async (req, res) => {
       imp_uid,
       merchant_uid,
       couponId,
-      userId
+      userId,
+      usedMileage
     });
 
     res.status(result.status).json({message: result.message, booking: result.booking});
