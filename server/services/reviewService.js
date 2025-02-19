@@ -4,37 +4,34 @@ const fs = require('fs');
 const path = require('path');
 
 exports.createReview = async reviewData => {
-  const booking = await Booking.findById(reviewData.bookingId);
-
   try {
-    if (!booking || booking.paymentStatus !== 'CONFIRMED') {
-      throw new Error('구매 확정된 예약만 리뷰 작성이 가능합니다!');
-    }
-
-    // 리뷰 중복 확인
-    const existingReview = await Review.findOne({
-      userId: booking.userId,
-      productId: reviewData.productId
-    });
-
-    const review = new Review({
-      ...reviewData,
-      userId: booking.userId
-    });
-
-    if (existingReview) {
-      throw new Error('이미 해당 상품에 대한 리뷰를 작성하셨습니다!');
-    }
-
-    return await review.save();
+    const newReview = new Review(reviewData);
+    await newReview.save();
+    return newReview;
   } catch (error) {
+    console.error('리뷰 등록 오류:', error);
     throw new Error(`리뷰 등록 오류: ${error.message}`);
   }
 };
 
 exports.getReviewsByProduct = async productId => {
-  const reviews = await Review.find({productId}).populate('userId', 'username');
-  return reviews;
+  try {
+    const reviews = await Review.find({productId}).populate('userId', 'username');
+    return reviews;
+  } catch (error) {
+    console.error('리뷰 조회 오류:', error);
+    throw new Error(`리뷰 조회 오류: ${error.message}`);
+  }
+};
+
+exports.checkExistingReview = async (userId, productId, bookingId) => {
+  try {
+    const existingReview = await Review.findOne({userId, productId, bookingId});
+    return !!existingReview; // true or false 반환
+  } catch (error) {
+    console.error('리뷰 확인 오류:', error);
+    throw new Error(`리뷰 확인 오류: ${error.message}`);
+  }
 };
 
 exports.toggleLike = async (reviewId, userId) => {
