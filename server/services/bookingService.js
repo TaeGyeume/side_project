@@ -564,7 +564,7 @@ exports.getUserBookings = async userId => {
     const bookings = await Booking.find({userId}).populate({path: 'productIds'}); // 배열로 된 productIds 전체를 populate
 
     if (!bookings || bookings.length === 0) {
-      return {status: 404, message: '예약 내역 없음'};
+      return {status: 200, data: [], message: '예약 이력이 없습니다.'};
     }
 
     return {status: 200, data: bookings};
@@ -581,7 +581,7 @@ exports.confirmBooking = async bookingId => {
       // 예약이 존재하지 않는 경우
       return {status: 404, message: '예약을 찾을 수 없습니다.'};
     }
-    
+
     if (booking.paymentStatus === 'COMPLETED') {
       booking.paymentStatus = 'CONFIRMED';
       booking.finalPrice = booking.finalPrice || booking.totalPrice; // 기본값 설정
