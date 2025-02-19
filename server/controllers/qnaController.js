@@ -56,10 +56,12 @@ const createQnaBoard = async (req, res) => {
       );
     });
 
-    // ✅ 텍스트 필드 처리
+    // ✅ 빈 값이 들어오지 않도록 필터링
     bb.on('field', (name, value) => {
       console.log(`📌 폼 필드 수신: ${name} = ${value}`);
-      formData[name] = value;
+      if (value && value.trim() !== '') {
+        formData[name] = value.trim();
+      }
     });
 
     // ✅ 모든 파일이 업로드될 때까지 기다린 후 데이터 처리

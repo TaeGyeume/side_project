@@ -7,31 +7,43 @@ const API_BASE_URL =
 // ✅ QnA 게시글 생성 (파일이 있을 경우 `FormData`, 없을 경우 `JSON`)
 export const createQnaBoard = async (data, isMultipart = false) => {
   try {
-    let headers = {'Content-Type': 'application/json'}; // 기본적으로 JSON 요청
     let requestData = data;
+    let headers = {};
 
-    // ✅ FormData로 변환이 필요한 경우
     if (isMultipart) {
-      headers['Content-Type'] = 'multipart/form-data';
       const formData = new FormData();
 
-      formData.append('category', data.category);
-      formData.append('title', data.title);
-      formData.append('content', data.content);
+      // ✅ 빈 값 방지: 값이 존재할 때만 추가
+      if (data.category) formData.append('category', data.category);
+      if (data.title) formData.append('title', data.title);
+      if (data.content) formData.append('content', data.content);
 
-      if (data.images) {
-        Array.from(data.images).forEach(file => formData.append('images', file));
+      if (data.images && data.images.length > 0) {
+        data.images.forEach(file => {
+          if (file) formData.append('images', file);
+        });
       }
-      if (data.attachments) {
-        Array.from(data.attachments).forEach(file =>
-          formData.append('attachments', file)
-        );
+      if (data.attachments && data.attachments.length > 0) {
+        data.attachments.forEach(file => {
+          if (file) formData.append('attachments', file);
+        });
       }
 
       requestData = formData;
+      headers = {'Content-Type': 'multipart/form-data'}; // Axios가 자동 처리
+    } else {
+      headers = {'Content-Type': 'application/json'};
     }
 
-    console.log('📡 요청 데이터:', requestData);
+    // ✅ 디버깅용 FormData 로그
+    console.log('📡 최종 전송할 FormData 내용:');
+    if (isMultipart) {
+      for (let [key, value] of requestData.entries()) {
+        console.log(`🔹 ${key}:`, value);
+      }
+    } else {
+      console.log(requestData);
+    }
 
     const response = await axios.post(`${API_BASE_URL}`, requestData, {
       headers,
@@ -72,13 +84,12 @@ export const getQnaBoardById = async qnaBoardId => {
   }
 };
 
-// ✅ QnA 게시글 삭제 요청 (userId 직접 전달 X)
+// ✅ QnA 게시글 삭제 요청 (URL 수정)
 export const deleteQnaBoard = async qnaBoardId => {
   try {
-    const response = await axios.delete(
-      `${process.env.REACT_APP_API_URL}/qna/${qnaBoardId}`,
-      {withCredentials: true} // ✅ 쿠키 인증 포함
-    );
+    const response = await axios.delete(`${API_BASE_URL}/${qnaBoardId}`, {
+      withCredentials: true
+    });
     return response.data;
   } catch (error) {
     console.error('❌ QnA 게시글 삭제 오류:', error);
@@ -131,31 +142,30 @@ export const deleteQnaComment = async commentId => {
 // ✅ QnA 게시글 수정 (파일이 있을 경우 `FormData`, 없을 경우 `JSON`)
 export const updateQnaBoard = async (qnaBoardId, data, isMultipart = false) => {
   try {
-    let headers = {'Content-Type': 'application/json'}; // 기본적으로 JSON 요청
     let requestData = data;
+    let headers = {};
 
-    // ✅ FormData로 변환이 필요한 경우
     if (isMultipart) {
-      headers['Content-Type'] = 'multipart/form-data';
       const formData = new FormData();
 
       formData.append('category', data.category);
       formData.append('title', data.title);
       formData.append('content', data.content);
 
-      if (data.images) {
-        Array.from(data.images).forEach(file => formData.append('images', file));
+      if (data.images && data.images.length > 0) {
+        data.images.forEach(file => formData.append('images', file));
       }
-      if (data.attachments) {
-        Array.from(data.attachments).forEach(file =>
-          formData.append('attachments', file)
-        );
+      if (data.attachments && data.attachments.length > 0) {
+        data.attachments.forEach(file => formData.append('attachments', file));
       }
 
       requestData = formData;
+      headers = {'Content-Type': 'multipart/form-data'}; // Axios가 자동 처리
+    } else {
+      headers = {'Content-Type': 'application/json'};
     }
 
-    console.log('📡 요청 데이터:', requestData);
+    console.log('📡 수정 요청 데이터:', requestData);
 
     const response = await axios.put(`${API_BASE_URL}/${qnaBoardId}`, requestData, {
       headers,
