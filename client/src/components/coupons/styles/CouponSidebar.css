@@ -1,41 +1,84 @@
-/* ✅ 쿠폰 사이드바 위치 조정 */
+/* ✅ 쿠폰 사이드바 스타일 */
 .coupon-sidebar {
-  position: fixed; /* ✅ 오른쪽 고정 */
-  top: 50%; /* ✅ 화면의 중간에 배치 */
-  right: 15px; /* ✅ 오른쪽 끝으로 정렬 */
-  transform: translateY(-50%); /* ✅ 화면 중앙 정렬 */
-  width: 170px; /* ✅ 사이드바 너비 조정 */
-  max-height: 80vh; /* ✅ 화면의 80%까지만 차지 */
-  overflow-y: auto; /* ✅ 내부 스크롤 가능 */
-  background: #fff;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  transition: all 0.3s ease-in-out;
+}
+
+.coupon-toggle-btn {
+  background: #007bff;
+  border: none;
+  color: white;
   padding: 12px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1050; /* ✅ 다른 요소보다 위로 */
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-/* ✅ 쿠폰 카드 스타일 */
+.coupon-toggle-btn:hover {
+  background: #0056b3;
+}
+
+.coupon-container {
+  background: white;
+  width: 250px;
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+  transform: translateY(10px);
+  opacity: 0;
+  display: none;
+}
+
+.coupon-sidebar.open .coupon-container {
+  opacity: 1;
+  transform: translateY(0);
+  display: block;
+}
+
+.coupon-header {
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.coupon-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .coupon-card {
-  width: 100%;
-  padding: 8px; /* ✅ 내부 패딩 줄이기 */
-  margin-bottom: 10px; /* ✅ 카드 간격 조정 */
-  border-radius: 6px;
-  font-size: 13px;
+  padding: 8px;
+  font-size: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
 }
 
-/* ✅ 버튼 크기 조정 */
-.coupon-card button {
+.coupon-title {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.coupon-text {
+  font-size: 12px;
+  color: #555;
+}
+
+.coupon-btn {
   font-size: 12px;
   padding: 5px 10px;
-}
-
-/* ✅ 모바일에서는 화면 전체 너비 차지 */
-@media (max-width: 768px) {
-  .coupon-sidebar {
-    position: fixed;
-    right: 10px;
-    width: 180px;
-    max-height: 70vh;
-    z-index: 1100; /* ✅ 더 위로 배치 */
-  }
 }
