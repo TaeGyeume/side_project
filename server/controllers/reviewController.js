@@ -4,23 +4,40 @@ const authorizeRoles = require('../middleware/authorizeRoles');
 
 exports.createReview = async (req, res) => {
   try {
-    const {bookingId, productId, rating, content} = req.body;
-    const imagePaths = req.files
-      ? req.files.map(file => `/uploads/${file.filename}`)
-      : [];
+    const {userId, productId, bookingId, rating, content, images} = req.body;
 
-    const newReview = await reviewService.createReview({
-      bookingId,
+    if (!userId || !bookingId || !productId) {
+      return res
+        .status(400)
+        .json({message: '리뷰 등록 오류: userId, bookingId, productId가 필요합니다.'});
+    }
+
+    // 주문번호까지 포함하여 기존 리뷰 여부 체크
+    const hasReview = await reviewService.checkExistingReview(
+      userId,
       productId,
+      bookingId
+    );
+
+    if (hasReview) {
+      return res
+        .status(400)
+        .json({message: '이미 해당 주문 건에 대한 리뷰를 작성하셨습니다!'});
+    }
+
+    // 새로운 리뷰 생성
+    const newReview = await reviewService.createReview({
+      userId,
+      productId,
+      bookingId,
       rating,
       content,
-      images: imagePaths
+      images
     });
-
     res.status(201).json(newReview);
   } catch (error) {
     console.error('리뷰 등록 오류:', error);
-    res.status(400).json({message: error.message});
+    res.status(500).json({message: `리뷰 등록 오류: ${error.message}`});
   }
 };
 
