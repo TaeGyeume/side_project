@@ -1,11 +1,16 @@
 import React, {useState} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import {createReview} from '../../api/review/reviewService';
+import {useAuthStore} from '../../store/authStore';
 
 const ReviewForm = () => {
   const [searchParams] = useSearchParams();
   const productId = searchParams.get('productId');
   const bookingId = searchParams.get('bookingId');
+
+  const {user} = useAuthStore();
+  const userId = user?._id;
+
   const [rating, setRating] = useState(5);
   const [content, setContent] = useState('');
   const [images, setImages] = useState([]);
@@ -15,7 +20,12 @@ const ReviewForm = () => {
   };
 
   const handleSubmit = async () => {
+    if (!userId) {
+      console.error('로그인 필요');
+    }
+
     const formData = new FormData();
+    formData.append('userId', userId);
     formData.append('bookingId', bookingId);
     formData.append('productId', productId);
     formData.append('rating', rating);

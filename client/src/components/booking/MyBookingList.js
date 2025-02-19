@@ -34,14 +34,24 @@ const MyBookingList = ({status}) => {
             await Promise.all(
               booking.productIds.map(async product => {
                 const productId = product._id || product;
-                console.log('Fetching reviews for productId:', productId);
+                const merchant_uid = booking.merchant_uid;
+
+                console.log('Fetching reviews for:', {productId, merchant_uid});
+
                 const reviews = await getReviews(productId.toString());
 
+                if (!reviewsStatus[productId]) {
+                  reviewsStatus[productId] = {};
+                }
+
+                // 유저 ID와 주문번호까지 고려해서 리뷰 작성 여부 체크
                 const hasReview = reviews.some(
-                  r => String(r.userId._id || r.userId) === String(userId)
+                  r =>
+                    String(r.userId._id || r.userId) === String(userId) &&
+                    r.bookingId.toString() === booking._id.toString()
                 );
 
-                reviewsStatus[productId] = hasReview;
+                reviewsStatus[productId][merchant_uid] = hasReview;
               })
             );
           })
@@ -151,11 +161,20 @@ const MyBookingList = ({status}) => {
                 )}
                 {status === 'completed' && booking.paymentStatus === 'CONFIRMED' && (
                   <div className="booking-buttons">
-                    {reviewStatus[booking.productIds[0]._id] ? ( // 작성된 리뷰가 있으면
+                    {booking.types.includes('flight') ? (
+                      /* 항공 상품이면 리뷰 버튼 없이 구매 확정 완료 버튼 유지 */
+                      <button className="confirm-button" disabled>
+                        구매 확정 완료
+                      </button>
+                    ) : (reviewStatus?.[booking.productIds[0]._id]?.[
+                        booking.merchant_uid
+                      ] ?? false) ? (
+                      /* 이미 해당 주문 건에 대한 리뷰를 작성한 경우 */
                       <button className="review-done-button" disabled>
                         리뷰 작성 완료
                       </button>
                     ) : (
+                      /* 리뷰 작성 가능한 경우 */
                       <button
                         className="review-button"
                         onClick={() =>
