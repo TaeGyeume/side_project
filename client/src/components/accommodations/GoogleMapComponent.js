@@ -12,7 +12,10 @@ const MapComponent = ({lat, lng}) => {
 
   const mapContainerStyle = {
     width: '100%',
-    height: '400px'
+    height: '400px',
+    borderRadius: '15px', // ✅ 라운딩 처리
+    overflow: 'hidden', // ✅ 테두리 밖으로 넘치는 부분 숨기기
+    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)' // ✅ 그림자 효과 추가 (선택 사항)
   };
 
   const center = {

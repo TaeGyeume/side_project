@@ -114,3 +114,56 @@ exports.deleteTravelItemController = async (req, res) => {
     res.status(500).json({error: error.message});
   }
 };
+
+// ✅ 최상위 카테고리 수정 (PUT)
+exports.updateTopLevelCategory = async (req, res) => {
+  try {
+    const {categoryId} = req.params;
+    const updateData = req.body;
+
+    const updatedCategory = await travelItemService.updateTopLevelCategory(
+      categoryId,
+      updateData
+    );
+
+    res.status(200).json({
+      message: '최상위 카테고리 수정 성공',
+      category: updatedCategory
+    });
+  } catch (error) {
+    res.status(400).json({message: error.message});
+  }
+};
+
+// ✅ 특정 하위 카테고리 수정 (PUT)
+exports.updateSubCategory = async (req, res) => {
+  try {
+    const {subCategoryId} = req.params;
+    const updateData = req.body;
+
+    const updatedSubCategory = await travelItemService.updateSubCategory(
+      subCategoryId,
+      updateData
+    );
+
+    res.status(200).json({
+      message: '하위 카테고리 수정 성공',
+      category: updatedSubCategory
+    });
+  } catch (error) {
+    res.status(400).json({message: error.message});
+  }
+};
+
+// ✅ 특정 하위 카테고리 삭제 (DELETE)
+exports.deleteCategory = async (req, res) => {
+  try {
+    const {categoryId} = req.params;
+
+    await travelItemService.deleteCategory(categoryId);
+
+    res.status(200).json({message: '카테고리 삭제 성공'});
+  } catch (error) {
+    res.status(400).json({message: error.message});
+  }
+};

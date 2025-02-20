@@ -30,4 +30,13 @@ router.get('/:itemId', travelItemController.getTravelItemByIdController);
 // ✅ 상품 삭제 라우트
 router.delete('/:itemId', travelItemController.deleteTravelItemController);
 
+// ✅ 최상위 카테고리 수정 (PUT)
+router.patch('/top-level/:categoryId', travelItemController.updateTopLevelCategory);
+
+// ✅ 특정 하위 카테고리 수정 (PUT)
+router.patch('/sub-category/:subCategoryId', travelItemController.updateSubCategory);
+
+// ✅ 특정 하위 카테고리 삭제 (DELETE)
+router.delete('/category/:categoryId', travelItemController.deleteCategory);
+
 module.exports = router;
