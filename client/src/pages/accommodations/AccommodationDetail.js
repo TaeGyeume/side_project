@@ -57,11 +57,6 @@ const AccommodationDetail = () => {
     loadAccommodationDetail();
   }, [accommodationId, startDate, endDate, adults, minPrice, maxPrice]);
 
-  // ✅ 모달이 정상적으로 표시되는지 확인하는 useEffect 추가
-  // useEffect(() => {
-  //   console.log(`📌 모달 상태 변경됨: ${modalIsOpen}`);
-  // }, [modalIsOpen]);
-
   if (loading) return <div>로딩 중...</div>;
   if (error) return <div>{error}</div>;
   if (!accommodationData) return <div>데이터가 없습니다.</div>;
@@ -338,7 +333,11 @@ const AccommodationDetail = () => {
 
       <h3>예약 가능한 객실</h3>
       {availableRooms?.length > 0 ? (
-        availableRooms.map(room => <RoomCard key={room._id} room={room} />)
+        availableRooms.map(room => (
+          <div key={room._id} style={{marginBottom: '20px'}}>
+            <RoomCard room={room} />
+          </div>
+        ))
       ) : (
         <p>예약 가능한 객실이 없습니다.</p>
       )}

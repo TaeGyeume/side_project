@@ -44,7 +44,10 @@ const CategoryPage = () => {
       {!loading && !error && (
         <>
           <h4 className="mt-4">📌 카테고리 목록</h4>
-          <CategoryList categories={categories} />
+          <CategoryList
+            categories={categories}
+            refreshCategories={fetchCategories} // ✅ 이 부분 추가
+          />
         </>
       )}
     </div>

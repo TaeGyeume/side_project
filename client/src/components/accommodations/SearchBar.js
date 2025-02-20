@@ -17,7 +17,7 @@ import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
 import {Add, Remove} from '@mui/icons-material';
 
 const SearchBar = ({onSearch}) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('서울');
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(
     new Date(new Date().setDate(new Date().getDate() + 1))
@@ -184,10 +184,16 @@ const SearchBar = ({onSearch}) => {
           {/* 숙소 검색 버튼 */}
           <Button
             variant="contained"
-            color="primary"
             onClick={handleSearch}
-            sx={{flexShrink: 0, minWidth: '140px', height: '56px'}} // 🔹 버튼 크기 유지
-          >
+            sx={{
+              flexShrink: 0,
+              minWidth: '140px',
+              height: '56px',
+              backgroundColor: '#42a5f5', // ✅ 원하는 색상 적용
+              '&:hover': {
+                backgroundColor: '#1565c0' // ✅ 호버 시 색상 변경
+              }
+            }}>
             숙소 검색
           </Button>
         </Stack>
