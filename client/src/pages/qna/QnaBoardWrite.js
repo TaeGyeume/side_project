@@ -15,6 +15,8 @@ const QnaBoardWrite = () => {
     attachments: []
   });
 
+  const [imagePreviews, setImagePreviews] = useState([]); // ✅ 이미지 미리보기
+  const [fileNames, setFileNames] = useState([]); // ✅ 첨부파일 리스트
   const [loading, setLoading] = useState(false);
 
   // ✅ 카테고리 옵션
@@ -39,10 +41,20 @@ const QnaBoardWrite = () => {
   // ✅ 파일 업로드 핸들러
   const handleFileChange = e => {
     const {name, files} = e.target;
+
+    if (name === 'images') {
+      // ✅ 이미지 미리보기 처리
+      const previews = Array.from(files).map(file => URL.createObjectURL(file));
+      setImagePreviews(previews);
+    } else if (name === 'attachments') {
+      // ✅ 첨부파일 리스트 처리
+      const fileList = Array.from(files).map(file => file.name);
+      setFileNames(fileList);
+    }
+
     setFormData({...formData, [name]: files});
   };
 
-  // ✅ 게시글 제출 핸들러
   // ✅ 게시글 제출 핸들러
   const handleSubmit = async e => {
     e.preventDefault();
@@ -60,17 +72,22 @@ const QnaBoardWrite = () => {
       form.append('title', formData.title);
       form.append('content', formData.content);
 
-      // ✅ FormData 디버깅용 로그 추가
+      // 파일 추가
+      if (formData.images.length > 0) {
+        Array.from(formData.images).forEach(file => form.append('images', file));
+      }
+      if (formData.attachments.length > 0) {
+        Array.from(formData.attachments).forEach(file =>
+          form.append('attachments', file)
+        );
+      }
+
       console.log('📡 전송할 FormData 내용:');
       for (let [key, value] of form.entries()) {
         console.log(`🔹 ${key}:`, value);
       }
 
-      // ✅ 파일 추가 확인
-      Array.from(formData.images).forEach(file => form.append('images', file));
-      Array.from(formData.attachments).forEach(file => form.append('attachments', file));
-
-      const response = await createQnaBoard(form);
+      const response = await createQnaBoard(form, true); // 'true'는 multipart 처리
       alert('게시글이 작성되었습니다.');
       navigate('/qna');
     } catch (error) {
@@ -128,6 +145,18 @@ const QnaBoardWrite = () => {
           onChange={handleFileChange}
         />
 
+        {/* ✅ 이미지 미리보기 */}
+        <div className="image-preview-container">
+          {imagePreviews.map((src, index) => (
+            <img
+              key={index}
+              src={src}
+              alt={`미리보기-${index}`}
+              className="image-preview"
+            />
+          ))}
+        </div>
+
         {/* 첨부파일 업로드 */}
         <label>첨부파일 업로드 (PDF, DOCX 등)</label>
         <input
@@ -137,6 +166,13 @@ const QnaBoardWrite = () => {
           accept=".pdf, .doc, .docx"
           onChange={handleFileChange}
         />
+
+        {/* ✅ 첨부파일 리스트 */}
+        <ul className="file-list">
+          {fileNames.map((file, index) => (
+            <li key={index}>{file}</li>
+          ))}
+        </ul>
 
         {/* 제출 버튼 */}
         <button type="submit" disabled={loading}>

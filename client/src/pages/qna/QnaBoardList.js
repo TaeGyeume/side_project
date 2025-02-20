@@ -6,11 +6,11 @@ import './styles/QnaBoardList.css';
 
 const QnaBoardList = () => {
   const [qnaBoards, setQnaBoards] = useState([]);
-  const [category, setCategory] = useState(''); // 카테고리 필터링
+  const [category, setCategory] = useState('');
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1); // 현재 페이지
-  const [totalPages, setTotalPages] = useState(1); // 전체 페이지 수
-  const [user, setUser] = useState(null); // 로그인된 사용자 정보
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [user, setUser] = useState(null);
 
   const navigate = useNavigate();
 
@@ -18,15 +18,11 @@ const QnaBoardList = () => {
     const fetchUserAndBoards = async () => {
       try {
         setLoading(true);
-
-        // 사용자 정보 가져오기
         const userResponse = await getUserProfile();
         setUser(userResponse.data);
-
-        // QnA 게시글 목록 가져오기 (페이징 및 카테고리 필터링을 함께 처리)
-        const response = await getQnaBoards(page, 10, category); // `page`, `limit`, `category` 값을 전달
+        const response = await getQnaBoards(page, 10, category);
         setQnaBoards(response.qnaBoards);
-        setTotalPages(response.totalPages || 1); // 총 페이지 수
+        setTotalPages(response.totalPages || 1);
       } catch (error) {
         console.error('❌ 데이터 로드 중 오류 발생:', error);
       } finally {
@@ -35,18 +31,19 @@ const QnaBoardList = () => {
     };
 
     fetchUserAndBoards();
-  }, [page, category]); // page나 category가 바뀔 때마다 API 호출
+  }, [page, category]);
 
-  // 게시글 삭제 처리
+  const handleCategoryChange = e => {
+    setCategory(e.target.value);
+    setPage(1);
+  };
+
   const handleDeleteQnaBoard = async qnaBoardId => {
     if (!user) return alert('로그인이 필요합니다.');
 
     if (window.confirm('정말로 삭제하시겠습니까?')) {
       try {
-        // QnA 게시글 삭제 요청
         await deleteQnaBoard(qnaBoardId);
-
-        // 삭제된 게시글을 목록에서 즉시 제외하여 UI 갱신
         setQnaBoards(prevBoards => prevBoards.filter(qna => qna._id !== qnaBoardId));
         alert('게시글이 삭제되었습니다.');
       } catch (error) {
@@ -56,23 +53,24 @@ const QnaBoardList = () => {
     }
   };
 
-  // 게시글 수정 페이지로 이동
   const handleEditQnaBoard = qnaBoardId => {
     navigate(`/qna/edit/${qnaBoardId}`);
   };
 
   return (
-    <div className="qna-board-container">
-      <h1>고객 문의</h1>
+    <div className="container my-4">
+      <h1 className="text-center mb-4">고객 문의</h1>
 
       {user && (
-        <button className="qna-create-button" onClick={() => navigate('/qna/write')}>
+        <button className="btn btn-primary mb-3" onClick={() => navigate('/qna/write')}>
           ✏️ 고객 문의 등록
         </button>
       )}
 
-      {/* 🔹 카테고리 필터 */}
-      <select onChange={e => setCategory(e.target.value)} value={category}>
+      <select
+        className="form-select mb-3"
+        onChange={handleCategoryChange}
+        value={category}>
         <option value="">전체</option>
         <option value="회원 정보 문의">회원 정보 문의</option>
         <option value="회원 가입 문의">회원 가입 문의</option>
@@ -87,52 +85,46 @@ const QnaBoardList = () => {
       </select>
 
       {loading ? (
-        <p>로딩 중...</p>
+        <div className="d-flex justify-content-center">
+          <div className="spinner-border" role="status"></div>
+        </div>
       ) : (
-        <div className="qna-board-list">
+        <div className="list-group">
           {qnaBoards.length > 0 ? (
             qnaBoards.map(qna => (
               <div
                 key={qna._id}
-                className="qna-board-item"
-                onClick={() => navigate(`/qna/${qna._id}`)} // 게시글 상세보기로 이동
-              >
-                <h3>{qna.title}</h3>
-                <p>{qna.category}</p>
-
-                {/* 🔹 작성자 정보 표시 (이름 우선, 없으면 아이디) */}
-                <p>
-                  작성자: <strong>{qna.user?.username || '익명'}</strong>
-                </p>
-                <p>
-                  이메일: <strong>{qna.user?.email || '알 수 없음'}</strong>
-                </p>
-
-                <p>작성일: {new Date(qna.createdAt).toLocaleDateString()}</p>
-
-                {/* 🔹 수정 및 삭제 버튼 (현재 사용자만 수정, 관리자는 삭제 가능) */}
-                {user && (user._id === qna.user?._id || user.roles.includes('admin')) && (
-                  <div className="qna-board-actions">
-                    {user._id === qna.user?._id && (
+                className="list-group-item list-group-item-action d-flex justify-content-between"
+                onClick={() => navigate(`/qna/${qna._id}`)}>
+                <div>
+                  <h5 className="mb-1">{qna.title}</h5>
+                  <p className="mb-1">{qna.category}</p>
+                  <small>작성자: {qna.user?.username || '익명'}</small>
+                </div>
+                <div>
+                  {user._id === qna.user?._id || user.roles.includes('admin') ? (
+                    <div className="d-flex flex-column align-items-end">
+                      {user._id === qna.user?._id && (
+                        <button
+                          className="btn btn-warning btn-sm mb-1"
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleEditQnaBoard(qna._id);
+                          }}>
+                          수정
+                        </button>
+                      )}
                       <button
+                        className="btn btn-danger btn-sm"
                         onClick={e => {
-                          e.stopPropagation(); // 클릭 시 상세 페이지 이동을 방지하고 수정으로만 이동
-                          handleEditQnaBoard(qna._id);
-                        }}
-                        className="edit-button">
-                        수정
+                          e.stopPropagation();
+                          handleDeleteQnaBoard(qna._id);
+                        }}>
+                        삭제
                       </button>
-                    )}
-                    <button
-                      onClick={e => {
-                        e.stopPropagation(); // 클릭 시 상세 페이지 이동을 방지하고 삭제로만 이동
-                        handleDeleteQnaBoard(qna._id);
-                      }}
-                      className="delete-button">
-                      삭제
-                    </button>
-                  </div>
-                )}
+                    </div>
+                  ) : null}
+                </div>
               </div>
             ))
           ) : (
@@ -141,15 +133,20 @@ const QnaBoardList = () => {
         </div>
       )}
 
-      {/* 🔹 페이징 버튼 */}
-      <div className="pagination">
-        <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+      <div className="d-flex justify-content-center mt-3">
+        <button
+          className="btn btn-secondary mx-2"
+          disabled={page === 1}
+          onClick={() => setPage(page - 1)}>
           이전
         </button>
-        <span>
+        <span className="my-auto">
           {page} / {totalPages}
         </span>
-        <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>
+        <button
+          className="btn btn-secondary mx-2"
+          disabled={page === totalPages}
+          onClick={() => setPage(page + 1)}>
           다음
         </button>
       </div>
