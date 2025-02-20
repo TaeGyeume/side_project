@@ -2,7 +2,8 @@ import React, {useState} from 'react';
 import {authAPI} from '../../api/auth';
 import {useAuthStore} from '../../store/authStore';
 import {useNavigate} from 'react-router-dom';
-import SocialLoginButtons from '../../components/SocialLoginButtons';
+import {Button, TextField} from '@mui/material';
+import '../auth/style/login.css'; // 기존 스타일 시트
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -15,12 +16,12 @@ const Login = () => {
   const navigate = useNavigate();
   const {fetchUserProfile} = useAuthStore();
 
-  // 입력값 변경 핸들러
+  // Handle input change
   const handleChange = e => {
     setFormData({...formData, [e.target.name]: e.target.value});
   };
 
-  // 폼 제출 핸들러
+  // Handle form submission
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
@@ -31,14 +32,14 @@ const Login = () => {
       await fetchUserProfile();
       navigate('/main');
     } catch (error) {
-      console.error('로그인 오류:', error);
+      console.error('Login error:', error);
 
       if (error.response?.status === 401) {
-        setError('아이디 또는 비밀번호가 잘못되었습니다.');
+        setError('Invalid username or password.');
       } else if (error.response?.status === 500) {
-        setError('서버에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        setError('Server error, please try again later.');
       } else {
-        setError(error.response?.data?.message || '로그인에 실패했습니다.');
+        setError(error.response?.data?.message || 'Login failed.');
       }
     } finally {
       setLoading(false);
@@ -48,60 +49,105 @@ const Login = () => {
   return (
     <div className="container mt-5">
       <div className="row justify-content-center">
-        <div className="col-md-6">
-          <h2 className="text-center mb-4">로그인</h2>
+        <div className="col-md-6 col-12">
+          <h2 className="text-center mb-4 text-primary font-weight-bold">Login</h2>
+
+          {/* Error Message */}
           {error && <div className="alert alert-danger">{error}</div>}
-          <form onSubmit={handleSubmit} className="p-4 border rounded shadow">
+
+          {/* Login Form */}
+          <form
+            onSubmit={handleSubmit}
+            className="p-4 border rounded-lg shadow-lg bg-white">
             <div className="mb-3">
-              <label className="form-label">아이디</label>
-              <input
-                type="text"
+              <TextField
+                label="Username"
+                variant="outlined"
+                fullWidth
                 name="userid"
-                className="form-control"
-                placeholder="아이디를 입력하세요"
                 value={formData.userid}
                 onChange={handleChange}
                 required
+                className="mb-3"
+                inputProps={{className: 'login-input'}}
               />
             </div>
 
             <div className="mb-3">
-              <label className="form-label">비밀번호</label>
-              <input
+              <TextField
+                label="Password"
+                variant="outlined"
                 type="password"
+                fullWidth
                 name="password"
-                className="form-control"
-                placeholder="비밀번호를 입력하세요"
                 value={formData.password}
                 onChange={handleChange}
                 required
+                className="mb-3"
+                inputProps={{className: 'login-input'}}
               />
             </div>
 
-            <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-              {loading ? '로그인 중...' : '로그인'}
-            </button>
+            {/* Login Button */}
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              type="submit"
+              disabled={loading}
+              className="btn-login">
+              {loading ? 'Logging in...' : 'Log In'}
+            </Button>
           </form>
 
-          {/* ✅ 아이디 찾기 링크 추가 */}
+          {/* Additional Links */}
           <div className="text-center mt-3">
-            <a href="/find-userid" className="text-decoration-none">
-              아이디 찾기
+            <a href="/find-userid" className="text-decoration-none text-muted">
+              Find Username
+            </a>
+          </div>
+          <div className="text-center mt-2">
+            <a href="/forgot-password" className="text-decoration-none text-muted">
+              Forgot Password?
+            </a>
+          </div>
+          <div className="text-center mt-2">
+            <a href="/register" className="text-decoration-none text-muted">
+              Sign Up
             </a>
           </div>
 
-          {/* ✅ 비밀번호 찾기 (기존 코드 유지) */}
-          <div className="text-center mt-3">
-            <a href="/forgot-password" className="text-decoration-none">
-              비밀번호를 잊으셨나요?
-            </a>
-          </div>
+          {/* Social Login Buttons */}
+          <div className="text-center mt-4 social-btns">
+            {/* Facebook Button */}
+            <Button
+              variant="contained"
+              style={{backgroundColor: '#3b5998', width: '100%', marginBottom: '10px'}}
+              href="#!">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="mr-2 h-3.5 w-3.5"
+                fill="currentColor"
+                viewBox="0 0 24 24">
+                <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
+              </svg>
+              Continue with Facebook
+            </Button>
 
-          <div className="text-center mt-3">
-            <a href="/register" className="text-decoration-none">
-              회원가입
-            </a>
-            <SocialLoginButtons />
+            {/* Google Button */}
+            <Button
+              variant="contained"
+              style={{backgroundColor: '#db4437', width: '100%'}}
+              href="#!">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="mr-2 h-3.5 w-3.5"
+                fill="currentColor"
+                viewBox="0 0 24 24">
+                <path d="M23 12c0-1.45-.47-2.8-1.26-3.88l-5.39-.02c-.42-.89-1.3-1.51-2.39-1.51-1.7 0-3.1 1.2-3.62 2.81-1.11-.91-2.57-1.44-4.01-1.44-3.18 0-5.75 2.65-5.75 5.9 0 3.24 2.58 5.9 5.75 5.9 1.45 0 2.77-.48 3.81-1.29.54.8 1.5 1.3 2.57 1.3 1.85 0 3.36-1.27 3.91-2.95 1.42-3.95-.04-8.09-3.91-8.09z" />
+              </svg>
+              Continue with Google
+            </Button>
           </div>
         </div>
       </div>

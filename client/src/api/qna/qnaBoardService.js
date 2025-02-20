@@ -8,36 +8,38 @@ const API_BASE_URL =
 export const createQnaBoard = async (data, isMultipart = false) => {
   try {
     let requestData = data;
-    let headers = {};
+    let headers = {}; // `Content-Type`은 axios가 자동으로 처리
 
     if (isMultipart) {
       const formData = new FormData();
 
-      // ✅ 빈 값 방지: 값이 존재할 때만 추가
-      if (data.category) formData.append('category', data.category);
-      if (data.title) formData.append('title', data.title);
-      if (data.content) formData.append('content', data.content);
+      // ✅ 값이 있을 때만 필드 추가
+      if (data.category?.trim()) formData.append('category', data.category);
+      if (data.title?.trim()) formData.append('title', data.title);
+      if (data.content?.trim()) formData.append('content', data.content);
 
+      // ✅ 이미지가 있으면 추가
       if (data.images && data.images.length > 0) {
         data.images.forEach(file => {
-          if (file) formData.append('images', file);
-        });
-      }
-      if (data.attachments && data.attachments.length > 0) {
-        data.attachments.forEach(file => {
-          if (file) formData.append('attachments', file);
+          if (file) formData.append('images[]', file); // 여러 개의 파일을 처리하려면 []로 표시
         });
       }
 
-      requestData = formData;
-      headers = {'Content-Type': 'multipart/form-data'}; // Axios가 자동 처리
+      // ✅ 첨부파일이 있으면 추가
+      if (data.attachments && data.attachments.length > 0) {
+        data.attachments.forEach(file => {
+          if (file) formData.append('attachments[]', file); // 여러 개의 파일을 처리하려면 []로 표시
+        });
+      }
+
+      requestData = formData; // FormData로 데이터를 설정
     } else {
       headers = {'Content-Type': 'application/json'};
     }
 
     // ✅ 디버깅용 FormData 로그
-    console.log('📡 최종 전송할 FormData 내용:');
     if (isMultipart) {
+      console.log('📡 최종 전송할 FormData 내용:');
       for (let [key, value] of requestData.entries()) {
         console.log(`🔹 ${key}:`, value);
       }
@@ -45,6 +47,7 @@ export const createQnaBoard = async (data, isMultipart = false) => {
       console.log(requestData);
     }
 
+    // FormData를 백엔드로 전송
     const response = await axios.post(`${API_BASE_URL}`, requestData, {
       headers,
       withCredentials: true
