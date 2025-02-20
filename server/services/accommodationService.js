@@ -6,7 +6,7 @@ const Booking = require('../models/Booking');
 const Room = require('../models/Room');
 const Location = require('../models/Location');
 
-// ✅ 숙소 생성 함수
+// 숙소 생성 함수
 exports.createAccommodation = async accommodationData => {
   try {
     const newAccommodation = new Accommodation(accommodationData);
@@ -17,7 +17,7 @@ exports.createAccommodation = async accommodationData => {
   }
 };
 
-// ✅ 실시간 자동완성 검색 함수
+// 실시간 자동완성 검색 함수
 exports.autocompleteSearch = async query => {
   try {
     if (!query) return {locations: [], accommodations: []};

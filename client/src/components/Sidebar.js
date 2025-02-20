@@ -62,7 +62,7 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
                 </Nav.Link>
               </Nav.Item>
 
-              {/* ✅ 쿠폰 관리 탭 */}
+              {/* 쿠폰 관리 탭 */}
               <Nav.Item style={{whiteSpace: 'nowrap'}}>
                 <Nav.Link
                   style={
