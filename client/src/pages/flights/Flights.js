@@ -6,6 +6,7 @@ import RoundTripSearch from '../../components/flights/RoundTripSearch';
 import FlightCardList from '../../components/flights/FlightCardList';
 import {fetchFlights} from '../../api/flight/flights';
 import moment from 'moment-timezone';
+import {ToggleButton, ToggleButtonGroup} from '@mui/material';
 
 const Flights = () => {
   const [flights, setFlights] = useState([]); // 전체 항공편 데이터
@@ -47,10 +48,16 @@ const Flights = () => {
     navigate('/flights/results', {state: {flights: filtered}});
   };
 
+  const handleTripChange = (_, newValue) => {
+    if (newValue !== null) {
+      setIsRoundTrip(newValue);
+    }
+  };
+
   return (
     <div className="container mt-4">
       {/* ✈️ 편도/왕복 선택 버튼 */}
-      <div className="flex justify-center space-x-4 mb-4">
+      {/* <div className="flex justify-center space-x-4 mb-4">
         <button
           onClick={() => setIsRoundTrip(false)}
           className={`px-4 py-2 rounded-lg ${
@@ -65,7 +72,20 @@ const Flights = () => {
           }`}>
           왕복
         </button>
-      </div>
+      </div> */}
+
+      <ToggleButtonGroup
+        value={isRoundTrip}
+        exclusive
+        onChange={handleTripChange}
+        sx={{display: 'flex', justifyContent: 'center', mb: 2}}>
+        <ToggleButton value={false} sx={{px: 4}}>
+          편도
+        </ToggleButton>
+        <ToggleButton value={true} sx={{px: 4}}>
+          왕복
+        </ToggleButton>
+      </ToggleButtonGroup>
 
       {/* 🔍 편도 검색 or 왕복 검색 */}
       {isRoundTrip ? <RoundTripSearch /> : <FlightSearch onSearch={handleSearch} />}

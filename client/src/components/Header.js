@@ -99,16 +99,17 @@ const Header = () => {
             component={Link}
             to="/main"
             sx={{
-              flexGrow: 1,
+              flexGrow: 0,
               textDecoration: 'none',
               color: 'white',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+              mr: 3
             }}>
             Our Real Trip
           </Typography>
 
           {/* 네비게이션 메뉴 */}
-          <Box sx={{display: {xs: 'none', md: 'flex'}, gap: 0.5}}>
+          <Box sx={{flexGrow: 1, display: 'flex', justifyContent: 'center', gap: 0.5}}>
             <Button
               component={Link}
               to="/main"
