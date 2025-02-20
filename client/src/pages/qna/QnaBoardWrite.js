@@ -68,11 +68,11 @@ const QnaBoardWrite = () => {
 
     try {
       const form = new FormData();
-      form.append('category', formData.category || '기타 문의'); // 🔹 category 기본값 설정
+      form.append('category', formData.category);
       form.append('title', formData.title);
       form.append('content', formData.content);
 
-      // ✅ 파일 추가 확인
+      // 파일 추가
       if (formData.images.length > 0) {
         Array.from(formData.images).forEach(file => form.append('images', file));
       }
@@ -87,9 +87,9 @@ const QnaBoardWrite = () => {
         console.log(`🔹 ${key}:`, value);
       }
 
-      await createQnaBoard(form, true);
+      const response = await createQnaBoard(form, true); // 'true'는 multipart 처리
       alert('게시글이 작성되었습니다.');
-      navigate('/qna'); // ✅ 목록 페이지로 이동
+      navigate('/qna');
     } catch (error) {
       console.error('❌ QnA 게시글 작성 오류:', error);
       alert('게시글 작성에 실패했습니다.');
