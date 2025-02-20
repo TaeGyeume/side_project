@@ -4,6 +4,25 @@ import moment from 'moment-timezone';
 import './styles/FlightSearch.css';
 import {searchFlights} from '../../api/flight/flights';
 import LoadingScreen from './LoadingScreen';
+import {
+  Container,
+  TextField,
+  Select,
+  MenuItem,
+  Button,
+  Paper,
+  Alert,
+  Typography,
+  FormControl,
+  InputLabel,
+  Box,
+  OutlinedInput,
+  IconButton
+} from '@mui/material';
+import {Add, Remove} from '@mui/icons-material';
+import {LocalizationProvider, DatePicker} from '@mui/x-date-pickers';
+import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
+import {ko} from 'date-fns/locale';
 
 // ✅ 공항 한글 → 코드 변환
 const AIRPORT_CODES = {
@@ -23,7 +42,7 @@ const AIRPORT_LIST = Object.keys(AIRPORT_CODES);
 const FlightSearch = () => {
   const [departure, setDeparture] = useState('');
   const [arrival, setArrival] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(new Date());
   const [passengers, setPassengers] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -87,62 +106,124 @@ const FlightSearch = () => {
   };
 
   return (
-    <div className="p-4 bg-gray-100 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-2">✈️ 항공편 검색</h2>
+    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ko}>
+      {/* <Container maxWidth="md"> */}
+      <Paper elevation={3} sx={{p: 3, mt: 4}}>
+        <Typography variant="h5" fontWeight="bold" gutterBottom>
+          ✈️ 항공편 검색
+        </Typography>
 
-      <div className="flex space-x-2 items-center">
-        <select
-          value={departure}
-          onChange={e => setDeparture(e.target.value)}
-          className="border p-2 rounded w-1/4">
-          <option value="">출발 공항</option>
-          {AIRPORT_LIST.map(airport => (
-            <option key={airport} value={airport}>
-              {airport}
-            </option>
-          ))}
-        </select>
+        {/* ✅ 수평 정렬 적용 */}
+        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+          {/* 출발 공항 */}
+          <FormControl sx={{flex: 1, minWidth: '150px'}} variant="outlined">
+            <InputLabel>출발지가 어디인가요?</InputLabel>
+            <Select
+              value={departure}
+              onChange={e => setDeparture(e.target.value)}
+              label="출발지가 어디인가요?">
+              {AIRPORT_LIST.map(airport => (
+                <MenuItem key={airport} value={airport}>
+                  {airport}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        <select
-          value={arrival}
-          onChange={e => setArrival(e.target.value)}
-          className="border p-2 rounded w-1/4">
-          <option value="">도착 공항</option>
-          {AIRPORT_LIST.map(airport => (
-            <option key={airport} value={airport}>
-              {airport}
-            </option>
-          ))}
-        </select>
+          {/* 도착 공항 */}
+          <FormControl sx={{flex: 1, minWidth: '150px'}} variant="outlined">
+            <InputLabel>도착지가 어디인가요?</InputLabel>
+            <Select
+              value={arrival}
+              onChange={e => setArrival(e.target.value)}
+              label="도착지가 어디인가요?">
+              {AIRPORT_LIST.map(airport => (
+                <MenuItem key={airport} value={airport}>
+                  {airport}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        <input
-          type="date"
-          value={date}
-          onChange={e => setDate(e.target.value)}
-          className="border p-2 rounded w-1/4"
-        />
+          {/* 날짜 선택 */}
+          <DatePicker
+            label="가는 날"
+            value={date}
+            onChange={newValue => setDate(newValue)}
+            renderInput={params => <TextField {...params} fullWidth />}
+          />
 
-        <select
-          value={passengers}
-          onChange={e => setPassengers(Number(e.target.value))}
-          className="border p-2 rounded w-1/5">
-          {[...Array(9)].map((_, i) => (
-            <option key={i + 1} value={i + 1}>
-              {i + 1}명
-            </option>
-          ))}
-        </select>
+          {/* 인원 선택 */}
+          <FormControl sx={{flex: 1, minWidth: '160px'}}>
+            <InputLabel shrink htmlFor="passengers">
+              인원수
+            </InputLabel>
+            <OutlinedInput
+              id="passengers"
+              notched
+              label="인원수"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                height: '56px',
+                padding: '0 8px', // 내부 패딩 조정
+                borderRadius: '5px'
+              }}
+              startAdornment={
+                <IconButton
+                  onClick={() => setPassengers(prev => Math.max(1, prev - 1))}
+                  size="small"
+                  sx={{padding: '4px'}} // 버튼 크기 줄임
+                >
+                  <Remove fontSize="small" />
+                </IconButton>
+              }
+              endAdornment={
+                <IconButton
+                  onClick={() => setPassengers(prev => prev + 1)}
+                  size="small"
+                  sx={{padding: '4px'}} // 버튼 크기 줄임
+                >
+                  <Add fontSize="small" />
+                </IconButton>
+              }
+              inputProps={{
+                style: {
+                  textAlign: 'center',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  width: '24px' // 숫자가 중앙 정렬되도록 조정
+                }
+              }}
+              value={passengers}
+              readOnly
+            />
+          </FormControl>
 
-        <button
-          onClick={handleSearch}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
-          검색
-        </button>
-      </div>
+          {/* 검색 버튼 */}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSearch}
+            sx={{minWidth: '120px', height: '56px'}} // 버튼 크기 맞춤
+          >
+            검색
+          </Button>
+        </Box>
 
-      {errorMessage && <p className="text-red-600 mt-2">{errorMessage}</p>}
-      {loading && <LoadingScreen />}
-    </div>
+        {/* 에러 메시지 */}
+        {errorMessage && (
+          <Alert severity="error" sx={{mt: 2}}>
+            {errorMessage}
+          </Alert>
+        )}
+
+        {/* 로딩 화면 */}
+        {loading && <LoadingScreen />}
+      </Paper>
+      {/* </Container> */}
+    </LocalizationProvider>
   );
 };
 
