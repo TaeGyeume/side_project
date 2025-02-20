@@ -16,6 +16,7 @@ export const createBooking = async bookingData => {
       finalPrice:
         bookingData.finalPrice ||
         bookingData.totalPrice - (bookingData.discountAmount || 0), // 최종 결제 금액
+      usedMileage: bookingData.usedMileage || 0, // ✅ 사용한 마일리지 추가
       userId: bookingData.userId,
       couponId: bookingData.couponId || null, // 쿠폰 ID (선택 사항)
       reservationInfo: bookingData.reservationInfo,
@@ -45,7 +46,8 @@ export const verifyPayment = async paymentData => {
       imp_uid: paymentData.imp_uid,
       merchant_uid: paymentData.merchant_uid,
       couponId: paymentData.couponId || null, // ✅ 쿠폰 ID 추가
-      userId: paymentData.userId || null // ✅ 유저 ID 추가
+      userId: paymentData.userId || null, // ✅ 유저 ID 추가
+      usedMileage: paymentData.usedMileage || 0 // ✅ 사용한 마일리지 추가
     });
 
     // console.log('결제 검증 응답:', response.data);
@@ -59,9 +61,14 @@ export const verifyPayment = async paymentData => {
 export const getMyBookings = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/my`);
-    // console.log('내 예약 내역:', response.data);
     return response.data;
   } catch (error) {
+    if (error.response && error.response.status === 404) {
+      // console.warn('예약 이력이 없습니다.');
+
+      return [];
+    }
+
     console.error('예약 내역 불러오기 실패:', error);
     throw error;
   }

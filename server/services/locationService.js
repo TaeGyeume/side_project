@@ -1,6 +1,6 @@
 const Location = require('../models/Location');
 
-// ✅ 여행지 추가 함수
+// 여행지 추가 함수
 exports.createLocation = async locationData => {
   try {
     const newLocation = new Location(locationData);
@@ -11,7 +11,7 @@ exports.createLocation = async locationData => {
   }
 };
 
-// ✅ 여행지 수정 함수 (PATCH 지원)
+// 여행지 수정 함수 (PATCH 지원)
 exports.updateLocation = async (locationId, updateData) => {
   try {
     const updatedLocation = await Location.findByIdAndUpdate(locationId, updateData, {
@@ -29,7 +29,7 @@ exports.updateLocation = async (locationId, updateData) => {
   }
 };
 
-// ✅ 여행지 삭제 함수
+// 여행지 삭제 함수
 exports.deleteLocation = async locationId => {
   try {
     const deletedLocation = await Location.findByIdAndDelete(locationId);
@@ -44,12 +44,12 @@ exports.deleteLocation = async locationId => {
   }
 };
 
-// ✅ 모든 여행지 조회 서비스
+// 모든 여행지 조회 서비스
 exports.getLocations = async () => {
   return await Location.find();
 };
 
-// ✅ 도시 및 국가 검색 함수 (한 글자 입력 시도 가능)
+// 도시 및 국가 검색 함수 (한 글자 입력 시도 가능)
 exports.searchLocations = async query => {
   try {
     if (!query) return [];
@@ -81,7 +81,7 @@ exports.searchLocations = async query => {
   }
 };
 
-// ✅ 국가 목록 조회
+// 국가 목록 조회
 exports.getCountries = async () => {
   try {
     const countries = await Location.distinct('country'); // 중복 제거하여 국가 목록 반환
@@ -91,7 +91,7 @@ exports.getCountries = async () => {
   }
 };
 
-// ✅ 특정 국가의 도시 목록 조회
+// 특정 국가의 도시 목록 조회
 exports.getCitiesByCountry = async country => {
   try {
     if (!country) {
@@ -105,7 +105,7 @@ exports.getCitiesByCountry = async country => {
   }
 };
 
-// ✅ 특정 위치 조회 함수
+// 특정 위치 조회 함수
 exports.getLocationById = async locationId => {
   try {
     const location = await Location.findById(locationId);
