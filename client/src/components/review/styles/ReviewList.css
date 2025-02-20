@@ -95,29 +95,44 @@
 .dropdown-menu {
   position: absolute;
   right: 0;
+  top: 30px;
   background: white;
   border: 1px solid #ddd;
-  border-radius: 4px;
-  width: 120px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  width: 160px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 10;
+  overflow: hidden;
 }
 
 .dropdown-item {
-  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
   cursor: pointer;
+  font-size: 14px;
   transition: background 0.2s ease;
 }
 
 .dropdown-item:hover {
-  background-color: #f2f2f2;
+  background-color: #f5f5f5;
 }
 
 .dropdown-item.delete {
   color: red;
 }
 
-.dropdown-item.disabled {
-  color: #aaa;
-  cursor: default;
+.dropdown-icon {
+  font-size: 16px;
+  margin-left: 10px;
+}
+
+.kebab-menu {
+  position: relative;
+  cursor: pointer;
+}
+
+.kebab-icon {
+  font-size: 24px;
 }

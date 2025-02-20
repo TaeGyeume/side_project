@@ -1,13 +1,13 @@
-import React, {useEffect, useState} from 'react';
-import {getReviews, likeReview, deleteReview} from '../../api/review/reviewService';
-import {AiOutlineLike, AiOutlineMore} from 'react-icons/ai';
+import React, { useEffect, useState, useRef } from 'react';
+import { getReviews, likeReview } from '../../api/review/reviewService';
+import { AiOutlineLike, AiOutlineMore } from 'react-icons/ai';
 import './styles/ReviewList.css';
 import authAPI from '../../api/auth/auth';
 
-const ReviewList = ({productId}) => {
+const ReviewList = ({ productId }) => {
   const [reviews, setReviews] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-  const [menuOpen, setMenuOpen] = useState({});
+  const [menuOpen, setMenuOpen] = useState({}); // 열린 메뉴 상태
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -20,137 +20,113 @@ const ReviewList = ({productId}) => {
       }
     };
 
-    const fetchUser = async () => {
+    const fetchCurrentUser = async () => {
       try {
-        const userProfile = await authAPI.getUserProfile();
-        setCurrentUser(userProfile);
+        const user = await authAPI.getUserProfile();
+        setCurrentUser(user);
       } catch (err) {
-        console.error('사용자 정보 조회 오류: ', err);
+        console.error('사용자 정보 불러오기 오류:', err);
       }
     };
 
     fetchReviews();
-    fetchUser();
+    fetchCurrentUser();
   }, [productId]);
 
-  const handleLike = async reviewId => {
+  const toggleMenu = (reviewId) => {
+    setMenuOpen((prev) => ({
+      ...prev,
+      [reviewId]: !prev[reviewId],
+    }));
+  };
+
+  const handleLike = async (reviewId) => {
     try {
       const data = await likeReview(reviewId);
-      setReviews(reviews.map(r => (r._id === reviewId ? {...r, likes: data.likes} : r)));
+      setReviews((prevReviews) =>
+        prevReviews.map((r) => (r._id === reviewId ? { ...r, likes: data.likes } : r))
+      );
     } catch (err) {
       alert('좋아요 처리 실패');
     }
   };
 
-  const handleDelete = async reviewId => {
-    if (window.confirm('정말로 이 리뷰를 삭제하시겠습니까?')) {
-      try {
-        await deleteReview(reviewId);
-        setReviews(reviews.filter(review => review._id !== reviewId));
-        alert('리뷰가 삭제되었습니다.');
-      } catch (err) {
-        alert('리뷰 삭제 실패');
-      }
-    }
+  const handleEdit = (reviewId) => {
+    alert(`리뷰 ${reviewId} 수정하기`);
   };
 
-  const toggleMenu = reviewId => {
-    setMenuOpen(prev => ({
-      ...prev,
-      [reviewId]: !prev[reviewId]
-    }));
+  const handleDelete = (reviewId) => {
+    alert(`리뷰 ${reviewId} 삭제하기`);
   };
 
-  const isAdmin = currentUser?.role === 'admin';
+  const handleAddComment = (reviewId) => {
+    alert(`리뷰 ${reviewId}에 댓글 추가`);
+  };
 
   return (
     <div className="review-list">
       {reviews.length === 0 ? (
         <p className="no-reviews">등록된 리뷰가 없습니다.</p>
       ) : (
-        reviews.map(review => {
-          const isAuthor = currentUser?._id === review.userId._id;
+        reviews.map((review) => (
+          <div key={review._id} className="review-card">
+            <div className="review-header">
+              <span className="review-username">{review.userId.username || '익명 사용자'}</span>
+              <span className="review-date">{new Date(review.createdAt).toISOString().substring(0, 10)}</span>
+            </div>
 
-          return (
-            <div key={review._id} className="review-card">
-              <div className="review-header">
-                <span className="review-username">
-                  {review.userId.username || '익명 사용자'}
-                </span>
-                {new Date(review.createdAt).toISOString().substring(0, 10)}
-
-                {/* ✅ 케밥 메뉴 (⋮) - 항상 표시 */}
-                <div className="kebab-menu">
-                  <AiOutlineMore
-                    onClick={() => toggleMenu(review._id)}
-                    className="kebab-icon"
+            {review.images && review.images.length > 0 && (
+              <div className="review-images">
+                {review.images.map((image, index) => (
+                  <img
+                    key={index}
+                    src={`http://localhost:5000${image}`}
+                    alt={`리뷰 이미지 ${index + 1}`}
+                    className="review-thumbnail"
                   />
-
-                  {/* ✅ 드롭다운 메뉴 */}
-                  {menuOpen[review._id] && (
-                    <div className="dropdown-menu">
-                      {/* 작성자 권한 */}
-                      {isAuthor && (
-                        <>
-                          <div
-                            className="dropdown-item"
-                            onClick={() => alert('수정 기능 구현 예정')}>
-                            수정하기
-                          </div>
-                          <div
-                            className="dropdown-item delete"
-                            onClick={() => handleDelete(review._id)}>
-                            삭제하기
-                          </div>
-                        </>
-                      )}
-
-                      {/* 관리자 권한 */}
-                      {isAdmin && !isAuthor && (
-                        <>
-                          <div
-                            className="dropdown-item"
-                            onClick={() => alert('댓글 달기 기능 구현 예정')}>
-                            댓글 달기
-                          </div>
-                          <div
-                            className="dropdown-item delete"
-                            onClick={() => handleDelete(review._id)}>
-                            삭제하기
-                          </div>
-                        </>
-                      )}
-
-                      {/* 일반 사용자 - 아무 메뉴 없음 */}
-                      {!isAuthor && !isAdmin && (
-                        <div className="dropdown-item disabled">메뉴 없음</div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                ))}
               </div>
+            )}
 
-              {review.images && review.images.length > 0 && (
-                <div className="review-images">
-                  {review.images.map((image, index) => (
-                    <img
-                      key={index}
-                      src={`http://localhost:5000${image}`}
-                      alt={`리뷰 이미지 ${index + 1}`}
-                      className="review-thumbnail"
-                    />
-                  ))}
-                </div>
-              )}
+            <p className="review-text">{review.content}</p>
 
-              <p className="review-text">{review.content}</p>
-
+            <div className="review-actions">
+              {/* 좋아요 버튼 */}
               <button className="like-button" onClick={() => handleLike(review._id)}>
                 <AiOutlineLike /> {review.likes || 0}
               </button>
+
+              {/* 케밥 메뉴 */}
+              <div className="kebab-menu">
+                <AiOutlineMore onClick={() => toggleMenu(review._id)} className="kebab-icon" />
+
+                {menuOpen[review._id] && (
+                  <div className="menu-options">
+                    {currentUser &&
+                    (currentUser.isAdmin || currentUser._id === review.userId._id) ? (
+                      <>
+                        {currentUser._id === review.userId._id && (
+                          <>
+                            <button onClick={() => handleEdit(review._id)}>수정하기</button>
+                            <button onClick={() => handleDelete(review._id)}>삭제하기</button>
+                          </>
+                        )}
+                        {currentUser.isAdmin && (
+                          <>
+                            <button onClick={() => handleAddComment(review._id)}>댓글 달기</button>
+                            <button onClick={() => handleDelete(review._id)}>삭제하기</button>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <p>권한이 없습니다</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          );
-        })
+          </div>
+        ))
       )}
     </div>
   );
