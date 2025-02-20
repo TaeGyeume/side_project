@@ -1,4 +1,4 @@
-/* ✅ 사용된 쿠폰 스타일 */
+/* 사용된 쿠폰 스타일 */
 .used-coupon {
   opacity: 0.5; /* 흐릿하게 표시 */
   background-color: #f8f9fa;
@@ -9,7 +9,7 @@
   color: #6c757d;
 }
 
-/* ✅ 쿠폰 섹션 제목 스타일 */
+/* 쿠폰 섹션 제목 스타일 */
 .coupon-section-title {
   margin-top: 20px;
   font-weight: bold;

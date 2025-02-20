@@ -43,7 +43,7 @@ const Header = () => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchUserProfile();
-      setIsDropdownOpen(false); // 🔹 로그인 후 드롭다운 자동 열림 방지
+      setIsDropdownOpen(false); // 로그인 후 드롭다운 자동 열림 방지
     }
   }, [isAuthenticated, fetchUserProfile]);
 
@@ -80,7 +80,7 @@ const Header = () => {
         position="sticky"
         sx={{
           backgroundImage:
-            'linear-gradient(90deg, rgb(0, 181, 204) 0%, rgb(0, 51, 102) 100%)', // 오션 블루 → 다크 블루
+            'linear-gradient(90deg, rgb(0, 181, 204) 0%, rgb(0, 51, 102) 100%)',
           boxShadow: 3
         }}>
         <Toolbar>

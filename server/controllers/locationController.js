@@ -1,6 +1,6 @@
 const locationService = require('../services/locationService');
 
-// ✅ 여행지 추가 API
+// 여행지 추가 API
 exports.createLocation = async (req, res) => {
   try {
     const locationData = req.body;
@@ -13,7 +13,7 @@ exports.createLocation = async (req, res) => {
   }
 };
 
-// ✅ 여행지 수정 API (PATCH /api/locations/:locationId)
+// 여행지 수정 API (PATCH /api/locations/:locationId)
 exports.updateLocation = async (req, res) => {
   try {
     const {locationId} = req.params;
@@ -33,7 +33,7 @@ exports.updateLocation = async (req, res) => {
   }
 };
 
-// ✅ 여행지 삭제 API (DELETE /api/locations/:locationId)
+// 여행지 삭제 API (DELETE /api/locations/:locationId)
 exports.deleteLocation = async (req, res) => {
   try {
     const {locationId} = req.params;
@@ -46,7 +46,7 @@ exports.deleteLocation = async (req, res) => {
   }
 };
 
-// ✅ 모든 여행지 조회
+// 모든 여행지 조회
 exports.getLocations = async (req, res) => {
   try {
     const locations = await locationService.getLocations();
@@ -56,7 +56,7 @@ exports.getLocations = async (req, res) => {
   }
 };
 
-// ✅ 도시 및 국가 검색 API
+// 도시 및 국가 검색 API
 exports.searchLocations = async (req, res) => {
   try {
     const {query} = req.query;
@@ -72,7 +72,7 @@ exports.searchLocations = async (req, res) => {
   }
 };
 
-// ✅ 국가 목록 조회 API
+// 국가 목록 조회 API
 exports.getCountries = async (req, res) => {
   try {
     const countries = await locationService.getCountries();
@@ -82,7 +82,7 @@ exports.getCountries = async (req, res) => {
   }
 };
 
-// ✅ 특정 국가의 도시 목록 조회 API
+// 특정 국가의 도시 목록 조회 API
 exports.getCitiesByCountry = async (req, res) => {
   try {
     const {country} = req.query;
@@ -97,7 +97,7 @@ exports.getCitiesByCountry = async (req, res) => {
   }
 };
 
-// ✅ 특정 위치 조회 API
+// 특정 위치 조회 API
 exports.getLocationById = async (req, res) => {
   try {
     const {locationId} = req.params;

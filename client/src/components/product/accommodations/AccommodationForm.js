@@ -58,36 +58,36 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
     }
   };
 
-  // 🔹 입력값 변경 핸들러
+  // 입력값 변경 핸들러
   const handleChange = e => {
     const {name, value} = e.target;
     setFormData({...formData, [name]: value});
   };
 
-  // 🔹 좌표 입력 핸들러
+  // 좌표 입력 핸들러
   const handleCoordinateChange = e => {
     const {name, value} = e.target;
     setFormData(prev => ({
       ...prev,
       coordinates: {
-        ...prev.coordinates, // ✅ 기존 값 유지
-        [name]: parseFloat(value) || '' // ✅ 숫자로 변환
+        ...prev.coordinates, // 기존 값 유지
+        [name]: parseFloat(value) || '' // 숫자로 변환
       }
     }));
   };
 
-  // 🔹 파일 업로드 핸들러 (미리보기 포함)
+  // 파일 업로드 핸들러 (미리보기 포함)
   const handleFileChange = e => {
     const files = Array.from(e.target.files);
 
-    // 📌 미리보기 URL 생성
+    // 미리보기 URL 생성
     const newPreviews = files.map(file => URL.createObjectURL(file));
 
     setPreviewImages([...previewImages, ...newPreviews]); // 기존 이미지 + 새로운 이미지
     setFormData({...formData, images: files});
   };
 
-  // 🔹 업로드한 이미지 삭제 핸들러
+  // 업로드한 이미지 삭제 핸들러
   const handleRemoveImage = index => {
     const updatedPreviews = previewImages.filter((_, i) => i !== index);
     const updatedImages = Array.from(formData.images).filter((_, i) => i !== index);
@@ -96,15 +96,15 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
     setFormData({...formData, images: updatedImages});
   };
 
-  // 🔹 편의시설 삭제 핸들러
+  // 편의시설 삭제 핸들러
   const handleRemoveAmenity = index => {
     setFormData(prev => ({
       ...prev,
-      amenities: prev.amenities.filter((_, i) => i !== index) // ✅ 정확한 인덱스의 값만 삭제
+      amenities: prev.amenities.filter((_, i) => i !== index) // 정확한 인덱스의 값만 삭제
     }));
   };
 
-  // 🔹 폼 제출 핸들러
+  // 폼 제출 핸들러
   const handleSubmit = async e => {
     e.preventDefault();
 
@@ -122,7 +122,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
     requestData.append('category', formData.category);
     requestData.append('host', formData.host);
 
-    // ✅ MongoDB GeoJSON 형식으로 좌표 저장
+    // MongoDB GeoJSON 형식으로 좌표 저장
     requestData.append(
       'coordinates',
       JSON.stringify({
@@ -139,38 +139,38 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
         requestData.append('images', formData.images[i]);
       }
     } else {
-      console.log('⚠️ 업로드할 이미지가 없습니다.');
+      console.log('업로드할 이미지가 없습니다.');
     }
 
-    // 📌 FormData 디버깅
+    // FormData 디버깅
     for (let pair of requestData.entries()) {
-      console.log('✅ 전송할 데이터:', pair[0], pair[1]);
+      console.log('전송할 데이터:', pair[0], pair[1]);
     }
 
     try {
       await createAccommodation(requestData);
-      if (window.confirm('✅ 숙소가 성공적으로 등록되었습니다. 목록으로 이동할까요?')) {
+      if (window.confirm('숙소가 성공적으로 등록되었습니다. 목록으로 이동할까요?')) {
         navigate('/product/accommodations/list');
       }
     } catch (error) {
-      console.error('❌ 숙소 등록 오류');
+      console.error('숙소 등록 오류');
     }
   };
 
-  // ✅ 로그인한 사용자 ID 가져오기
+  // 로그인한 사용자 ID 가져오기
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         const userData = await authAPI.getUserProfile();
         setFormData(prev => ({...prev, host: userData._id})); // host 필드에 사용자 ID 저장
       } catch (error) {
-        console.error('❌ 사용자 프로필 불러오기 오류:', error);
+        console.error('사용자 프로필 불러오기 오류:', error);
       }
     };
     fetchUserProfile();
   }, []);
 
-  // ✅ 국가 목록 가져오기
+  // 국가 목록 가져오기
   useEffect(() => {
     const fetchCountryList = async () => {
       try {
@@ -178,10 +178,10 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
         if (Array.isArray(response.data) && response.data.length > 0) {
           setCountries(response.data);
         } else {
-          console.warn('⚠️ 받아온 국가 리스트가 비어 있음:', response.data);
+          console.warn('받아온 국가 리스트가 비어 있음:', response.data);
         }
       } catch (error) {
-        console.error('❌ 국가 목록 불러오기 오류:', error);
+        console.error('국가 목록 불러오기 오류:', error);
       }
     };
     fetchCountryList();
@@ -220,7 +220,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
             labelId="country-label"
             value={selectedCountry}
             onChange={handleCountryChange}
-            label="국가 선택" // ✅ label을 Select에 추가해야 InputLabel과 연동됨
+            label="국가 선택" // label을 Select에 추가해야 InputLabel과 연동됨
           >
             {countries.map((country, index) => (
               <MenuItem key={index} value={country}>
@@ -277,7 +277,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
           />
         </Box>
 
-        {/* 🔹 카테고리 선택 */}
+        {/* 카테고리 선택 */}
         <FormControl fullWidth sx={{mb: 3}} variant="outlined">
           <InputLabel id="category-label">카테고리</InputLabel>
           <Select
@@ -298,7 +298,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
           label="편의시설 추가 (Enter 입력)"
           onKeyDown={e => {
             if (e.key === 'Enter') {
-              e.preventDefault(); // ✅ 엔터 입력 시 폼 제출 방지
+              e.preventDefault(); // 엔터 입력 시 폼 제출 방지
               if (e.target.value.trim()) {
                 setFormData(prev => ({
                   ...prev,
@@ -314,13 +314,13 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
             <Chip
               key={index}
               label={amenity}
-              onDelete={() => handleRemoveAmenity(index)} // ✅ 인덱스를 전달하여 삭제
+              onDelete={() => handleRemoveAmenity(index)} // 인덱스를 전달하여 삭제
               sx={{bgcolor: 'lightgray', color: 'black'}}
             />
           ))}
         </Box>
 
-        {/* 🔹 숙소 이미지 업로드 */}
+        {/* 숙소 이미지 업로드 */}
         <Box sx={{mb: 3}}>
           <Button
             variant="contained"
@@ -337,7 +337,7 @@ const AccommodationForm = ({onSubmit, initialData = {}, userId}) => {
             />
           </Button>
 
-          {/* 🔹 업로드한 이미지 미리보기 */}
+          {/* 업로드한 이미지 미리보기 */}
           {previewImages.length > 0 && (
             <ImageList cols={3} rowHeight={100}>
               {previewImages.map((image, index) => (

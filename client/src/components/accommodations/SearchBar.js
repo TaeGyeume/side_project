@@ -34,7 +34,7 @@ const SearchBar = ({onSearch}) => {
     const delayDebounceFn = setTimeout(async () => {
       let results = await fetchSuggestions(searchTerm);
 
-      // ✅ 옵션을 객체 배열로 변환
+      // 옵션을 객체 배열로 변환
       if (Array.isArray(results)) {
         results = results.map(item => (typeof item === 'string' ? {name: item} : item));
       }
@@ -45,7 +45,7 @@ const SearchBar = ({onSearch}) => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
 
-  // 🔹 검색 실행 함수
+  // 검색 실행 함수
   const handleSearch = () => {
     onSearch({
       searchTerm,
@@ -55,7 +55,7 @@ const SearchBar = ({onSearch}) => {
     });
   };
 
-  // 🔹 검색어 하이라이트 적용 (정확히 일치하는 부분만)
+  // 검색어 하이라이트 적용 (정확히 일치하는 부분만)
   const highlightMatch = (text, query) => {
     if (!query) return text;
     const regex = new RegExp(`(${query})`, 'gi');
@@ -77,18 +77,18 @@ const SearchBar = ({onSearch}) => {
       <Paper
         elevation={3}
         sx={{
-          width: '100%', // 🔹 전체 너비 적용
-          mx: 0, // 🔹 좌우 여백 제거
+          width: '100%', // 전체 너비 적용
+          mx: 0, // 좌우 여백 제거
           p: 3,
-          borderRadius: 0, // 🔹 둥근 모서리 제거하여 전체 너비 채우기
+          borderRadius: 0, // 둥근 모서리 제거하여 전체 너비 채우기
           backgroundColor: '#f8f9fa'
         }}>
         <Stack
           direction="row"
           spacing={2}
           alignItems="center"
-          justifyContent="space-between" // 🔹 좌우로 끝까지 배치
-          sx={{width: '100%', px: 3}} // 🔹 내부 요소도 너비를 채우도록 조정
+          justifyContent="space-between" // 좌우로 끝까지 배치
+          sx={{width: '100%', px: 3}} // 내부 요소도 너비를 채우도록 조정
         >
           {/* 여행지 입력 */}
           <Autocomplete
@@ -99,11 +99,11 @@ const SearchBar = ({onSearch}) => {
             }
             onInputChange={(event, newValue) => setSearchTerm(newValue)}
             renderOption={(props, option) => {
-              const {key, ...restProps} = props; // ✅ key 속성을 분리
+              const {key, ...restProps} = props; // key 속성을 분리
               return (
                 <li key={option.id || option.name} {...restProps}>
                   {' '}
-                  {/* ✅ key를 별도로 설정 */}
+                  {/* key를 별도로 설정 */}
                   <Typography>{highlightMatch(option.name, searchTerm)}</Typography>
                 </li>
               );
@@ -120,7 +120,7 @@ const SearchBar = ({onSearch}) => {
             value={startDate}
             onChange={newDate => setStartDate(newDate)}
             renderInput={params => <TextField {...params} fullWidth />}
-            sx={{flex: 1, minWidth: '180px'}} // 🔹 크기 조정
+            sx={{flex: 1, minWidth: '180px'}} // 크기 조정
           />
 
           {/* 체크아웃 날짜 선택 */}
@@ -130,7 +130,7 @@ const SearchBar = ({onSearch}) => {
             onChange={newDate => setEndDate(newDate)}
             renderInput={params => <TextField {...params} fullWidth />}
             minDate={startDate}
-            sx={{flex: 1, minWidth: '180px'}} // 🔹 크기 조정
+            sx={{flex: 1, minWidth: '180px'}} // 크기 조정
           />
 
           {/* 성인 수 선택 */}
@@ -189,9 +189,9 @@ const SearchBar = ({onSearch}) => {
               flexShrink: 0,
               minWidth: '140px',
               height: '56px',
-              backgroundColor: '#42a5f5', // ✅ 원하는 색상 적용
+              backgroundColor: '#42a5f5', // 원하는 색상 적용
               '&:hover': {
-                backgroundColor: '#1565c0' // ✅ 호버 시 색상 변경
+                backgroundColor: '#1565c0' // 호버 시 색상 변경
               }
             }}>
             숙소 검색

@@ -23,15 +23,15 @@ const FilterPanel = ({onFilterChange}) => {
         sortBy
       };
 
-      // ✅ 이전 필터 값과 비교하여 변경된 경우에만 실행
+      // 이전 필터 값과 비교하여 변경된 경우에만 실행
       if (JSON.stringify(prevFiltersRef.current) !== JSON.stringify(newFilters)) {
         onFilterChange(newFilters);
-        prevFiltersRef.current = newFilters; // ✅ 현재 필터 값 저장
+        prevFiltersRef.current = newFilters; // 현재 필터 값 저장
       }
-    }, 500); // ✅ 500ms 동안 추가 입력이 없을 때만 실행
+    }, 500); // 500ms 동안 추가 입력이 없을 때만 실행
 
     return () => clearTimeout(debounceRef.current);
-  }, [priceRange, category, sortBy, onFilterChange]); // ✅ 의존성 배열에 필터 값 포함
+  }, [priceRange, category, sortBy, onFilterChange]); // 의존성 배열에 필터 값 포함
 
   return (
     <div className="card p-3">
@@ -50,7 +50,7 @@ const FilterPanel = ({onFilterChange}) => {
           className="price-slider"
           min={0}
           max={500000}
-          step={10000} // ✅ 가격 조정 단위
+          step={10000} // 가격 조정 단위
           value={priceRange}
           onChange={setPriceRange}
         />
@@ -87,7 +87,7 @@ const FilterPanel = ({onFilterChange}) => {
         </select>
       </div>
 
-      {/* ✅ 기존 버튼은 그대로 유지 (필요하면 추가 클릭 가능) */}
+      {/* 기존 버튼은 그대로 유지 (필요하면 추가 클릭 가능) */}
       {/* <button
         className="btn btn-primary mt-2"
         onClick={() =>

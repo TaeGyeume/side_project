@@ -14,7 +14,7 @@ const MyCoupons = ({userId}) => {
       try {
         const data = await fetchUserCoupons(userId);
 
-        // ✅ 사용된 쿠폰과 사용되지 않은 쿠폰 분리
+        // 사용된 쿠폰과 사용되지 않은 쿠폰 분리
         setUnusedCoupons(data.filter(coupon => !coupon.isUsed));
         setUsedCoupons(data.filter(coupon => coupon.isUsed));
       } catch (err) {
@@ -42,7 +42,7 @@ const MyCoupons = ({userId}) => {
     <Container>
       <h2 className="coupon-title">🎫 내 쿠폰함</h2>
 
-      {/* ✅ 사용 가능한 쿠폰 섹션 */}
+      {/* 사용 가능한 쿠폰 섹션 */}
       <section>
         <h4 className="coupon-section-title">✅ 사용 가능한 쿠폰</h4>
         <Row>
@@ -75,7 +75,7 @@ const MyCoupons = ({userId}) => {
         </Row>
       </section>
 
-      {/* ✅ 사용된 쿠폰 섹션 */}
+      {/* 사용된 쿠폰 섹션 */}
       <section>
         <h4 className="coupon-section-title">⚠ 사용된 쿠폰</h4>
         <Row>

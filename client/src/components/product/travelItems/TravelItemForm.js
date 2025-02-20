@@ -8,18 +8,18 @@ import {
 } from '../../../api/travelItem/travelItemService';
 
 const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}}) => {
-  // ✅ isEdit과 itemId를 props에서 받음
+  // isEdit과 itemId를 props에서 받음
   const navigate = useNavigate();
-  const {itemId: paramItemId} = useParams(); // ✅ URL에서 itemId 가져오기 (수정 모드)
+  const {itemId: paramItemId} = useParams(); // URL에서 itemId 가져오기 (수정 모드)
 
-  const finalItemId = itemId || paramItemId; // ✅ props에서 받은 itemId가 없으면 useParams 사용
+  const finalItemId = itemId || paramItemId; // props에서 받은 itemId가 없으면 useParams 사용
 
   const [categories, setCategories] = useState([]); // 모든 카테고리
   const [topCategories, setTopCategories] = useState([]); // 최상위 카테고리
   const [subCategories, setSubCategories] = useState([]); // 선택한 최상위 카테고리의 하위 카테고리
-  const [previewImages, setPreviewImages] = useState([]); // ✅ 기존 이미지 미리보기
-  const [newImages, setNewImages] = useState([]); // ✅ 새로 업로드된 이미지
-  const [removeImages, setRemoveImages] = useState([]); // ✅ 삭제할 기존 이미지 목록
+  const [previewImages, setPreviewImages] = useState([]); // 기존 이미지 미리보기
+  const [newImages, setNewImages] = useState([]); // 새로 업로드된 이미지
+  const [removeImages, setRemoveImages] = useState([]); // 삭제할 기존 이미지 목록
 
   const [formData, setFormData] = useState({
     name: '',
@@ -34,7 +34,7 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
 
   const SERVER_URL = 'http://localhost:5000';
 
-  // ✅ 모든 카테고리 불러오기
+  // 모든 카테고리 불러오기
   useEffect(() => {
     const loadCategories = async () => {
       const data = await fetchAllCategories();
@@ -45,7 +45,7 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
     loadCategories();
   }, []);
 
-  // ✅ 수정 모드일 경우 기존 상품 데이터 불러오기
+  // 수정 모드일 경우 기존 상품 데이터 불러오기
   useEffect(() => {
     if (isEdit && finalItemId) {
       const fetchItem = async () => {
@@ -53,7 +53,7 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
           const response = await fetchTravelItem(finalItemId);
           const itemData = response.data;
 
-          // ✅ 최상위 카테고리 & 하위 카테고리 설정
+          // 최상위 카테고리 & 하위 카테고리 설정
           let topCategoryId = '';
           let parentCategoryId = '';
 
@@ -69,8 +69,8 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
           setFormData({
             name: itemData.name,
             description: itemData.description,
-            topCategory: topCategoryId, // ✅ 최상위 카테고리 자동 설정
-            category: parentCategoryId, // ✅ 직접적인 부모 카테고리
+            topCategory: topCategoryId, // 최상위 카테고리 자동 설정
+            category: parentCategoryId, // 직접적인 부모 카테고리
             parentCategory: parentCategoryId,
             price: itemData.price,
             stock: itemData.stock,
@@ -85,7 +85,7 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
             );
           }
         } catch (error) {
-          console.error('❌ 기존 상품 불러오기 실패:', error);
+          console.error('기존 상품 불러오기 실패:', error);
         }
       };
 
@@ -93,7 +93,7 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
     }
   }, [isEdit, finalItemId, categories]);
 
-  // ✅ 최상위 카테고리 변경 시, 하위 카테고리 필터링
+  // 최상위 카테고리 변경 시, 하위 카테고리 필터링
   const handleTopCategoryChange = e => {
     const selectedTopCategory = e.target.value;
     setFormData({
@@ -112,7 +112,7 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
     }
   };
 
-  // ✅ 하위 카테고리 선택 시, parentCategory 설정
+  // 하위 카테고리 선택 시, parentCategory 설정
   const handleChange = e => {
     const {name, value} = e.target;
 
@@ -130,7 +130,7 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
     }
   };
 
-  // ✅ 이미지 업로드 핸들러
+  // 이미지 업로드 핸들러
   const handleFileChange = e => {
     const files = Array.from(e.target.files);
     setNewImages(files);
@@ -139,14 +139,14 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
     setPreviewImages([...previewImages, ...filePreviews]);
   };
 
-  // ✅ 기존 및 새 이미지 삭제 핸들러
+  // 기존 및 새 이미지 삭제 핸들러
   const handleRemoveImage = index => {
     if (index < formData.images.length) {
       const removedImage = formData.images[index];
       setRemoveImages(prev => [...prev, removedImage]); // 삭제할 기존 이미지 추가
       setFormData(prev => ({
         ...prev,
-        images: prev.images.filter((_, i) => i !== index) // ✅ formData.images에서 삭제
+        images: prev.images.filter((_, i) => i !== index) // formData.images에서 삭제
       }));
     } else {
       // 새로 추가된 이미지 삭제
@@ -158,7 +158,7 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
     setPreviewImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  // ✅ 상품 등록 / 수정 요청
+  // 상품 등록 / 수정 요청
   const handleSubmit = async e => {
     e.preventDefault();
     const data = new FormData();
@@ -178,23 +178,23 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
     try {
       if (isEdit) {
         await updateTravelItem(finalItemId, data);
-        console.log('✅ 상품 수정 성공');
+        console.log('상품 수정 성공');
       } else {
         await createTravelItem(data);
-        console.log('✅ 상품 등록 성공');
+        console.log('상품 등록 성공');
       }
 
       navigate('/product/travelItems/list');
 
       if (onItemCreated) {
-        onItemCreated(); // ✅ 함수가 있을 경우에만 실행
+        onItemCreated(); // 함수가 있을 경우에만 실행
       }
     } catch (error) {
-      console.error('❌ 상품 처리 실패:', error);
+      console.error('상품 처리 실패:', error);
     }
   };
 
-  // ✅ 취소 버튼 클릭 시 상품 리스트 페이지로 이동
+  // 취소 버튼 클릭 시 상품 리스트 페이지로 이동
   const handleCancel = () => {
     navigate('/product/travelItems/list');
   };
@@ -225,7 +225,7 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
           />
         </div>
 
-        {/* ✅ 최상위 카테고리 선택 */}
+        {/* 최상위 카테고리 선택 */}
         <div className="mb-3">
           <label className="form-label">최상위 카테고리</label>
           <select
@@ -243,7 +243,7 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
           </select>
         </div>
 
-        {/* ✅ 하위 카테고리 선택 */}
+        {/* 하위 카테고리 선택 */}
         {subCategories.length > 0 && (
           <div className="mb-3">
             <label className="form-label">하위 카테고리</label>
@@ -287,7 +287,7 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
           />
         </div>
 
-        {/* ✅ 이미지 업로드 */}
+        {/* 이미지 업로드 */}
         <div className="mb-3">
           <label className="form-label">이미지 업로드</label>
           <input
@@ -300,7 +300,7 @@ const TravelItemForm = ({isEdit = false, itemId = null, onItemCreated = () => {}
           />
         </div>
 
-        {/* ✅ 기존 이미지 미리보기 */}
+        {/* 기존 이미지 미리보기 */}
         {previewImages.length > 0 && (
           <div className="mb-3">
             <label className="form-label">기존 이미지</label>

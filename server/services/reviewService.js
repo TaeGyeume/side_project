@@ -49,19 +49,19 @@ exports.toggleLike = async (reviewId, userId) => {
 };
 
 exports.updateReview = async (id, data, files) => {
-  console.log('📌 [서버] 리뷰 수정 서비스 호출 - id:', id, 'data:', data);
+  console.log('[서버] 리뷰 수정 서비스 호출 - id:', id, 'data:', data);
   const imagePaths = files ? files.map(file => `/uploads/${file.filename}`) : [];
   const updatedData = {...data, images: imagePaths.length > 0 ? imagePaths : data.images};
   const review = await Review.findByIdAndUpdate(id, updatedData, {new: true});
-  console.log('✅ [서버] 리뷰 수정 성공:', review);
+  console.log('[서버] 리뷰 수정 성공:', review);
   return review;
 };
 
 exports.deleteReview = async id => {
-  console.log('📌 [서버] 리뷰 삭제 서비스 호출 - id:', id);
+  console.log('[서버] 리뷰 삭제 서비스 호출 - id:', id);
   await Review.findByIdAndDelete(id);
   await Comment.deleteMany({reviewId: id});
-  console.log('✅ [서버] 리뷰 및 댓글 삭제 성공');
+  console.log('[서버] 리뷰 및 댓글 삭제 성공');
 };
 
 // 댓글 추가 (관리자만)

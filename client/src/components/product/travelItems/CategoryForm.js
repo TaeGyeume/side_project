@@ -14,7 +14,7 @@ const CategoryForm = ({onCategoryCreated}) => {
     parentCategory: null
   });
 
-  // ✅ 최상위 카테고리 불러오기
+  // 최상위 카테고리 불러오기
   useEffect(() => {
     const loadCategories = async () => {
       const data = await fetchTopCategories();
@@ -23,7 +23,7 @@ const CategoryForm = ({onCategoryCreated}) => {
     loadCategories();
   }, []);
 
-  // ✅ 하위 카테고리를 선택하면 `parentCategory` 자동 설정
+  // 하위 카테고리를 선택하면 `parentCategory` 자동 설정
   const handleChange = e => {
     const {name, value} = e.target;
 
@@ -33,7 +33,7 @@ const CategoryForm = ({onCategoryCreated}) => {
       setFormData({
         ...formData,
         [name]: value, // category 값 설정
-        parentCategory: value // ✅ category 값과 동일하게 parentCategory 설정
+        parentCategory: value // category 값과 동일하게 parentCategory 설정
       });
     } else {
       setFormData({
@@ -43,23 +43,23 @@ const CategoryForm = ({onCategoryCreated}) => {
     }
   };
 
-  // ✅ 카테고리 등록 요청
+  // 카테고리 등록 요청
   const handleSubmit = async e => {
     e.preventDefault();
     try {
       const categoryData = {...formData, category: formData.name};
 
       await createCategory(categoryData);
-      alert('✅ 카테고리가 추가되었습니다.');
+      alert('카테고리가 추가되었습니다.');
       setFormData({name: '', category: '', parentCategory: null});
       onCategoryCreated();
       navigate('/product/travelItems/list');
     } catch (error) {
-      console.error('❌ 카테고리 등록 실패:', error);
+      console.error('카테고리 등록 실패:', error);
     }
   };
 
-  // ✅ 취소 버튼 클릭 시 상품 리스트 페이지로 이동
+  // 취소 버튼 클릭 시 상품 리스트 페이지로 이동
   const handleCancel = () => {
     navigate('/product/travelItems/list');
   };
@@ -80,7 +80,7 @@ const CategoryForm = ({onCategoryCreated}) => {
           />
         </div>
 
-        {/* ✅ 부모 카테고리 선택 */}
+        {/* 부모 카테고리 선택 */}
         <div className="mb-3">
           <label className="form-label">부모 카테고리 (선택)</label>
           <select
@@ -97,7 +97,7 @@ const CategoryForm = ({onCategoryCreated}) => {
           </select>
         </div>
 
-        {/* ✅ 버튼 그룹 */}
+        {/* 버튼 그룹 */}
         <div className="d-flex gap-2">
           <button type="submit" className="btn btn-primary">
             카테고리 추가

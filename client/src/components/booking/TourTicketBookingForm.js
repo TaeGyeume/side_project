@@ -73,7 +73,7 @@ const TourTicketBookingForm = () => {
         merchant_uid,
         totalPrice,
         discountAmount,
-        finalPrice, // ✅ 최종 결제 금액 (할인 후) 추가
+        finalPrice, // 최종 결제 금액 (할인 후) 추가
         userId: user._id,
         couponId: selectedCoupon ? selectedCoupon._id : null,
         reservationInfo: {
