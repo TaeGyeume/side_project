@@ -18,7 +18,7 @@ const locationRoutes = require('./routes/locationRoutes');
 const accommodationRoutes = require('./routes/accommodationRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const productRoutes = require('./routes/productRoutes');
-const flightRoutes = require('./routes/flightRoutes'); // ✈️ 항공편 라우트 추가
+const flightRoutes = require('./routes/flightRoutes');
 const socialAuthRoutes = require('./routes/socialAuthRoutes');
 const userTourTicketRoutes = require('./routes/tourTicket/userTourTicketRoutes');
 const travelItemRoutes = require('./routes/travelItemRoutes');
@@ -75,7 +75,7 @@ app.use('/api/rooms', roomRoutes);
 app.use('/api', routes);
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', socialAuthRoutes); // 소셜 로그인 라우트 추가
-app.use('/api/flights', flightRoutes); // 항공편 관련 API
+app.use('/api/flights', flightRoutes);
 app.use('/api/mileage', userMileageRoutes); // 마일리지 API
 app.use('/api/travelItems', travelItemRoutes);
 app.use('/api/coupons', couponRoutes);

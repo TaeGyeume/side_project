@@ -1,7 +1,7 @@
 import React from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
 
-// ✅ 항공사별 로고 매핑
+// 항공사별 로고 매핑
 const AIRLINE_LOGOS = {
   대한항공: 'korean.png',
   아시아나항공: 'asiana.png',
@@ -24,9 +24,9 @@ const RoundTripReturn = () => {
   }
 
   const handleSelectReturn = flight => {
-    console.log('✅ 도착 항공편 선택됨:', flight);
+    console.log('도착 항공편 선택됨:', flight);
 
-    // ✅ 출발 & 도착 항공편 선택 후 BookingPage로 이동
+    // 출발 & 도착 항공편 선택 후 BookingPage로 이동
     navigate('/flights/roundtrip-confirm', {
       state: {selectedDeparture, selectedReturn: flight, passengers, isRoundTrip: true}
     });
@@ -38,7 +38,7 @@ const RoundTripReturn = () => {
 
       <div className="row justify-content-center">
         {returnFlights.length === 0 ? (
-          <p className="text-muted text-center">🚫 돌아오는 항공편이 없습니다.</p>
+          <p className="text-muted text-center">돌아오는 항공편이 없습니다.</p>
         ) : (
           returnFlights.map(flight => {
             const logoFile = AIRLINE_LOGOS[flight.airline] || 'default.png';

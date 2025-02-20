@@ -16,7 +16,7 @@ export const createBooking = async bookingData => {
       finalPrice:
         bookingData.finalPrice ||
         bookingData.totalPrice - (bookingData.discountAmount || 0), // 최종 결제 금액
-      usedMileage: bookingData.usedMileage || 0, // ✅ 사용한 마일리지 추가
+      usedMileage: bookingData.usedMileage || 0, // 사용한 마일리지 추가
       userId: bookingData.userId,
       couponId: bookingData.couponId || null, // 쿠폰 ID (선택 사항)
       reservationInfo: bookingData.reservationInfo,

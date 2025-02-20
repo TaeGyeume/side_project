@@ -35,7 +35,7 @@ const SearchResultsList = ({flights, passengers = 1}) => {
       <h2 className="fw-bold mb-4 text-center">📋 검색된 항공편 리스트</h2>
       <div className="row justify-content-center">
         {flights.length === 0 ? (
-          <p className="text-muted text-center">🚫 검색된 항공편이 없습니다.</p>
+          <p className="text-muted text-center">검색된 항공편이 없습니다.</p>
         ) : (
           flights.map(flight => {
             const logoFile = AIRLINE_LOGOS[flight?.airline] || 'default.png';

@@ -20,7 +20,7 @@ const FlightBookingPage = () => {
     return (
       <div className="text-center mt-5">
         <h1>✈️ 항공편 예약</h1>
-        <p className="text-danger">🚫 항공편 정보를 불러올 수 없습니다.</p>
+        <p className="text-danger">항공편 정보를 불러올 수 없습니다.</p>
       </div>
     );
   }

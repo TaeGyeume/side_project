@@ -21,7 +21,7 @@ import AccommodationSearch from './pages/accommodations/AccommodationSearch';
 import AccommodationResults from './pages/accommodations/AccommodationResults';
 import AccommodationDetail from './pages/accommodations/AccommodationDetail';
 import RoomDetail from './pages/accommodations/RoomDetail';
-import Flights from './pages/flights/Flights'; // ✈️ 항공편 목록 페이지 추가
+import Flights from './pages/flights/Flights';
 import FlightResults from './pages/flights/FlightResults';
 import RoundTripResults from './pages/flights/RoundTripResults';
 import RoundTripDeparture from './pages/flights/RoundTripDeparture';
@@ -130,7 +130,7 @@ const App = () => {
           />
           <Route path="/accommodation/room/:roomId" element={<RoomDetail />} />
 
-          {/* ✈️ 항공편 목록 페이지 추가 */}
+          {/* 항공편 목록 페이지 추가 */}
           <Route path="/flights" element={<Flights />} />
           <Route path="/flights/results" element={<FlightResults />} />
           <Route path="/flights/roundtrip-results" element={<RoundTripResults />} />
@@ -143,7 +143,7 @@ const App = () => {
 
           <Route path="/tourTicket/*" element={<UserTourTicketPage />} />
 
-          {/* 🔐 인증된 사용자만 접근 가능 */}
+          {/* 인증된 사용자만 접근 가능 */}
           <Route element={<PrivateRoute />}>
             {/* <Route path="/reservation/:flightId" element={<Reservation />} /> */}
             <Route path="/profile" element={<UserPages.Profile />} />
@@ -170,7 +170,7 @@ const App = () => {
             <Route path="/booking/detail/:bookingId" element={<BookingDetailPage />} />
             <Route path="/reviews/create" element={<ReviewForm />} />
           </Route>
-          {/* 🔒 어드민 전용 페이지 */}
+          {/* 어드민 전용 페이지 */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>
             <Route path="/product" element={<ProductPage />} />
             <Route path="/product/tourTicket/list" element={<TourTicketList />} />

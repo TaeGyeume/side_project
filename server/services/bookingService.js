@@ -278,15 +278,6 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
       await userCoupon.save();
     }
 
-    // 결제 금액 검증 (expectedFinalAmount가 항상 올바르게 업데이트됨)
-    console.log('[서버] 결제 금액 검증:', {
-      totalOriginalPrice,
-      discountAmount,
-      totalUsedMileage,
-      expectedFinalAmount,
-      portOneAmount: paymentData.amount
-    });
-
     if (Math.abs(paymentData.amount - expectedFinalAmount) >= 0.01) {
       console.error(
         `결제 금액 불일치! 포트원: ${paymentData.amount}, 예상 결제 금액: ${expectedFinalAmount}`
@@ -297,7 +288,6 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
 
     // [1] 마일리지 사용 확정
     if (totalUsedMileage > 0) {
-      console.log(`[서버] 마일리지 ${totalUsedMileage}P 사용 확정`);
       await userMileageService.useMileage(
         userId,
         totalUsedMileage,
@@ -416,7 +406,7 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
           })
         );
 
-        // [2] 마일리지 1% 적립
+        // 마일리지 1% 적립
         const earnedMileage = Math.floor(booking.totalPrice * 0.01);
         await userMileageService.addMileageWithHistory(
           userId,
@@ -509,7 +499,7 @@ exports.cancelBooking = async bookingIds => {
 
     // `_id` 또는 `merchant_uid`를 기준으로 예약 조회
     const bookings = await Booking.find({
-      $or: [{_id: {$in: objectIds}}, {merchant_uid: {$in: merchantUids}}] // ✅ 둘 다 검색 가능하도록 수정
+      $or: [{_id: {$in: objectIds}}, {merchant_uid: {$in: merchantUids}}] // 둘 다 검색 가능하도록 수정
     });
 
     if (!bookings.length) {
@@ -518,9 +508,9 @@ exports.cancelBooking = async bookingIds => {
 
     await Promise.all(
       bookings.map(async booking => {
-        // ✅ 중복 복구 방지를 위한 체크
+        // 중복 복구 방지를 위한 체크
         if (booking.paymentStatus === 'CANCELED') {
-          console.log(`⚠️ [서버] 이미 취소된 예약 - Booking ID: ${booking._id}`);
+          console.log(`[서버] 이미 취소된 예약 - Booking ID: ${booking._id}`);
           return;
         }
 
@@ -561,7 +551,7 @@ exports.cancelBooking = async bookingIds => {
                     product.seatsAvailable += prodCounts[index];
                     await product.save();
                     console.log(
-                      `✅ [서버] 항공편 좌석 복구 완료 - flightId: ${productId}, 복구 좌석 수: ${prodCounts[index]}`
+                      `[서버] 항공편 좌석 복구 완료 - flightId: ${productId}, 복구 좌석 수: ${prodCounts[index]}`
                     );
                   }
                   break;
@@ -582,7 +572,7 @@ exports.cancelBooking = async bookingIds => {
                   while (currentDate < endDate) {
                     const dateStr = currentDate.toISOString().split('T')[0];
 
-                    // ✅ 해당 날짜의 예약 개수 가져오기
+                    // 해당 날짜의 예약 개수 가져오기
                     let reservedIndex = product.reservedDates.findIndex(
                       d => d.date.toISOString().split('T')[0] === dateStr
                     );
@@ -590,7 +580,7 @@ exports.cancelBooking = async bookingIds => {
                     if (reservedIndex !== -1) {
                       product.reservedDates[reservedIndex].count -= prodCounts[index];
 
-                      // ✅ 만약 0개가 되면 해당 날짜 데이터를 제거
+                      // 만약 0개가 되면 해당 날짜 데이터를 제거
                       if (product.reservedDates[reservedIndex].count <= 0) {
                         product.reservedDates.splice(reservedIndex, 1);
                       }
@@ -599,7 +589,7 @@ exports.cancelBooking = async bookingIds => {
                     currentDate.setDate(currentDate.getDate() + 1);
                   }
 
-                  // ✅ 객실 가용 여부 업데이트
+                  // 객실 가용 여부 업데이트
                   const totalReserved = product.reservedDates.reduce(
                     (acc, d) => acc + d.count,
                     0
@@ -608,7 +598,7 @@ exports.cancelBooking = async bookingIds => {
 
                   await product.save();
                   console.log(
-                    `✅ [서버] 객실 예약 취소 완료 - roomId: ${bookingRoomIds[index]}`
+                    `[서버] 객실 예약 취소 완료 - roomId: ${bookingRoomIds[index]}`
                   );
                   break;
 
@@ -625,7 +615,7 @@ exports.cancelBooking = async bookingIds => {
           })
         );
 
-        // ✅ 사용된 쿠폰 복구 처리
+        // 사용된 쿠폰 복구 처리
         if (userCouponId) {
           try {
             const userCoupon = await UserCoupon.findById(userCouponId);
@@ -645,15 +635,11 @@ exports.cancelBooking = async bookingIds => {
         const earnedMileage = Math.floor(totalPrice * 0.01); // 적립된 마일리지 계산
         if (earnedMileage > 0) {
           try {
-            console.log(`[서버] 예약 취소로 인해 적립된 마일리지 ${earnedMileage}P 차감`);
-
             await userMileageService.useMileage(
               userId,
               earnedMileage,
               `예약 취소로 마일리지 적립 취소 (${earnedMileage.toLocaleString()}P)`
             );
-
-            console.log(`[서버] 예약 취소로 적립된 마일리지 ${earnedMileage}P 차감 완료`);
           } catch (mileageError) {
             console.error(
               `[서버] 적립된 마일리지 차감 중 오류 발생: ${mileageError.message}`
@@ -670,12 +656,6 @@ exports.cancelBooking = async bookingIds => {
             if (user) {
               // 결제 상태가 PENDING 또는 COMPLETED일 때만 복구 실행
               if (['CANCELED'].includes(booking.paymentStatus)) {
-                console.log(
-                  `🔍 [서버] 사용자 ${userId} 현재 마일리지: ${user.mileage}, 복구 예정: ${usedMileage}`
-                );
-
-                // 사용자 마일리지 복구
-                // user.mileage += usedMileage;
                 await user.save();
 
                 // 마일리지 복구 내역 추가
@@ -683,10 +663,6 @@ exports.cancelBooking = async bookingIds => {
                   userId,
                   usedMileage,
                   `예약 취소로 마일리지 복구 (${usedMileage.toLocaleString()}P)`
-                );
-
-                console.log(
-                  `[서버] 예약 취소 - 사용된 마일리지 ${usedMileage}P 복구 완료`
                 );
               } else {
                 console.log(
@@ -753,7 +729,6 @@ exports.scheduleAutoConfirm = async (bookingId, createdAt) => {
   const utcCreatedAt = new Date(createdAt.getTime() - 9 * 60 * 60 * 1000);
 
   const confirmTime = new Date(utcCreatedAt.getTime() + 5 * 24 * 60 * 60 * 1000); // 5일 뒤 구매 확정으로 바뀜
-  console.log(`⏰ UTC 변환된 예약 확인 스케줄 시간: ${confirmTime}`);
 
   try {
     schedule.scheduleJob(confirmTime, async () => {

@@ -39,7 +39,7 @@ const RoundTripConfirm = () => {
   }, []);
 
   if (!selectedDeparture && !selectedReturn && !selectedFlight) {
-    return <p className="text-center text-danger">🚫 예약할 항공편이 없습니다.</p>;
+    return <p className="text-center text-danger">예약할 항공편이 없습니다.</p>;
   }
 
   const totalPrice =
@@ -109,7 +109,7 @@ const RoundTripConfirm = () => {
 
     try {
       const bookingResponse = await createBooking(bookingData);
-      console.log('✅ 예약 생성 성공:', bookingResponse);
+      console.log('예약 생성 성공:', bookingResponse);
 
       const {IMP} = window;
       IMP.init('imp22685348');
@@ -122,21 +122,21 @@ const RoundTripConfirm = () => {
           pay_method: 'card',
           merchant_uid,
           name: '항공권 및 기타 상품 예약',
-          amount: paymentAmount, // ✅ 마일리지 적용된 최종 결제 금액
+          amount: paymentAmount, // 마일리지 적용된 최종 결제 금액
           buyer_email: user.email,
           buyer_name: user.username,
           buyer_tel: user.phone
         },
         async rsp => {
           if (rsp.success) {
-            console.log('✅ 결제 성공:', rsp);
+            console.log('결제 성공:', rsp);
             const verifyResponse = await verifyPayment({
               imp_uid: rsp.imp_uid,
               merchant_uid,
               userId: user._id,
-              usedMileage // ✅ 결제 검증 시 사용한 마일리지도 함께 전달
+              usedMileage // 결제 검증 시 사용한 마일리지도 함께 전달
             });
-            console.log('✅ 결제 검증 응답:', verifyResponse);
+            console.log('결제 검증 응답:', verifyResponse);
             if (verifyResponse.message === '결제 검증 성공') {
               alert('항공권 및 기타 상품 예약이 완료되었습니다.');
               navigate('/');
@@ -145,7 +145,7 @@ const RoundTripConfirm = () => {
         }
       );
     } catch (error) {
-      console.error('❌ 예약 및 결제 중 오류 발생:', error);
+      console.error('예약 및 결제 중 오류 발생:', error);
       alert('예약 및 결제 중 오류가 발생했습니다.');
     }
   };
@@ -164,7 +164,7 @@ const RoundTripConfirm = () => {
           <h4 className="fw-bold">💰 총 예약 비용: {totalPrice.toLocaleString()}원</h4>
         </div>
 
-        {/* ✅ 마일리지 입력 UI 추가 */}
+        {/* 마일리지 입력 UI 추가 */}
         <div className="col-12 text-center mt-3">
           <label className="fw-bold me-2">🎯 사용할 마일리지:</label>
           <input
