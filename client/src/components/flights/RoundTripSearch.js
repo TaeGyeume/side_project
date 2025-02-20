@@ -25,8 +25,9 @@ import {LocalizationProvider, DatePicker} from '@mui/x-date-pickers';
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
 import {ko} from 'date-fns/locale';
 import {Add, Remove} from '@mui/icons-material';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 
-// ✅ 공항 한글 → 코드 변환
+// 공항 한글 → 코드 변환
 const AIRPORT_CODES = {
   서울: 'GMP',
   인천: 'ICN',
@@ -52,7 +53,7 @@ const RoundTripSearch = () => {
   const navigate = useNavigate();
 
   const handleSearch = async () => {
-    console.log('🔍 왕복 검색 요청:', {
+    console.log('왕복 검색 요청:', {
       departure,
       arrival,
       departureDate,
@@ -78,14 +79,14 @@ const RoundTripSearch = () => {
       !moment(formattedDepartureDate, 'YYYY-MM-DD', true).isValid() ||
       !moment(formattedReturnDate, 'YYYY-MM-DD', true).isValid()
     ) {
-      setErrorMessage('🚨 잘못된 날짜 형식입니다. YYYY-MM-DD 형식이어야 합니다.');
+      setErrorMessage('잘못된 날짜 형식입니다. YYYY-MM-DD 형식이어야 합니다.');
       return;
     }
 
     setLoading(true);
 
     try {
-      console.log(`✅ 출발편 검색 날짜: ${formattedDepartureDate}`);
+      console.log(`출발편 검색 날짜: ${formattedDepartureDate}`);
       const departureFlights = await searchFlights(
         deptCode,
         arrCode,
@@ -95,14 +96,14 @@ const RoundTripSearch = () => {
 
       if (!departureFlights || departureFlights.length === 0) {
         setErrorMessage(
-          `🚫 출발편 (${formattedDepartureDate})에 운항하는 항공편이 없습니다.`
+          `출발편 (${formattedDepartureDate})에 운항하는 항공편이 없습니다.`
         );
         setLoading(false);
       } else {
         setErrorMessage('');
-        console.log('✅ 출발편 검색 완료:', departureFlights);
+        console.log('출발편 검색 완료:', departureFlights);
 
-        // ✅ 500ms 딜레이 후 navigate 실행 (로딩 화면이 보이도록)
+        // 500ms 딜레이 후 navigate 실행 (로딩 화면이 보이도록)
         setTimeout(() => {
           setLoading(false);
           navigate('/flights/roundtrip-departure', {
@@ -117,8 +118,8 @@ const RoundTripSearch = () => {
         }, 500);
       }
     } catch (error) {
-      console.error('🚨 검색 실패:', error);
-      setErrorMessage('🚨 검색 중 오류가 발생했습니다.');
+      console.error('검색 실패:', error);
+      setErrorMessage('검색 중 오류가 발생했습니다.');
       setLoading(false);
     }
   };
@@ -127,10 +128,10 @@ const RoundTripSearch = () => {
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ko}>
       <Paper elevation={3} sx={{p: 3, mt: 4}}>
         <Typography variant="h5" fontWeight="bold" gutterBottom>
-          🔄 왕복 항공편 검색
+          ✈️ 왕복 항공편 검색
         </Typography>
 
-        {/* ✅ 입력 필드 배치 (수평 정렬) */}
+        {/* 입력 필드 배치 (수평 정렬) */}
         <Stack direction="row" spacing={2} alignItems="center">
           {/* 출발 공항 */}
           <FormControl sx={{flex: 1, minWidth: '150px'}} variant="outlined">
@@ -146,6 +147,16 @@ const RoundTripSearch = () => {
               ))}
             </Select>
           </FormControl>
+
+          {/* 공항 변경 버튼 */}
+          <IconButton
+            onClick={() => {
+              const temp = departure;
+              setDeparture(arrival);
+              setArrival(temp);
+            }}>
+            <SwapHorizIcon />
+          </IconButton>
 
           {/* 도착 공항 */}
           <FormControl sx={{flex: 1, minWidth: '150px'}} variant="outlined">
@@ -167,7 +178,7 @@ const RoundTripSearch = () => {
             label="가는 날"
             value={departureDate}
             onChange={newValue => setDepartureDate(newValue)}
-            sx={{width: '200px'}}
+            sx={{width: '180px'}}
             renderInput={params => <TextField {...params} fullWidth />}
           />
 
@@ -176,7 +187,7 @@ const RoundTripSearch = () => {
             label="오는 날"
             value={returnDate}
             onChange={newValue => setReturnDate(newValue)}
-            sx={{width: '200px'}}
+            sx={{width: '180px'}}
             renderInput={params => <TextField {...params} fullWidth />}
           />
 
@@ -233,7 +244,12 @@ const RoundTripSearch = () => {
             variant="contained"
             color="primary"
             onClick={handleSearch}
-            sx={{minWidth: '120px', height: '56px'}}>
+            sx={{
+              minWidth: '100px',
+              height: '56px',
+              backgroundColor: 'primary.light',
+              color: 'primary.contrastText'
+            }}>
             검색
           </Button>
         </Stack>

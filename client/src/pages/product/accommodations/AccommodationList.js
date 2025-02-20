@@ -17,7 +17,7 @@ const AccommodationList = ({limit = 6}) => {
   const loadingRef = useRef(false);
   const observerInstance = useRef(null);
 
-  // ✅ 데이터 가져오기 함수 (검색 + 페이지네이션 적용)
+  // 데이터 가져오기 함수 (검색 + 페이지네이션 적용)
   const fetchAccommodations = useCallback(
     async (pageNumber = 1, reset = false, searchValue = searchTerm) => {
       if (loadingRef.current || pageNumber > totalPages) return;
@@ -26,7 +26,7 @@ const AccommodationList = ({limit = 6}) => {
       setLoading(true);
 
       try {
-        console.log('✅ 백엔드 요청 보냄... 페이지:', pageNumber, '검색어:', searchValue);
+        console.log('백엔드 요청 보냄... 페이지:', pageNumber, '검색어:', searchValue);
 
         const endpoint = searchValue
           ? '/accommodations/searchByName'
@@ -37,15 +37,15 @@ const AccommodationList = ({limit = 6}) => {
 
         const response = await axios.get(endpoint, {params});
 
-        console.log('✅ 응답 데이터:', response.data);
+        console.log('응답 데이터:', response.data);
 
         const result = response.data.accommodations || response.data;
 
         if (!Array.isArray(result)) {
-          throw new Error('❌ accommodations 배열이 없음!');
+          throw new Error('accommodations 배열이 없음!');
         }
 
-        // ✅ 중복 제거 로직 적용
+        // 중복 제거 로직 적용
         setAccommodations(prev => {
           const uniqueAccommodations = new Map();
           [...(reset ? [] : prev), ...result].forEach(acc =>
@@ -56,10 +56,10 @@ const AccommodationList = ({limit = 6}) => {
 
         setTotalPages(response.data.totalPages || 1);
 
-        // ✅ 검색 시 첫 번째 페이지를 불러온 경우, 페이지 초기화
+        // 검색 시 첫 번째 페이지를 불러온 경우, 페이지 초기화
         if (reset) setPage(1);
       } catch (err) {
-        console.error('❌ 숙소 데이터를 불러오는 중 오류:', err);
+        console.error('숙소 데이터를 불러오는 중 오류:', err);
         setError('숙소 정보를 불러오는 중 오류 발생');
       } finally {
         loadingRef.current = false;
@@ -69,22 +69,22 @@ const AccommodationList = ({limit = 6}) => {
     [totalPages, limit, searchTerm]
   );
 
-  // ✅ 검색어 변경 시 새로운 검색 실행 (무한 스크롤 유지)
+  // 검색어 변경 시 새로운 검색 실행 (무한 스크롤 유지)
   useEffect(() => {
-    console.log('✅ 검색어 변경됨. 새로운 검색 실행!', searchTerm);
-    setAccommodations([]); // ✅ 기존 데이터 초기화
-    fetchAccommodations(1, true, searchTerm); // ✅ 첫 페이지부터 다시 검색
+    console.log('검색어 변경됨. 새로운 검색 실행!', searchTerm);
+    setAccommodations([]); // 기존 데이터 초기화
+    fetchAccommodations(1, true, searchTerm); // 첫 페이지부터 다시 검색
   }, [searchTerm, fetchAccommodations]);
 
-  // ✅ 페이지 변경 시 추가 데이터 로드
+  // 페이지 변경 시 추가 데이터 로드
   useEffect(() => {
     if (page > 1 && !loadingRef.current) {
-      console.log('📌 페이지 변경됨, 데이터 불러오기', page);
+      console.log('페이지 변경됨, 데이터 불러오기', page);
       fetchAccommodations(page);
     }
   }, [page, fetchAccommodations]);
 
-  // ✅ totalPages 변경을 감지하여 무한 스크롤 다시 적용
+  // totalPages 변경을 감지하여 무한 스크롤 다시 적용
   useEffect(() => {
     if (!observerRef.current) return;
 
@@ -95,7 +95,7 @@ const AccommodationList = ({limit = 6}) => {
     observerInstance.current = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting && !loadingRef.current && page < totalPages) {
-          console.log('✅ 마지막 요소 감지 → 다음 페이지 불러오기!', {page, totalPages});
+          console.log('마지막 요소 감지 → 다음 페이지 불러오기!', {page, totalPages});
           setPage(prev => prev + 1);
         }
       },
@@ -144,10 +144,10 @@ const AccommodationList = ({limit = 6}) => {
         )}
       </div>
 
-      {/* ✅ 무한 스크롤을 위한 감지 요소 (높이 조정) */}
+      {/* 무한 스크롤을 위한 감지 요소 (높이 조정) */}
       <div ref={observerRef} style={{height: '80px', background: 'transparent'}} />
 
-      {/* ✅ 로딩 상태 표시 */}
+      {/* 로딩 상태 표시 */}
       {loading && <div style={{textAlign: 'center', marginTop: '10px'}}>로딩 중...</div>}
     </div>
   );

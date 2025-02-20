@@ -1,6 +1,6 @@
 import React from 'react';
 
-// ✅ 항공사 로고 매칭
+// 항공사 로고 매칭
 const AIRLINE_LOGOS = {
   대한항공: 'korean.png',
   아시아나항공: 'asiana.png',
@@ -11,7 +11,7 @@ const AIRLINE_LOGOS = {
   제주항공: 'jejuair.png'
 };
 
-// ✅ 항공사 로고 경로 함수
+// 항공사 로고 경로 함수
 const getAirlineLogo = airline =>
   `/images/logos/${AIRLINE_LOGOS[airline] || 'default.png'}`;
 
@@ -20,7 +20,7 @@ const RoundTripBooking = ({selectedDeparture, selectedReturn}) => {
 
   return (
     <div>
-      {/* ✅ 출발편 */}
+      {/* 출발편 */}
       <div className="card shadow-sm p-3 mb-3" style={{borderRadius: '12px'}}>
         <div className="d-flex justify-content-between align-items-center bg-light p-2 rounded">
           <span className="fw-bold text-primary">🛫 가는편</span>
@@ -62,7 +62,7 @@ const RoundTripBooking = ({selectedDeparture, selectedReturn}) => {
         </div>
       </div>
 
-      {/* ✅ 돌아오는편 */}
+      {/* 돌아오는편 */}
       <div className="card shadow-sm p-3" style={{borderRadius: '12px'}}>
         <div className="d-flex justify-content-between align-items-center bg-light p-2 rounded">
           <span className="fw-bold text-success">🛬 오는편</span>

@@ -53,9 +53,9 @@ const BookingDetail = () => {
     const fetchBookingDetails = async () => {
       try {
         const response = await getBookingDetails(bookingId);
-        console.log('📌 API 응답 데이터:', response);
+        console.log('API 응답 데이터:', response);
 
-        // ✅ `response` 자체를 저장해야 함! (data.data가 아님)
+        // `response` 자체를 저장해야 함! (data.data가 아님)
         setBooking(response);
       } catch (err) {
         setError('예약 정보를 불러오는 중 오류가 발생했습니다.');
@@ -99,7 +99,7 @@ const BookingDetail = () => {
         <strong>최종 결제 금액:</strong> ₩{booking.finalPrice?.toLocaleString() || 0}
       </p>
 
-      {/* ✅ 숙소 정보 (Accommodation) - roomIds + productIds 포함 */}
+      {/* 숙소 정보 (Accommodation) - roomIds + productIds 포함 */}
       {booking.types?.includes('accommodation') && (
         <>
           <h4>숙소 정보</h4>
@@ -111,8 +111,8 @@ const BookingDetail = () => {
                 <div
                   key={product._id}
                   className="card p-2 mb-2"
-                  style={{cursor: 'pointer'}} // ✅ 마우스 올리면 클릭 가능 효과
-                  onClick={() => handleAccommodationClick(product)} // ✅ 클릭하면 상세 페이지 이동
+                  style={{cursor: 'pointer'}} // 마우스 올리면 클릭 가능 효과
+                  onClick={() => handleAccommodationClick(product)} // 클릭하면 상세 페이지 이동
                 >
                   <p>
                     <strong>숙소 상품명:</strong> {product.name || '정보 없음'}
@@ -135,7 +135,7 @@ const BookingDetail = () => {
         </>
       )}
 
-      {/* ✅ 투어/티켓 정보 (Tour Ticket) */}
+      {/* 투어/티켓 정보 (Tour Ticket) */}
       {booking.types?.includes('tourTicket') && booking.productIds?.length > 0 && (
         <>
           <h4>투어/티켓 정보</h4>
@@ -159,7 +159,7 @@ const BookingDetail = () => {
         </>
       )}
 
-      {/* ✅ 여행 용품 정보 (Travel Item) */}
+      {/* 여행 용품 정보 (Travel Item) */}
       {booking.types?.includes('travelItem') && booking.productIds?.length > 0 && (
         <>
           <h4>여행 용품 정보</h4>

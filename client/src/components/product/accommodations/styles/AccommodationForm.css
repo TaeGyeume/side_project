@@ -52,7 +52,7 @@
   background: rgba(255, 0, 0, 1);
 }
 
-/* ✅ 전체 폼 스타일 */
+/* 전체 폼 스타일 */
 .accommodation-form {
   max-width: 600px;
   margin: 0 auto;
@@ -62,21 +62,21 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* ✅ 폼 그룹 (각 필드) 스타일 */
+/* 폼 그룹 (각 필드) 스타일 */
 .form-group {
   display: flex;
   flex-direction: column;
   margin-bottom: 15px;
 }
 
-/* ✅ 라벨 스타일 */
+/* 라벨 스타일 */
 .form-group label {
   font-weight: 600;
   margin-bottom: 5px;
   color: #333;
 }
 
-/* ✅ 입력 필드 & 텍스트 영역 스타일 */
+/* 입력 필드 & 텍스트 영역 스타일 */
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -89,7 +89,7 @@
   background: #f9f9f9;
 }
 
-/* ✅ 포커스 시 스타일 */
+/* 포커스 시 스타일 */
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
@@ -99,13 +99,13 @@
   outline: none;
 }
 
-/* ✅ 텍스트 영역 크기 조정 */
+/* 텍스트 영역 크기 조정 */
 .form-group textarea {
   min-height: 100px;
   resize: vertical;
 }
 
-/* ✅ 버튼 스타일 */
+/* 버튼 스타일 */
 .form-button {
   width: 100%;
   padding: 12px;

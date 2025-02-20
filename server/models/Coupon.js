@@ -22,7 +22,7 @@ const CouponSchema = new mongoose.Schema(
     },
     maxDiscountAmount: {
       type: Number,
-      default: 0, // ✅ 정액 할인 시 기본값 0
+      default: 0, // 정액 할인 시 기본값 0
       validate: {
         validator: function (value) {
           return this.discountType === 'percentage' ? value >= 0 : true;
@@ -59,12 +59,12 @@ const CouponSchema = new mongoose.Schema(
   }
 );
 
-// 📌 **저장 전 데이터 검증 및 기본값 설정**
+// **저장 전 데이터 검증 및 기본값 설정**
 CouponSchema.pre('save', function (next) {
   this.createdAt = moment().tz('Asia/Seoul').toDate();
   this.updatedAt = moment().tz('Asia/Seoul').toDate();
 
-  // ✅ 정액 할인(`fixed`)일 경우 `maxDiscountAmount`를 강제로 `0`으로 설정
+  // 정액 할인(`fixed`)일 경우 `maxDiscountAmount`를 강제로 `0`으로 설정
   if (this.discountType === 'fixed') {
     this.maxDiscountAmount = 0;
   }
@@ -72,13 +72,13 @@ CouponSchema.pre('save', function (next) {
   next();
 });
 
-// 📌 **업데이트 시 `updatedAt` 자동 변경**
+// **업데이트 시 `updatedAt` 자동 변경**
 CouponSchema.pre('updateOne', function (next) {
   this.set({updatedAt: moment().tz('Asia/Seoul').toDate()});
   next();
 });
 
-// 📌 **조회 시 KST 변환된 날짜 제공**
+// **조회 시 KST 변환된 날짜 제공**
 CouponSchema.virtual('createdAtKST').get(function () {
   return moment(this.createdAt).tz('Asia/Seoul').format('YYYY-MM-DD HH:mm:ss');
 });

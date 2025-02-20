@@ -1,7 +1,7 @@
 const userMileageService = require('../services/userMileageService');
 const User = require('../models/User');
 
-// ✅ 마일리지 조회 (User 스키마의 mileage 반환)
+// 마일리지 조회 (User 스키마의 mileage 반환)
 exports.getUserMileage = async (req, res) => {
   const {userId} = req.params;
   try {
@@ -11,12 +11,12 @@ exports.getUserMileage = async (req, res) => {
     }
     res.status(200).json({mileage: user.mileage || 0});
   } catch (error) {
-    console.error('🚨 마일리지 조회 중 오류:', error);
+    console.error('마일리지 조회 중 오류:', error);
     res.status(500).json({message: '마일리지 조회 중 서버 오류'});
   }
 };
 
-// ✅ 마일리지 적립 (예약 후 결제 시 호출)
+// 마일리지 적립 (예약 후 결제 시 호출)
 exports.addMileage = async (req, res) => {
   const {userId, amount, description} = req.body;
   try {
@@ -31,7 +31,7 @@ exports.addMileage = async (req, res) => {
   }
 };
 
-// ✅ 마일리지 사용
+// 마일리지 사용
 exports.useMileage = async (req, res) => {
   const {userId, amount, description} = req.body;
   try {
@@ -46,7 +46,7 @@ exports.useMileage = async (req, res) => {
   }
 };
 
-// ✅ 마일리지 내역 조회
+// 마일리지 내역 조회
 exports.getUserMileageHistory = async (req, res) => {
   const {userId} = req.params;
   try {

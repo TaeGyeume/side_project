@@ -17,7 +17,7 @@ const UserSchema = new mongoose.Schema(
     phone: {
       type: String, // 핸드폰 번호 (로컬 로그인 시 필수)
       unique: true,
-      default: undefined, //  기본값을 undefined로 설정
+      default: undefined, // 기본값을 undefined로 설정
       sparse: true // 소셜 로그인 시 핸드폰 번호가 없을 수 있으므로 sparse 설정
     },
     password: {

@@ -46,10 +46,10 @@ const AccommodationCard = ({
         height: '200px', // 높이 유지
         cursor: 'pointer',
         mb: 2, // 카드 간격 조정
-        position: 'relative' // ✅ 즐겨찾기 버튼 위치 조정을 위해 relative 설정
+        position: 'relative' // 즐겨찾기 버튼 위치 조정을 위해 relative 설정
       }}
       onClick={handleCardClick}>
-      {/* ✅ 왼쪽 이미지 */}
+      {/* 왼쪽 이미지 */}
       <CardMedia
         component="img"
         image={imageUrl}
@@ -61,7 +61,7 @@ const AccommodationCard = ({
         }}
       />
 
-      {/* ✅ 오른쪽 정보 */}
+      {/* 오른쪽 정보 */}
       <CardContent sx={{display: 'flex', flexDirection: 'column', flex: 1, p: 2}}>
         <Typography variant="h6" sx={{fontWeight: 'bold', mb: 1}}>
           {accommodation.name}
@@ -74,10 +74,10 @@ const AccommodationCard = ({
         </Typography>
       </CardContent>
 
-      {/* ✅ 즐겨찾기 버튼 (카드 내부에서 우측 상단에 배치) */}
+      {/* 즐겨찾기 버튼 (카드 내부에서 우측 상단에 배치) */}
       <Box
         sx={{
-          position: 'absolute', // ✅ 이제 Card 내부에서 배치됨
+          position: 'absolute', // 이제 Card 내부에서 배치됨
           top: 8, // 상단 여백
           right: 8, // 오른쪽 여백
           zIndex: 10,

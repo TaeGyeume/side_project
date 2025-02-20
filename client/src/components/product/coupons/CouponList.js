@@ -23,14 +23,14 @@ const CouponList = () => {
     getCoupons();
   }, []);
 
-  // ✅ 쿠폰 삭제 함수
+  // 쿠폰 삭제 함수
   const handleDelete = async couponId => {
     const confirmDelete = window.confirm('정말로 이 쿠폰을 삭제하시겠습니까?');
 
     if (confirmDelete) {
       try {
         await deleteCoupon(couponId);
-        setCoupons(prev => prev.filter(coupon => coupon._id !== couponId)); // ✅ UI에서 삭제
+        setCoupons(prev => prev.filter(coupon => coupon._id !== couponId)); // UI에서 삭제
         alert('쿠폰이 삭제되었습니다.');
       } catch (error) {
         alert(error.message);

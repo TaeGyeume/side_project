@@ -130,7 +130,7 @@ const MyBookingList = ({status}) => {
 
   return (
     <div className="booking-list-container">
-      <h2>{status === 'completed' ? '📌 예약 완료' : '❌ 예약 취소'}</h2>
+      <h2>{status === 'completed' ? '예약 완료' : '예약 취소'}</h2>
       {filteredBookings.length === 0 ? (
         <p className="no-bookings">해당하는 예약이 없습니다.</p>
       ) : (

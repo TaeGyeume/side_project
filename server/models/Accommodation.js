@@ -11,7 +11,7 @@ const AccommodationSchema = new mongoose.Schema({
   },
   location: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Location', // 🔹 여행지(Location) 참조
+    ref: 'Location', // 여행지(Location) 참조
     required: true
   },
   address: {type: String, required: true}, // 상세 주소

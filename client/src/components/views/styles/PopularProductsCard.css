@@ -1,4 +1,4 @@
-/* ✅ 상품 카드 */
+/* 상품 카드 */
 .product-card {
   padding: 10px;
   text-align: center;
@@ -12,7 +12,7 @@
   transform: scale(1.05);
 }
 
-/* ✅ 상품 이미지 */
+/* 상품 이미지 */
 .product-image img {
   width: 100%;
   height: 180px;
@@ -20,7 +20,7 @@
   border-radius: 8px;
 }
 
-/* ✅ 상품 정보 */
+/* 상품 정보 */
 .product-info {
   padding: 10px;
 }

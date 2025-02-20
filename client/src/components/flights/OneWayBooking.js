@@ -1,6 +1,6 @@
 import React from 'react';
 
-// ✅ 항공사 로고 매칭
+// 항공사 로고 매칭
 const AIRLINE_LOGOS = {
   대한항공: 'korean.png',
   아시아나항공: 'asiana.png',
@@ -11,7 +11,7 @@ const AIRLINE_LOGOS = {
   제주항공: 'jejuair.png'
 };
 
-// ✅ 항공사 로고 경로 함수
+// 항공사 로고 경로 함수
 const getAirlineLogo = airline =>
   `/images/logos/${AIRLINE_LOGOS[airline] || 'default.png'}`;
 
@@ -20,7 +20,7 @@ const OneWayBooking = ({flight}) => {
 
   return (
     <div className="card shadow-sm p-3 mb-3" style={{borderRadius: '12px'}}>
-      {/* ✅ 헤더 (가는편) */}
+      {/* 헤더 (가는편) */}
       <div className="d-flex justify-content-between align-items-center bg-light p-2 rounded">
         <span className="fw-bold text-primary">🛫 가는편</span>
         <span className="text-muted">
@@ -33,7 +33,7 @@ const OneWayBooking = ({flight}) => {
       </div>
 
       <div className="d-flex align-items-center mt-3">
-        {/* ✅ 항공사 로고 */}
+        {/* 항공사 로고 */}
         <img
           src={getAirlineLogo(flight.airline)}
           alt={flight.airline}
@@ -47,7 +47,7 @@ const OneWayBooking = ({flight}) => {
         </div>
       </div>
 
-      {/* ✅ 출발 및 도착 시간 */}
+      {/* 출발 및 도착 시간 */}
       <div className="d-flex justify-content-between align-items-center mt-3">
         <div className="text-center">
           <h5 className="fw-bold">{flight.departure.time}</h5>
@@ -62,7 +62,7 @@ const OneWayBooking = ({flight}) => {
         </div>
       </div>
 
-      {/* ✅ 좌석 정보 & 가격 */}
+      {/* 좌석 정보 & 가격 */}
       <div className="d-flex justify-content-between align-items-center mt-3">
         <span className="text-muted">성인 {flight.seatClass}</span>
         <span className="text-danger fw-bold">잔여 {flight.seatsAvailable}석</span>
@@ -70,7 +70,7 @@ const OneWayBooking = ({flight}) => {
 
       <hr />
 
-      {/* ✅ 가격 */}
+      {/* 가격 */}
       <div className="d-flex justify-content-between">
         <span className="fw-bold text-dark">가격</span>
         <span className="fs-5 fw-bold">{flight.price.toLocaleString()}원</span>

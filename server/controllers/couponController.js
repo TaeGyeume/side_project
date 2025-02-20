@@ -1,7 +1,6 @@
 const couponService = require('../services/couponService');
 
-// ✅ 쿠폰 생성 API (POST /api/coupons)
-
+// 쿠폰 생성 API (POST /api/coupons)
 exports.createCoupon = async (req, res) => {
   try {
     const couponData = req.body;
@@ -18,7 +17,7 @@ exports.createCoupon = async (req, res) => {
   }
 };
 
-// ✅ 모든 쿠폰 조회 API
+// 모든 쿠폰 조회 API
 exports.getAllCoupons = async (req, res) => {
   try {
     const coupons = await couponService.fetchAllCoupons();
@@ -31,7 +30,7 @@ exports.getAllCoupons = async (req, res) => {
   }
 };
 
-// ✅ 유저 등급별 쿠폰 조회 API
+// 유저 등급별 쿠폰 조회 API
 exports.getCouponsByMembership = async (req, res) => {
   try {
     const {membershipLevel} = req.query;
@@ -50,7 +49,7 @@ exports.getCouponsByMembership = async (req, res) => {
   }
 };
 
-// ✅ 쿠폰 삭제 API (DELETE /api/coupons/:couponId)
+// 쿠폰 삭제 API (DELETE /api/coupons/:couponId)
 exports.deleteCoupon = async (req, res) => {
   try {
     const {couponId} = req.params;

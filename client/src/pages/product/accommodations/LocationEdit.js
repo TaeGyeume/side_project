@@ -16,7 +16,7 @@ const LocationEdit = () => {
         const response = await axios.get(`/locations/${locationId}`);
         setLocationData(response.data);
       } catch (err) {
-        setError('❌ 위치 정보를 불러오는 중 오류 발생');
+        setError('위치 정보를 불러오는 중 오류 발생');
       } finally {
         setLoading(false);
       }
@@ -35,8 +35,7 @@ const LocationEdit = () => {
       <LocationForm locationData={locationData} isEdit={true} />
       <button
         className="btn btn-secondary mt-3"
-        onClick={() => navigate('/product/locations/list')}
-      >
+        onClick={() => navigate('/product/locations/list')}>
         ↩ 목록으로
       </button>
     </div>

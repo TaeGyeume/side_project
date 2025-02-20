@@ -10,7 +10,7 @@ const CategoryList = ({categories, refreshCategories}) => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [editedName, setEditedName] = useState('');
 
-  // ✅ 특정 카테고리 클릭 시 하위 카테고리 표시 토글
+  // 특정 카테고리 클릭 시 하위 카테고리 표시 토글
   const toggleCategory = categoryId => {
     setExpandedCategories(prev => ({
       ...prev,
@@ -18,13 +18,13 @@ const CategoryList = ({categories, refreshCategories}) => {
     }));
   };
 
-  // ✅ 카테고리 수정 시작 (입력창 활성화)
+  // 카테고리 수정 시작 (입력창 활성화)
   const startEditing = (categoryId, currentName) => {
     setEditingCategory(categoryId);
     setEditedName(currentName);
   };
 
-  // ✅ 카테고리 수정 저장 (수정 후 페이지 리로드)
+  // 카테고리 수정 저장 (수정 후 페이지 리로드)
   const saveCategoryEdit = async categoryId => {
     try {
       if (!editedName.trim()) {
@@ -43,23 +43,23 @@ const CategoryList = ({categories, refreshCategories}) => {
 
       setEditingCategory(null);
 
-      // ✅ 수정 후 페이지 리로드
+      // 수정 후 페이지 리로드
       window.location.reload();
     } catch (error) {
-      console.error('❌ 카테고리 수정 실패:', error);
+      console.error('카테고리 수정 실패:', error);
     }
   };
 
-  // ✅ 카테고리 삭제 (삭제 후 페이지 리로드)
+  // 카테고리 삭제 (삭제 후 페이지 리로드)
   const handleDelete = async categoryId => {
     if (window.confirm('정말 이 카테고리를 삭제하시겠습니까?')) {
       try {
         await deleteCategory(categoryId);
 
-        // ✅ 삭제 후 페이지 리로드
+        // 삭제 후 페이지 리로드
         window.location.reload();
       } catch (error) {
-        console.error('❌ 카테고리 삭제 실패:', error);
+        console.error('카테고리 삭제 실패:', error);
       }
     }
   };
@@ -73,7 +73,7 @@ const CategoryList = ({categories, refreshCategories}) => {
             .map(cat => (
               <li key={cat._id} className="list-group-item">
                 <div className="d-flex justify-content-between align-items-center">
-                  {/* ✅ 카테고리명 표시 또는 수정 입력창 */}
+                  {/* 카테고리명 표시 또는 수정 입력창 */}
                   {editingCategory === cat._id ? (
                     <input
                       type="text"
@@ -92,7 +92,7 @@ const CategoryList = ({categories, refreshCategories}) => {
                     </span>
                   )}
 
-                  {/* ✅ 수정 및 삭제 버튼 */}
+                  {/* 수정 및 삭제 버튼 */}
                   <div>
                     <button
                       className="btn btn-sm btn-primary me-2"
@@ -107,14 +107,14 @@ const CategoryList = ({categories, refreshCategories}) => {
                   </div>
                 </div>
 
-                {/* ✅ 하위 카테고리 목록 */}
+                {/* 하위 카테고리 목록 */}
                 {expandedCategories[cat._id] &&
                   categories
                     .filter(subCat => subCat.parentCategory?._id === cat._id)
                     .map(subCat => (
                       <ul key={subCat._id} className="list-group mt-2">
                         <li className="list-group-item ms-4 d-flex justify-content-between align-items-center">
-                          {/* ✅ 하위 카테고리명 표시 또는 수정 입력창 */}
+                          {/* 하위 카테고리명 표시 또는 수정 입력창 */}
                           {editingCategory === subCat._id ? (
                             <input
                               type="text"
@@ -131,7 +131,7 @@ const CategoryList = ({categories, refreshCategories}) => {
                             <span>{subCat.name}</span>
                           )}
 
-                          {/* ✅ 수정 및 삭제 버튼 */}
+                          {/* 수정 및 삭제 버튼 */}
                           <div>
                             <button
                               className="btn btn-sm btn-primary me-2"
