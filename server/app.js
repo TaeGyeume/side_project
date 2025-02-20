@@ -4,6 +4,8 @@ const cors = require('cors');
 const routes = require('./routes');
 const connectDB = require('./config/db');
 const passport = require('passport'); // Passport 불러오기
+const busboy = require('connect-busboy');
+
 require('./config/passport'); // Passport 설정 파일 불러오기
 require('dotenv').config();
 require('./models/TourTicket');
@@ -45,6 +47,16 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'],
   exposedHeaders: ['set-cookie']
 };
+
+app.use(
+  busboy({
+    highWaterMark: 2 * 1024 * 1024, // ✅ 2MB로 설정하여 메모리 안정화
+    limits: {
+      files: 10, // ✅ 최대 10개 파일 업로드 허용
+      fileSize: 10 * 1024 * 1024 // ✅ 최대 10MB 제한
+    }
+  })
+);
 
 // 미들웨어 설정
 app.use(cors(corsOptions));

@@ -1,8 +1,16 @@
-// src/components/accommodations/RoomCard.js
 import React from 'react';
 import {useNavigate, useSearchParams} from 'react-router-dom';
 import {useAuthStore} from '../../store/authStore';
 import {deleteRoom} from '../../api/room/roomService';
+import {
+  Card,
+  CardMedia,
+  CardContent,
+  CardActions,
+  Typography,
+  Button,
+  Box
+} from '@mui/material';
 
 const RoomCard = ({room, onRoomDeleted}) => {
   const navigate = useNavigate();
@@ -66,72 +74,79 @@ const RoomCard = ({room, onRoomDeleted}) => {
   };
 
   return (
-    <div className="card mb-3" onClick={handleRoomDetail} style={{cursor: 'pointer'}}>
-      <div className="d-flex" style={{height: '250px'}}>
-        {/* ✅ 왼쪽에 이미지 배치 */}
-        <div style={{width: '300px', height: '100%', flexShrink: 0}}>
-          <img
-            src={imageUrl}
-            className="img-fluid h-100"
-            alt={room.name}
-            style={{
-              objectFit: 'cover',
-              borderTopLeftRadius: '5px',
-              borderBottomLeftRadius: '5px'
-            }}
-          />
-        </div>
+    <Card
+      sx={{
+        mb: 3,
+        display: 'flex',
+        flexDirection: 'row', // ✅ 가로 정렬
+        borderRadius: '12px',
+        overflow: 'hidden',
+        boxShadow: 4,
+        cursor: 'pointer',
+        width: '100%', // ✅ 너비를 100%로 확장
+        maxWidth: '1400px', // ✅ 최대 너비 설정 (더 넓게)
+        margin: 'auto' // ✅ 중앙 정렬
+      }}
+      onClick={handleRoomDetail}>
+      {/* ✅ 객실 이미지 */}
+      <CardMedia
+        component="img"
+        sx={{width: '35%', height: '230px', objectFit: 'cover'}}
+        image={imageUrl}
+        alt={room.name}
+      />
 
-        {/* ✅ 오른쪽에 내용 배치 */}
-        <div
-          className="card-body d-flex flex-column justify-content-between"
-          style={{flex: 1, textAlign: 'left'}}>
-          <div>
-            <h5 className="card-title">{room.name}</h5>
-            <p>
-              <strong>가격:</strong> {room.pricePerNight.toLocaleString()}원/1박
-            </p>
-            <p>
-              <strong>최대 수용 인원:</strong> {room.maxGuests}명
-            </p>
-            {room.amenities?.length > 0 && (
-              <p>
-                <strong>편의시설:</strong> {room.amenities.join(', ')}
-              </p>
-            )}
-          </div>
+      {/* ✅ 객실 정보 */}
+      <Box sx={{display: 'flex', flexDirection: 'column', flex: 1}}>
+        <CardContent sx={{padding: '16px'}}>
+          <Typography variant="h5" fontWeight="bold">
+            {room.name}
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            <strong>가격:</strong> {room.pricePerNight.toLocaleString()}원/1박
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            <strong>최대 수용 인원:</strong> {room.maxGuests}명
+          </Typography>
+          {room.amenities?.length > 0 && (
+            <Typography variant="body2" color="text.secondary">
+              <strong>편의시설:</strong> {room.amenities.join(', ')}
+            </Typography>
+          )}
+        </CardContent>
 
-          {/* ✅ 버튼 배치 (이벤트 버블링 방지) */}
-          <div className="mt-3">
-            <button
-              type="button"
-              className="btn btn-primary me-2"
-              onClick={handleBooking}>
-              🏨 객실 예약하기
-            </button>
+        {/* ✅ 액션 버튼 (예약, 수정, 삭제) */}
+        <CardActions sx={{justifyContent: 'flex-end', pr: 3, pb: 2}}>
+          <Button
+            variant="contained"
+            color="primary"
+            size="medium"
+            onClick={handleBooking}>
+            🏨 객실 예약
+          </Button>
 
-            {/* ✅ 관리자인 경우에만 객실 수정 및 삭제 버튼 표시 */}
-            {isAuthenticated && user?.roles.includes('admin') && (
-              <>
-                <button
-                  type="button"
-                  className="btn btn-warning me-2"
-                  onClick={handleEditRoom}>
-                  ✏️ 객실 수정
-                </button>
-
-                <button
-                  type="button"
-                  className="btn btn-danger"
-                  onClick={handleDeleteRoom}>
-                  🗑️ 객실 삭제
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+          {/* ✅ 관리자인 경우 수정/삭제 버튼 표시 */}
+          {isAuthenticated && user?.roles.includes('admin') && (
+            <>
+              <Button
+                variant="contained"
+                color="warning"
+                size="medium"
+                onClick={handleEditRoom}>
+                ✏️ 수정
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                size="medium"
+                onClick={handleDeleteRoom}>
+                🗑️ 삭제
+              </Button>
+            </>
+          )}
+        </CardActions>
+      </Box>
+    </Card>
   );
 };
 

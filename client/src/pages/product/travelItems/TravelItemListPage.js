@@ -100,7 +100,7 @@ const TravelItemListPage = () => {
         <button
           className="btn btn-primary"
           onClick={() => navigate('/product/travelItems/newCategory')}>
-          📂 카테고리 등록
+          📂 카테고리 관리
         </button>
       </div>
 

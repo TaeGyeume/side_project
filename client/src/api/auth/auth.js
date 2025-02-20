@@ -8,7 +8,7 @@ const requestConfig = {
   }
 };
 
-let isRefreshing = false;
+let isRefreshing = false; // 리프레시 토큰 요청 상태 관리
 
 // 공통 요청 처리 함수 (에러 핸들링 + 리프레시 토큰 처리 추가)
 const handleRequest = async (requestPromise, errorMessage) => {
@@ -23,15 +23,17 @@ const handleRequest = async (requestPromise, errorMessage) => {
       if (isRefreshing) {
         return Promise.reject(error);
       }
+
+      originalRequest._retry = true; // 재시도 방지 flag 설정
       isRefreshing = true;
 
       try {
-        console.log(' 액세스 토큰 만료, 리프레시 토큰 요청 중...');
+        console.log('액세스 토큰 만료, 리프레시 토큰 요청 중...');
         await authAPI.refreshToken(); // 새 액세스 토큰 요청
         isRefreshing = false;
         return api(originalRequest); // 원래 요청 다시 시도
       } catch (refreshError) {
-        console.error(' 리프레시 토큰 만료, 로그인 필요');
+        console.error('리프레시 토큰 만료, 로그인 필요');
         authAPI.logoutUser();
         isRefreshing = false;
         throw refreshError;
@@ -45,7 +47,7 @@ const handleRequest = async (requestPromise, errorMessage) => {
 const clearCookiesManually = () => {
   document.cookie = 'accessToken=; Max-Age=0; path=/;';
   document.cookie = 'refreshToken=; Max-Age=0; path=/;';
-  // console.log('브라우저 쿠키 수동 삭제 완료');
+  console.log('브라우저 쿠키 수동 삭제 완료');
 };
 
 export const authAPI = {
@@ -116,11 +118,19 @@ export const authAPI = {
       '비밀번호 변경 중 오류 발생'
     ),
 
-  refreshToken: () =>
-    handleRequest(
-      api.post('/auth/refresh-token', {}, requestConfig),
-      '토큰 갱신 요청 중 오류 발생'
-    ),
+  refreshToken: async () => {
+    try {
+      console.log('리프레시 토큰 갱신 중...');
+      const response = await handleRequest(
+        api.post('/auth/refresh-token', {}, requestConfig),
+        '리프레시 토큰 갱신 중 오류 발생'
+      );
+      return response;
+    } catch (error) {
+      console.error('리프레시 토큰 갱신 실패');
+      throw error;
+    }
+  },
 
   // ✅ 아이디 찾기 API 요청
   findUserId: async email => {

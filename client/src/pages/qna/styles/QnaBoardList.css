@@ -2,10 +2,14 @@
   max-width: 800px;
   margin: auto;
   padding: 20px;
+  min-height: 100vh; /* Ensure footer stays at the bottom */
+  display: flex;
+  flex-direction: column;
 }
 
 .qna-board-list {
   margin-top: 20px;
+  flex: 1; /* Makes sure the content section takes all available space */
 }
 
 .qna-board-item {
@@ -55,4 +59,19 @@
 .edit-button:hover,
 .delete-button:hover {
   opacity: 0.8;
+}
+
+/* Fix for the loading spinner to appear in the center */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Ensures it takes full viewport height */
+  font-size: 20px;
+  color: #888;
+}
+
+/* Fix the footer to stay at the bottom of the page */
+footer {
+  margin-top: auto; /* Keeps the footer at the bottom */
 }

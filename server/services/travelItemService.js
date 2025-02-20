@@ -225,3 +225,107 @@ exports.deleteTravelItem = async itemId => {
     throw new Error('상품 삭제 중 오류 발생: ' + error.message);
   }
 };
+
+// ✅ 최상위 카테고리 수정 (ID 기준)
+exports.updateTopLevelCategory = async (categoryId, updateData) => {
+  try {
+    const category = await TravelItem.findOne({
+      _id: categoryId,
+      parentCategory: null // 최상위 카테고리만 검색
+    });
+
+    if (!category) {
+      throw new Error('해당 최상위 카테고리를 찾을 수 없습니다.');
+    }
+
+    Object.assign(category, updateData);
+    await category.save();
+
+    console.log(`✅ 최상위 카테고리 수정 완료: ${categoryId}`);
+    return category;
+  } catch (error) {
+    console.error('❌ 최상위 카테고리 수정 중 오류 발생:', error.message);
+    throw new Error('최상위 카테고리 수정 중 오류 발생: ' + error.message);
+  }
+};
+
+// ✅ 특정 카테고리의 하위 카테고리 수정
+exports.updateSubCategory = async (subCategoryId, updateData) => {
+  try {
+    const subCategory = await TravelItem.findById(subCategoryId);
+
+    if (!subCategory) {
+      throw new Error('해당 하위 카테고리를 찾을 수 없습니다.');
+    }
+
+    Object.assign(subCategory, updateData);
+    await subCategory.save();
+
+    console.log(`✅ 하위 카테고리 수정 완료: ${subCategoryId}`);
+    return subCategory;
+  } catch (error) {
+    console.error('❌ 하위 카테고리 수정 중 오류 발생:', error.message);
+    throw new Error('하위 카테고리 수정 중 오류 발생: ' + error.message);
+  }
+};
+
+// ✅ 특정 카테고리 삭제 (하위 카테고리도 삭제)
+exports.deleteCategory = async categoryId => {
+  try {
+    const category = await TravelItem.findById(categoryId);
+
+    if (!category) {
+      throw new Error('해당 카테고리를 찾을 수 없습니다.');
+    }
+
+    console.log(`🗑 삭제할 카테고리: ${categoryId}`);
+
+    // ✅ 부모 카테고리가 존재하는 경우, 먼저 subCategories에서 제거
+    if (category.parentCategory) {
+      await TravelItem.findByIdAndUpdate(category.parentCategory.toString(), {
+        $pull: {subCategories: categoryId}
+      });
+    }
+
+    // ✅ 하위 카테고리가 존재하는 경우, 재귀적으로 삭제
+    if (category.subCategories && category.subCategories.length > 0) {
+      for (const subCategoryId of category.subCategories) {
+        await exports.deleteCategory(subCategoryId.toString()); // 재귀 삭제
+      }
+    }
+
+    // ✅ 해당 카테고리에 포함된 이미지 삭제 (삭제할 항목을 먼저 조회 후 삭제)
+    if (category.images && category.images.length > 0) {
+      for (const imagePath of category.images) {
+        const fileName = path.basename(imagePath);
+        const filePath = path.join(__dirname, '../uploads', fileName);
+
+        console.log(`🗑 이미지 삭제 시도: ${filePath}`);
+
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+          console.log(`✅ 파일 삭제 완료: ${filePath}`);
+        } else {
+          console.log(`❌ 파일을 찾을 수 없음: ${filePath}`);
+        }
+      }
+    }
+
+    // ✅ 삭제 전에 `parentCategory` 참조를 확인한 후, 삭제 실행
+    const parentCategoryId = category.parentCategory; // 미리 저장
+    await TravelItem.findByIdAndDelete(categoryId);
+    console.log(`✅ 카테고리 삭제 완료: ${categoryId}`);
+
+    // ✅ 부모 카테고리가 있다면 subCategories에서 해당 ID를 삭제
+    if (parentCategoryId) {
+      await TravelItem.findByIdAndUpdate(parentCategoryId.toString(), {
+        $pull: {subCategories: categoryId}
+      });
+    }
+
+    return {message: '카테고리 삭제 성공'};
+  } catch (error) {
+    console.error('❌ 카테고리 삭제 중 오류 발생:', error.message);
+    return {message: '카테고리 삭제 중 오류 발생: ' + error.message};
+  }
+};

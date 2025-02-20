@@ -93,7 +93,7 @@ const App = () => {
 
   return (
     <Router>
-      <h1 className="text-center">Our Real Trip</h1>
+      {/* <h1 className="text-center">Our Real Trip</h1> */}
       <ChannelTalk />
       {serverMessage && (
         <div

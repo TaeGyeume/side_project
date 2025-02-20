@@ -1,6 +1,6 @@
 const Coupon = require('../models/Coupon');
 
-// ✅ 쿠폰 생성 서비스
+// 쿠폰 생성 서비스
 exports.createCoupon = async couponData => {
   try {
     const newCoupon = new Coupon(couponData);
@@ -11,7 +11,7 @@ exports.createCoupon = async couponData => {
   }
 };
 
-// ✅ 모든 쿠폰 조회 서비스
+// 모든 쿠폰 조회 서비스
 exports.fetchAllCoupons = async () => {
   try {
     return await Coupon.find().sort({createdAt: -1}); // 최신순 정렬
@@ -20,7 +20,7 @@ exports.fetchAllCoupons = async () => {
   }
 };
 
-// ✅ 유저 등급별 쿠폰 조회 서비스
+// 유저 등급별 쿠폰 조회 서비스
 exports.fetchCouponsByMembership = async membershipLevel => {
   try {
     const coupons = await Coupon.find({applicableMemberships: membershipLevel}).sort({
