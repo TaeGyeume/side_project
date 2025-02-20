@@ -8,7 +8,7 @@ const Flight = require('../models/Flight');
 const {DB_URI, SERVICE_KEY} = process.env;
 
 if (!DB_URI || !SERVICE_KEY) {
-  console.error('❌ 환경 변수(DB_URI 또는 SERVICE_KEY)가 설정되지 않았습니다.');
+  console.error('환경 변수(DB_URI 또는 SERVICE_KEY)가 설정되지 않았습니다.');
   process.exit(1);
 }
 
@@ -21,7 +21,7 @@ mongoose
     socketTimeoutMS: 60000
   })
   .then(() => console.log('MongoDB 연결 성공'))
-  .catch(err => console.error('❌ MongoDB 연결 실패:', err));
+  .catch(err => console.error('MongoDB 연결 실패:', err));
 
 const AIRPORT_NAMES = {
   GMP: '김포공항',
@@ -60,7 +60,7 @@ const getOperatingDays = flight => {
 };
 
 const fetchAllFlights = async () => {
-  console.log('🚀 항공편 데이터 수집 시작...');
+  console.log('항공편 데이터 수집 시작...');
 
   const today = moment().tz('Asia/Seoul').startOf('day'); // KST 기준으로 시작
   const futureDate = moment().tz('Asia/Seoul').add(7, 'days').endOf('day'); // KST 기준으로 7일 후
@@ -107,7 +107,7 @@ const fetchAllFlights = async () => {
                 .toDate(); // Date 객체 저장
 
               if (!departureDate || !arrivalDate) {
-                console.warn(`⚠️ 유효하지 않은 날짜: ${formattedDate}`);
+                console.warn(`유효하지 않은 날짜: ${formattedDate}`);
                 continue;
               }
 
@@ -174,7 +174,7 @@ const fetchAllFlights = async () => {
               );
             }
           } catch (error) {
-            console.error(`❌ API 요청 오류 (${deptCode} → ${arrCode}):`, error.message);
+            console.error(`API 요청 오류 (${deptCode} → ${arrCode}):`, error.message);
           }
         }
       }

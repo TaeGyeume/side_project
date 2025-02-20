@@ -19,20 +19,20 @@ const inputDate = process.argv[2];
 const selectedDate = inputDate || moment().tz('Asia/Seoul').format('YYYYMMDD'); // 입력 없으면 오늘 날짜 사용
 
 if (!/^\d{8}$/.test(selectedDate)) {
-  console.error('🚨 날짜 형식 오류: YYYYMMDD 형식으로 입력하세요.');
+  console.error('날짜 형식 오류: YYYYMMDD 형식으로 입력하세요.');
   process.exit(1);
 }
 
 const fetchFlightsByDate = async () => {
-  console.log(`🔍 검색 날짜: ${selectedDate}`);
-  console.log(`✈️ 검색 기준: ${DEPARTURE_AIRPORT} → ${ARRIVAL_AIRPORT}`);
+  console.log(`검색 날짜: ${selectedDate}`);
+  console.log(`검색 기준: ${DEPARTURE_AIRPORT} → ${ARRIVAL_AIRPORT}`);
 
   const url = `http://openapi.airport.co.kr/service/rest/FlightScheduleList/getDflightScheduleList?serviceKey=${encodeURIComponent(
     SERVICE_KEY
   )}&schDate=${selectedDate}&schDeptCityCode=${DEPARTURE_AIRPORT}&schArrvCityCode=${ARRIVAL_AIRPORT}`;
 
   try {
-    console.log(`🚀 API 요청: ${url}`);
+    console.log(`API 요청: ${url}`);
     const response = await axios.get(url, {
       headers: {'User-Agent': 'Mozilla/5.0'}
     });
@@ -49,12 +49,12 @@ const fetchFlightsByDate = async () => {
 
     flightList.forEach(flight => {
       console.log(
-        `✈ ${flight.airlineKorean || '알 수 없음'} ${flight.domesticNum || 'N/A'} | ` +
+        `${flight.airlineKorean || '알 수 없음'} ${flight.domesticNum || 'N/A'} | ` +
           `출발: ${flight.domesticStartTime} | 도착: ${flight.domesticArrivalTime}`
       );
     });
   } catch (error) {
-    console.error('🚨 API 요청 오류:', error.message);
+    console.error('API 요청 오류:', error.message);
   }
 };
 

@@ -126,7 +126,7 @@ const TourTicketBookingForm = () => {
         } else {
           alert(`❌ 결제 실패: ${rsp.error_msg}`);
           if (selectedCoupon) {
-            console.log('📌 [클라이언트] 결제 취소, 예약 취소 요청 보냄:', merchant_uid);
+            console.log('[클라이언트] 결제 취소, 예약 취소 요청 보냄:', merchant_uid);
             await cancelBooking(merchant_uid);
           }
         }

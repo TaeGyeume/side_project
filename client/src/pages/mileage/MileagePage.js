@@ -75,19 +75,19 @@ const MileagePage = () => {
   }
 
   if (error) {
-    return <p className="text-center text-red-500">❌ {error}</p>;
+    return <p className="text-center text-red-500">{error}</p>;
   }
 
   return (
     <div className="container mx-auto p-4 space-y-4">
-      <h1 className="text-2xl font-bold text-center mb-4">🚀 마일리지 관리</h1>
+      <h1 className="text-2xl font-bold text-center mb-4">마일리지 관리</h1>
       {userId ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <MileageSummary totalMileage={totalMileage} />
           <MileageHistory history={mileageHistory} />
         </div>
       ) : (
-        <p className="text-center text-red-500">❌ 유저 정보가 없습니다.</p>
+        <p className="text-center text-red-500">유저 정보가 없습니다.</p>
       )}
     </div>
   );
