@@ -18,7 +18,7 @@ const Flights = () => {
         const data = await fetchFlights();
         setFlights(data || []);
       } catch (error) {
-        console.error('🚨 항공편 데이터를 불러오는 데 실패:', error);
+        console.error('항공편 데이터를 불러오는 데 실패:', error);
       }
     };
     getFlights();
@@ -55,7 +55,7 @@ const Flights = () => {
 
   return (
     <div className="container mt-4">
-      {/* ✈️ 편도/왕복 선택 버튼 */}
+      {/* 편도/왕복 선택 버튼 */}
       <ToggleButtonGroup
         value={isRoundTrip}
         exclusive
@@ -69,7 +69,7 @@ const Flights = () => {
         </ToggleButton>
       </ToggleButtonGroup>
 
-      {/* 🔍 편도 검색 or 왕복 검색 */}
+      {/* 편도 검색 or 왕복 검색 */}
       {isRoundTrip ? <RoundTripSearch /> : <FlightSearch onSearch={handleSearch} />}
 
       <FlightCardList flights={flights} />

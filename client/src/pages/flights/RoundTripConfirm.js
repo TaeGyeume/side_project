@@ -187,7 +187,7 @@ const RoundTripConfirm = () => {
 
         <div className="col-12 text-center mt-3">
           <button className="btn btn-primary px-4 py-2" onClick={handleConfirm}>
-            🚀 예약 확정
+            예약 확정
           </button>
         </div>
       </div>

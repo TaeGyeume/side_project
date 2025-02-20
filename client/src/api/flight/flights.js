@@ -9,7 +9,7 @@ export const fetchFlights = async () => {
     const response = await axios.get(`${API_URL}/flights`); // URL 명확히 설정
     return response.data;
   } catch (error) {
-    console.error('🚨 모든 항공편 데이터를 불러오는 데 실패했습니다:', error);
+    console.error('모든 항공편 데이터를 불러오는 데 실패했습니다:', error);
     return [];
   }
 };
