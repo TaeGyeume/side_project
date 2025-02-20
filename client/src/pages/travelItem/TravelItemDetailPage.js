@@ -7,10 +7,10 @@ const TravelItemDetailPage = () => {
   const {itemId} = useParams();
   const navigate = useNavigate();
   const [item, setItem] = useState(null);
-  const [imageError, setImageError] = useState(false); // ✅ 이미지 오류 상태 추가
+  const [imageError, setImageError] = useState(false); // 이미지 오류 상태 추가
   const SERVER_URL = 'http://localhost:5000';
 
-  console.log('✅ itemId:', itemId);
+  console.log('itemId:', itemId);
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -18,7 +18,7 @@ const TravelItemDetailPage = () => {
         const data = await fetchTravelItemDetail(itemId);
         setItem(data);
       } catch (error) {
-        console.error('❌ 상품 상세정보 불러오기 실패:', error);
+        console.error('상품 상세정보 불러오기 실패:', error);
       }
     };
 
@@ -29,7 +29,7 @@ const TravelItemDetailPage = () => {
     return <p className="text-center">⏳ 상품 정보를 불러오는 중...</p>;
   }
 
-  // ✅ 기본 이미지 설정 (이미지 에러 발생 시 변경)
+  // 기본 이미지 설정 (이미지 에러 발생 시 변경)
   let imageUrl = '/default-image.jpg';
   if (!imageError && Array.isArray(item.images) && item.images.length > 0) {
     imageUrl = item.images[0];
@@ -50,7 +50,7 @@ const TravelItemDetailPage = () => {
           src={imageUrl}
           alt={item.name}
           className="travel-item-detail-image"
-          onError={() => setImageError(true)} // ✅ 이미지 오류 시 상태 변경
+          onError={() => setImageError(true)} // 이미지 오류 시 상태 변경
         />
         <div className="card-body">
           <h2 className="card-title">{item.name}</h2>
@@ -59,9 +59,9 @@ const TravelItemDetailPage = () => {
           <button
             className="btn btn-primary mt-3"
             onClick={() => {
-              console.log('🛒 구매 버튼 클릭, itemId:', item._id);
+              console.log('구매 버튼 클릭, itemId:', item._id);
               if (!item._id) {
-                console.error('❌ 유효하지 않은 상품 ID:', item);
+                console.error('유효하지 않은 상품 ID:', item);
                 return;
               }
               navigate(`/travelItems/purchase/${item._id}`);

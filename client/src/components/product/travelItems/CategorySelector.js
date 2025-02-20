@@ -10,7 +10,7 @@ const CategorySelector = ({
 }) => {
   return (
     <div className="mb-4">
-      {/* ✅ 최상위 카테고리 선택 */}
+      {/* 최상위 카테고리 선택 */}
       <label className="form-label">최상위 카테고리</label>
       <select
         className="form-select mb-3"
@@ -24,7 +24,7 @@ const CategorySelector = ({
         ))}
       </select>
 
-      {/* ✅ 하위 카테고리 선택 (최상위 선택 시만 표시) */}
+      {/* 하위 카테고리 선택 (최상위 선택 시만 표시) */}
       {subCategories.length > 0 && (
         <>
           <label className="form-label">하위 카테고리</label>

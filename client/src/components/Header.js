@@ -43,7 +43,7 @@ const Header = () => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchUserProfile();
-      setIsDropdownOpen(false); // 🔹 로그인 후 드롭다운 자동 열림 방지
+      setIsDropdownOpen(false); // 로그인 후 드롭다운 자동 열림 방지
     }
   }, [isAuthenticated, fetchUserProfile]);
 
@@ -80,7 +80,7 @@ const Header = () => {
         position="sticky"
         sx={{
           backgroundImage:
-            'linear-gradient(90deg,rgb(200, 196, 255) 0%,rgb(162, 192, 255) 50%,rgb(218, 194, 255) 100%)',
+            'linear-gradient(90deg, rgb(0, 181, 204) 0%, rgb(0, 51, 102) 100%)',
           boxShadow: 3
         }}>
         <Toolbar>
@@ -275,8 +275,8 @@ const Header = () => {
         open={drawerOpen}
         onClose={toggleDrawer(false)}
         ModalProps={{
-          keepMounted: true, // ✅ 성능 최적화 (필요 시 유지)
-          disableEnforceFocus: true // ✅ 강제 포커스 해제 (aria-hidden 문제 해결)
+          keepMounted: true, // 성능 최적화 (필요 시 유지)
+          disableEnforceFocus: true // 강제 포커스 해제 (aria-hidden 문제 해결)
         }}>
         <Box sx={{width: 250}} role="presentation" onClick={toggleDrawer(false)}>
           <List>

@@ -204,7 +204,7 @@ const App = () => {
               element={<TravelItemEditPage />}
             />
           </Route>
-          {/* ❌ 권한 없음 페이지 */}
+          {/* 권한 없음 페이지 */}
           <Route path="/unauthorized" element={<Unauthorized />} />
           {/* 404 처리 */}
           <Route path="*" element={<div>페이지를 찾을 수 없습니다.</div>} />

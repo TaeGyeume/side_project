@@ -2,7 +2,7 @@
 import React, {useState, useEffect} from 'react';
 import {useParams, useSearchParams, useNavigate} from 'react-router-dom';
 import {getRoomById} from '../../api/room/roomService';
-import Slider from 'react-slick'; // ✅ React Slick 추가
+import Slider from 'react-slick'; // React Slick 추가
 import Modal from 'react-modal';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -49,37 +49,37 @@ const RoomDetail = () => {
         )
       : ['/default-image.jpg'];
 
-  // ✅ 모달 열기
+  // 모달 열기
   const openModal = index => {
     setSelectedImageIndex(index);
     setModalIsOpen(true);
   };
 
-  // ✅ 모달 닫기
+  // 모달 닫기
   const closeModal = () => {
     setModalIsOpen(false);
   };
 
-  // ✅ 이전 이미지 보기
+  // 이전 이미지 보기
   const prevImage = () => {
     setSelectedImageIndex(
       prevIndex => (prevIndex - 1 + imageUrls.length) % imageUrls.length
     );
   };
 
-  // ✅ 다음 이미지 보기
+  // 다음 이미지 보기
   const nextImage = () => {
     setSelectedImageIndex(prevIndex => (prevIndex + 1) % imageUrls.length);
   };
 
-  // ✅ 예약하기 버튼 클릭 시 이동
+  // 예약하기 버튼 클릭 시 이동
   const handleBooking = () => {
     navigate(
       `/accommodation/booking/${roomId}?startDate=${startDate}&endDate=${endDate}&adults=${adults}`
     );
   };
 
-  // ✅ React Slick 슬라이드 설정
+  // React Slick 슬라이드 설정
   const sliderSettings = {
     dots: true,
     infinite: true,
@@ -93,7 +93,7 @@ const RoomDetail = () => {
 
   return (
     <div className="container mt-4">
-      {/* ✅ 객실 이미지 (슬라이드 적용) */}
+      {/* 객실 이미지 (슬라이드 적용) */}
       <div className="text-center">
         {imageUrls.length > 1 ? (
           <Slider {...sliderSettings}>
@@ -133,9 +133,9 @@ const RoomDetail = () => {
         )}
       </div>
 
-      {/* ✅ 객실 정보 카드 */}
+      {/* 객실 정보 카드 */}
       <div className="card mt-4 p-4">
-        {/* ✅ 날짜 및 인원 정보 */}
+        {/* 날짜 및 인원 정보 */}
         <div className="d-flex justify-content-between border-bottom pb-3">
           <div>
             <p>
@@ -152,7 +152,7 @@ const RoomDetail = () => {
           </div>
         </div>
 
-        {/* ✅ 객실 상세 정보 */}
+        {/* 객실 상세 정보 */}
         <div className="mt-3">
           <h3 className="mb-3">{roomData.name}</h3>
           {roomData.description && (
@@ -169,7 +169,7 @@ const RoomDetail = () => {
             </p>
           )}
 
-          {/* ✅ 가격 및 예약 버튼 */}
+          {/* 가격 및 예약 버튼 */}
           <div className="d-flex justify-content-between align-items-center mt-4">
             <h4>
               💰 <strong>{roomData.pricePerNight.toLocaleString()}원</strong>/1박
@@ -181,7 +181,7 @@ const RoomDetail = () => {
         </div>
       </div>
 
-      {/* ✅ 이미지 모달 (Lightbox) */}
+      {/* 이미지 모달 (Lightbox) */}
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={closeModal}

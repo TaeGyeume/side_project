@@ -32,7 +32,7 @@ exports.fetchCouponsByMembership = async membershipLevel => {
   }
 };
 
-// ✅ 쿠폰 삭제 서비스
+// 쿠폰 삭제 서비스
 exports.deleteCoupon = async couponId => {
   try {
     const deletedCoupon = await Coupon.findByIdAndDelete(couponId);

@@ -2,7 +2,7 @@ import React from 'react';
 import {useNavigate} from 'react-router-dom';
 // import moment from 'moment-timezone';
 
-// ✅ 항공사별 로고 파일 매핑
+// 항공사별 로고 파일 매핑
 const AIRLINE_LOGOS = {
   대한항공: 'korean.png',
   아시아나항공: 'asiana.png',
@@ -13,7 +13,7 @@ const AIRLINE_LOGOS = {
   제주항공: 'jejuair.png'
 };
 
-// ✅ 시간 포맷 변환 함수 (0700 → 07:00)
+// 시간 포맷 변환 함수 (0700 → 07:00)
 const formatTime = timeString => {
   if (!timeString || typeof timeString !== 'string' || timeString.length !== 4) {
     return '시간 미정';
@@ -99,7 +99,7 @@ const SearchResultsList = ({flights, passengers = 1}) => {
                     </p>
                   </div>
 
-                  {/* ✅ 선택 버튼 */}
+                  {/* 선택 버튼 */}
                   <div className="ms-3">
                     <button
                       className="btn btn-primary"

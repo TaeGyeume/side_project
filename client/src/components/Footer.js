@@ -9,7 +9,7 @@ const Footer = () => {
   return (
     <footer className="footer">
       <Container>
-        {/* ✅ 첫 번째 줄: 고객지원 및 소개 */}
+        {/* 첫 번째 줄: 고객지원 및 소개 */}
         <Row className="footer-top">
           <Col md={4}>
             <h5>고객지원실 운영안내</h5>
@@ -66,7 +66,7 @@ const Footer = () => {
           </Col>
         </Row>
 
-        {/* ✅ 두 번째 줄: 이용약관 및 회사정보 */}
+        {/* 두 번째 줄: 이용약관 및 회사정보 */}
         <Row className="footer-middle">
           <Col>
             <ul className="footer-links">
@@ -83,7 +83,7 @@ const Footer = () => {
           </Col>
         </Row>
 
-        {/* ✅ 세 번째 줄: 회사 정보 */}
+        {/* 세 번째 줄: 회사 정보 */}
         <Row className="footer-bottom">
           <Col>
             <p>
@@ -99,7 +99,7 @@ const Footer = () => {
           </Col>
         </Row>
 
-        {/* ✅ 네 번째 줄: 소셜 미디어 아이콘 */}
+        {/* 네 번째 줄: 소셜 미디어 아이콘 */}
         <Row className="footer-social">
           <Col>
             <FaFacebookF className="social-icon" />

@@ -36,7 +36,7 @@ exports.createBooking = async (req, res) => {
       usedMileage
     };
 
-    console.log('📌 [서버] 변환된 데이터:', bookingData);
+    console.log('[서버] 변환된 데이터:', bookingData);
     const result = await bookingService.createBooking(bookingData);
 
     if (result.status === 200 && result.booking) {
@@ -52,14 +52,14 @@ exports.createBooking = async (req, res) => {
 
 exports.verifyPayment = async (req, res) => {
   try {
-    console.log('📌 [서버] 결제 검증 요청 도착:', req.body);
+    console.log('[서버] 결제 검증 요청 도착:', req.body);
     const {imp_uid, merchant_uid, couponId, userId, usedMileage} = req.body;
 
     if (!imp_uid || !merchant_uid) {
-      console.error('❌ [서버] 필수 결제 정보가 없습니다.');
+      console.error('[서버] 필수 결제 정보가 없습니다.');
       return res.status(400).json({message: '필수 결제 정보가 없습니다.'});
     }
-    // ✅ 쿠폰 ID와 사용자 ID를 추가하여 결제 검증 요청
+    // 쿠폰 ID와 사용자 ID를 추가하여 결제 검증 요청
     const result = await bookingService.verifyPayment({
       imp_uid,
       merchant_uid,

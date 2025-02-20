@@ -73,7 +73,7 @@ const TravelItemPurchaseForm = () => {
         merchant_uid,
         totalPrice,
         discountAmount,
-        finalPrice, // ✅ 최종 결제 금액 (할인 후) 추가
+        finalPrice, // 최종 결제 금액 (할인 후) 추가
         userId: user._id,
         couponId: selectedCoupon ? selectedCoupon._id : null,
         reservationInfo: {
@@ -118,17 +118,17 @@ const TravelItemPurchaseForm = () => {
             });
 
             if (verifyResponse.message === '결제 검증 성공') {
-              alert('✅ 구매가 완료되었습니다.');
+              alert('구매가 완료되었습니다.');
             } else {
-              alert(`❌ 결제 검증 실패: ${verifyResponse.message}`);
+              alert(`결제 검증 실패: ${verifyResponse.message}`);
             }
           } catch (error) {
-            alert('❌ 결제 검증 중 오류가 발생했습니다.');
+            alert('결제 검증 중 오류가 발생했습니다.');
           }
         } else {
-          alert(`❌ 결제 실패: ${rsp.error_msg}`);
+          alert(`결제 실패: ${rsp.error_msg}`);
           if (selectedCoupon) {
-            console.log('📌 [클라이언트] 결제 취소, 예약 취소 요청 보냄:', merchant_uid);
+            console.log('[클라이언트] 결제 취소, 예약 취소 요청 보냄:', merchant_uid);
             await cancelBooking(merchant_uid);
           }
         }

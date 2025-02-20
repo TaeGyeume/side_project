@@ -22,8 +22,8 @@ const flightRoutes = require('./routes/flightRoutes'); // ✈️ 항공편 라�
 const socialAuthRoutes = require('./routes/socialAuthRoutes');
 const userTourTicketRoutes = require('./routes/tourTicket/userTourTicketRoutes');
 const travelItemRoutes = require('./routes/travelItemRoutes');
-const authMiddleware = require('./middleware/authMiddleware'); // ✅ JWT 인증 미들웨어 추가
-const authorizeRoles = require('./middleware/authorizeRoles'); // ✅ 역할 기반 접근 제어 추가
+const authMiddleware = require('./middleware/authMiddleware'); // JWT 인증 미들웨어 추가
+const authorizeRoles = require('./middleware/authorizeRoles'); // 역할 기반 접근 제어 추가
 const bookingRoutes = require('./routes/bookingRoutes');
 const couponRoutes = require('./routes/couponRoutes');
 const userCouponRoutes = require('./routes/userCouponRoutes');
@@ -50,10 +50,10 @@ const corsOptions = {
 
 app.use(
   busboy({
-    highWaterMark: 2 * 1024 * 1024, // ✅ 2MB로 설정하여 메모리 안정화
+    highWaterMark: 2 * 1024 * 1024, // 2MB로 설정하여 메모리 안정화
     limits: {
-      files: 10, // ✅ 최대 10개 파일 업로드 허용
-      fileSize: 10 * 1024 * 1024 // ✅ 최대 10MB 제한
+      files: 10, // 최대 10개 파일 업로드 허용
+      fileSize: 10 * 1024 * 1024 // 최대 10MB 제한
     }
   })
 );

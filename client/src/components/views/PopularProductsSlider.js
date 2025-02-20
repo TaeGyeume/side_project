@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {fetchPopularProducts} from '../../api/views/viewsService';
 import Slider from 'react-slick';
-import ProductCard from './PopularProductsCard'; // ✅ 분리된 ProductCard 컴포넌트 사용
+import ProductCard from './PopularProductsCard'; // 분리된 ProductCard 컴포넌트 사용
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import './styles/PopularProductsSlider.css';
@@ -18,7 +18,7 @@ const PopularProductsSlider = () => {
         const data = await fetchPopularProducts(8);
         if (isMounted) setProducts(data);
       } catch (error) {
-        console.error('❌ 인기 상품 불러오기 실패:', error);
+        console.error('인기 상품 불러오기 실패:', error);
       }
     };
 

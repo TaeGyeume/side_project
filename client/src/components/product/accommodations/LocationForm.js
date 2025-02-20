@@ -64,15 +64,15 @@ const LocationForm = ({locationData = null, isEdit = false}) => {
 
       if (isEdit) {
         await updateLocation(locationData._id, formattedData);
-        alert('✅ 위치가 수정되었습니다.');
+        alert('위치가 수정되었습니다.');
       } else {
         await createLocation(formattedData);
-        alert('✅ 위치가 추가되었습니다.');
+        alert('위치가 추가되었습니다.');
       }
 
       navigate('/product/locations/list');
     } catch (err) {
-      setError('❌ 위치 처리 중 오류 발생');
+      setError('위치 처리 중 오류 발생');
     }
   };
 

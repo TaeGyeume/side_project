@@ -4,7 +4,7 @@ exports.createAccommodation = async (req, res) => {
   try {
     const accommodationData = req.body;
 
-    // 🔹 coordinates가 문자열로 전달되므로 JSON 변환
+    // coordinates가 문자열로 전달되므로 JSON 변환
     if (accommodationData.coordinates) {
       try {
         accommodationData.coordinates = JSON.parse(accommodationData.coordinates);
@@ -13,7 +13,7 @@ exports.createAccommodation = async (req, res) => {
       }
     }
 
-    // 🔹 amenities도 문자열로 전달될 경우 배열로 변환
+    // amenities도 문자열로 전달될 경우 배열로 변환
     if (accommodationData.amenities) {
       try {
         accommodationData.amenities = JSON.parse(accommodationData.amenities);
@@ -43,7 +43,7 @@ exports.createAccommodation = async (req, res) => {
   }
 };
 
-// ✅ 자동완성 검색 API
+// 자동완성 검색 API
 exports.autocompleteSearch = async (req, res) => {
   try {
     const {query} = req.query;
@@ -54,7 +54,7 @@ exports.autocompleteSearch = async (req, res) => {
   }
 };
 
-// ✅ 날짜 및 인원수에 맞는 숙소 검색 API (무한 스크롤)
+// 날짜 및 인원수에 맞는 숙소 검색 API (무한 스크롤)
 exports.getAccommodationsBySearch = async (req, res) => {
   try {
     const {
@@ -96,13 +96,13 @@ exports.getAccommodationsBySearch = async (req, res) => {
   }
 };
 
-// ✅ 특정 숙소의 검색 조건에 맞는 객실 조회 API
+// 특정 숙소의 검색 조건에 맞는 객실 조회 API
 exports.getAvailableRoomsByAccommodation = async (req, res) => {
   try {
     const {accommodationId} = req.params;
     let {startDate, endDate, adults, minPrice, maxPrice} = req.query;
 
-    // 👉 `startDate`, `endDate`, `adults` 값이 없으면 undefined로 처리 (서비스에서 모든 객실 반환하도록)
+    // `startDate`, `endDate`, `adults` 값이 없으면 undefined로 처리 (서비스에서 모든 객실 반환하도록)
     startDate = startDate ? startDate : undefined;
     endDate = endDate ? endDate : undefined;
     adults = adults ? parseInt(adults) : undefined;
@@ -122,7 +122,7 @@ exports.getAvailableRoomsByAccommodation = async (req, res) => {
   }
 };
 
-// ✅ 숙소 업데이트 컨트롤러
+// 숙소 업데이트 컨트롤러
 exports.updateAccommodation = async (req, res) => {
   try {
     const {accommodationId} = req.params;
@@ -147,7 +147,7 @@ exports.updateAccommodation = async (req, res) => {
   }
 };
 
-// ✅ 숙소 삭제 API 컨트롤러
+// 숙소 삭제 API 컨트롤러
 exports.deleteAccommodation = async (req, res) => {
   try {
     const {accommodationId} = req.params;
@@ -174,25 +174,25 @@ exports.getAllAccommodations = async (req, res) => {
   }
 };
 
-// ✅ 숙소 이름으로 검색하는 컨트롤러 (페이지네이션 추가)
+// 숙소 이름으로 검색하는 컨트롤러 (페이지네이션 추가)
 exports.searchAccommodationsByName = async (req, res) => {
   try {
     const {name, page = 1, limit = 6} = req.query;
 
-    console.log('🔍 검색어:', name, '페이지:', page, '개수:', limit);
+    console.log('검색어:', name, '페이지:', page, '개수:', limit);
 
     if (!name) {
       return res.status(400).json({message: '검색할 숙소 이름을 입력해주세요.'});
     }
 
-    console.log('✅ 검색 요청 수행');
+    console.log('검색 요청 수행');
     const accommodationsData = await accommodationService.getAccommodationsByName(
       name,
       page,
       limit
     );
 
-    console.log('✅ 검색 결과:', accommodationsData);
+    console.log('검색 결과:', accommodationsData);
     res.status(200).json(accommodationsData);
   } catch (error) {
     res.status(500).json({message: '숙소 이름 검색 중 오류 발생', error: error.message});
@@ -209,7 +209,7 @@ exports.getAccommodationById = async (req, res) => {
 
     res.status(200).json(accommodation);
   } catch (error) {
-    console.error('❌ 숙소 조회 오류:', error.message);
+    console.error('숙소 조회 오류:', error.message);
     res.status(404).json({message: error.message});
   }
 };

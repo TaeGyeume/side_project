@@ -4,7 +4,7 @@ import FlightBookingForm from '../../components/booking/FlightBookingForm';
 
 const FlightBookingPage = () => {
   const location = useLocation();
-  console.log('📌 전달된 state 확인:', location.state); // 디버깅용 로그 추가
+  console.log('전달된 state 확인:', location.state); // 디버깅용 로그 추가
 
   const {
     selectedDeparture,
@@ -15,7 +15,7 @@ const FlightBookingPage = () => {
     totalPrice
   } = location.state || {};
 
-  // ✅ 항공편 정보가 없을 경우 에러 메시지 출력
+  // 항공편 정보가 없을 경우 에러 메시지 출력
   if (!selectedDeparture && !selectedFlight) {
     return (
       <div className="text-center mt-5">
