@@ -6,10 +6,10 @@ const FilterPanel = ({onFilterChange}) => {
   const [priceRange, setPriceRange] = useState([0, 500000]);
   const [category, setCategory] = useState('all');
   const [sortBy, setSortBy] = useState('default');
-  const debounceRef = useRef(null); // ✅ 마지막 요청 시간을 저장하는 ref
+  const debounceRef = useRef(null); // 마지막 요청 시간을 저장하는 ref
   const prevFiltersRef = useRef(null);
 
-  // ✅ 필터 변경 시 자동 적용 (디바운스 적용)
+  // 필터 변경 시 자동 적용 (디바운스 적용)
   useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -66,8 +66,7 @@ const FilterPanel = ({onFilterChange}) => {
         <select
           className="form-select"
           value={category}
-          onChange={e => setCategory(e.target.value)}
-        >
+          onChange={e => setCategory(e.target.value)}>
           <option value="all">전체</option>
           <option value="Hotel">호텔</option>
           <option value="Pension">펜션</option>
@@ -81,8 +80,7 @@ const FilterPanel = ({onFilterChange}) => {
         <select
           className="form-select"
           value={sortBy}
-          onChange={e => setSortBy(e.target.value)}
-        >
+          onChange={e => setSortBy(e.target.value)}>
           <option value="default">기본순</option>
           <option value="priceLow">가격 낮은 순</option>
           <option value="priceHigh">가격 높은 순</option>

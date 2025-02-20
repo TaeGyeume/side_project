@@ -2,7 +2,7 @@ const User = require('../models/User');
 const MileageHistory = require('../models/MileageHistory');
 const mongoose = require('mongoose');
 
-// ✅ 마일리지 적립 (User에 반영 + MileageHistory에 기록)
+// 마일리지 적립 (User에 반영 + MileageHistory에 기록)
 exports.addMileageWithHistory = async (
   userId,
   amount,
@@ -25,28 +25,25 @@ exports.addMileageWithHistory = async (
       balanceAfter: user.mileage
     });
     await mileageRecord.save();
-
-    console.log(`✅ ${userId}님에게 ${amount}점 적립 완료`);
     return mileageRecord;
   } catch (error) {
-    console.error('🚨 마일리지 적립 실패:', error);
     throw new Error('마일리지 적립 실패');
   }
 };
 
-// ✅ 마일리지 사용 (User에 반영 + MileageHistory에 기록)
+// 마일리지 사용 (User에 반영 + MileageHistory에 기록)
 exports.useMileage = async (userId, amount, description = '마일리지 사용') => {
   try {
-    // ✅ 사용자 찾기
+    // 사용자 찾기
     const user = await User.findById(userId);
     if (!user) throw new Error('사용자를 찾을 수 없습니다.');
     if (user.mileage < amount) throw new Error('마일리지가 부족합니다.');
 
-    // ✅ 마일리지 차감 후 저장
+    // 마일리지 차감 후 저장
     user.mileage -= amount;
     await user.save();
 
-    // ✅ 마일리지 사용 내역 저장
+    // 마일리지 사용 내역 저장
     const mileageHistory = new MileageHistory({
       userId,
       type: 'use',
@@ -55,22 +52,19 @@ exports.useMileage = async (userId, amount, description = '마일리지 사용')
       balanceAfter: user.mileage
     });
     await mileageHistory.save();
-
-    console.log(`✅ ${userId}님이 마일리지 ${amount}점 사용 완료`);
     return mileageHistory;
   } catch (error) {
-    console.error('🚨 마일리지 사용 실패:', error);
     throw new Error('마일리지 사용 실패');
   }
 };
 
-// ✅ 마일리지 내역 조회
+// 마일리지 내역 조회
 exports.getMileageHistory = async userId => {
   try {
     const history = await MileageHistory.find({userId}).sort({createdAt: -1});
     return history;
   } catch (error) {
-    console.error('🚨 마일리지 내역 조회 실패:', error);
+    console.error('마일리지 내역 조회 실패:', error);
     throw new Error('마일리지 내역 조회 실패');
   }
 };

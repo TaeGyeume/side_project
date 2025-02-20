@@ -3,7 +3,7 @@ import {useLocation, useNavigate} from 'react-router-dom';
 import {searchFlights} from '../../api/flight/flights';
 import LoadingScreen from '../../components/flights/LoadingScreen';
 
-// ✅ 항공사별 로고 매핑
+// 항공사별 로고 매핑
 const AIRLINE_LOGOS = {
   대한항공: 'korean.png',
   아시아나항공: 'asiana.png',
@@ -26,7 +26,7 @@ const RoundTripDeparture = () => {
   const [loading, setLoading] = useState(false);
 
   const handleSelectDeparture = async flight => {
-    console.log('✅ 선택한 출발 항공편:', flight);
+    console.log('선택한 출발 항공편:', flight);
 
     const returnDept = flight?.arrival?.airport;
     const returnArr = flight?.departure?.airport;
@@ -34,13 +34,13 @@ const RoundTripDeparture = () => {
     const passengers = location.state?.passengers || 1;
 
     if (!returnDept || !returnArr || !returnDate || passengers < 1) {
-      console.error('🚨 잘못된 검색 요청:', {
+      console.error('잘못된 검색 요청:', {
         returnDept,
         returnArr,
         returnDate,
         passengers
       });
-      setErrorMessage('🚨 출발지, 도착지, 날짜, 인원수를 확인해주세요.');
+      setErrorMessage('출발지, 도착지, 날짜, 인원수를 확인해주세요.');
       return;
     }
 
@@ -48,7 +48,7 @@ const RoundTripDeparture = () => {
 
     try {
       console.log(
-        `🔍 돌아오는 항공편 검색 요청: ${returnDept} → ${returnArr}, 날짜: ${returnDate}`
+        `돌아오는 항공편 검색 요청: ${returnDept} → ${returnArr}, 날짜: ${returnDate}`
       );
 
       const returnFlights = await searchFlights(
@@ -65,8 +65,8 @@ const RoundTripDeparture = () => {
         });
       }, 500);
     } catch (error) {
-      console.error('🚨 돌아오는 항공편 검색 실패:', error);
-      setErrorMessage('🚨 도착 항공편 검색 중 오류가 발생했습니다.');
+      console.error('돌아오는 항공편 검색 실패:', error);
+      setErrorMessage('도착 항공편 검색 중 오류가 발생했습니다.');
       navigate('/flights/roundtrip-return', {
         state: {selectedDeparture: flight, returnFlights: [], passengers}
       });
@@ -83,7 +83,7 @@ const RoundTripDeparture = () => {
       <div className="row justify-content-center">
         {!loading &&
           (departureFlights.length === 0 ? (
-            <p className="text-muted text-center">🚫 출발 항공편이 없습니다.</p>
+            <p className="text-muted text-center">출발 항공편이 없습니다.</p>
           ) : (
             departureFlights.map(flight => {
               const logoFile = AIRLINE_LOGOS[flight.airline] || 'default.png';

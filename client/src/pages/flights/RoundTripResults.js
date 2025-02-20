@@ -17,7 +17,7 @@ const RoundTripResults = () => {
         {/* 출발 항공편 리스트 */}
         <h3 className="fw-bold mt-4 text-center">🛫 출발 항공편</h3>
         {departureFlights.length === 0 ? (
-          <p className="text-muted text-center">🚫 출발 항공편이 없습니다.</p>
+          <p className="text-muted text-center">출발 항공편이 없습니다.</p>
         ) : (
           <SearchResultsList flights={departureFlights} />
         )}
@@ -25,7 +25,7 @@ const RoundTripResults = () => {
         {/* 돌아오는 항공편 리스트 */}
         <h3 className="fw-bold mt-4 text-center">🛬 돌아오는 항공편</h3>
         {returnFlights.length === 0 ? (
-          <p className="text-muted text-center">🚫 돌아오는 항공편이 없습니다.</p>
+          <p className="text-muted text-center">돌아오는 항공편이 없습니다.</p>
         ) : (
           <SearchResultsList flights={returnFlights} />
         )}

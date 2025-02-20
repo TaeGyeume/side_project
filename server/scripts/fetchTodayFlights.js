@@ -10,12 +10,12 @@ if (!SERVICE_KEY) {
   process.exit(1);
 }
 
-// ✅ 검색할 출발지와 도착지 입력 (예: 김포 → 부산)
+// 검색할 출발지와 도착지 입력 (예: 김포 → 부산)
 const DEPARTURE_AIRPORT = 'GMP'; // 김포공항
 const ARRIVAL_AIRPORT = 'PUS'; // 김해공항
 
 const fetchTodayFlights = async () => {
-  const todayKST = moment().tz('Asia/Seoul').format('YYYYMMDD'); // ✅ 오늘 날짜 (KST 기준)
+  const todayKST = moment().tz('Asia/Seoul').format('YYYYMMDD'); // 오늘 날짜 (KST 기준)
 
   console.log(`🔍 오늘 날짜: ${todayKST}`);
   console.log(`✈️ 검색 기준: ${DEPARTURE_AIRPORT} → ${ARRIVAL_AIRPORT}`);
@@ -37,7 +37,7 @@ const fetchTodayFlights = async () => {
       return;
     }
 
-    console.log('✅ 오늘 운항하는 항공편 목록:');
+    console.log('오늘 운항하는 항공편 목록:');
     const flightList = Array.isArray(flights) ? flights : [flights];
 
     flightList.forEach(flight => {
