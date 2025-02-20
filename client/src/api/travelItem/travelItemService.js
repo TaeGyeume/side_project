@@ -115,3 +115,56 @@ export const fetchTravelItemDetail = async itemId => {
     throw new Error('상품 상세정보를 불러오는 중 오류가 발생했습니다.');
   }
 };
+
+/**
+ * 📝 최상위 카테고리 수정
+ * @param {string} categoryId - 수정할 최상위 카테고리 ID
+ * @param {Object} updateData - 수정할 데이터 (예: { name: '새 카테고리명' })
+ * @returns {Promise<Object>} 수정된 카테고리 정보
+ */
+export const updateTopLevelCategory = async (categoryId, updateData) => {
+  try {
+    const response = await axios.patch(
+      `/travelItems/top-level/${categoryId}`,
+      updateData
+    );
+    return response.data;
+  } catch (error) {
+    console.error('❌ 최상위 카테고리 수정 실패:', error);
+    throw new Error('최상위 카테고리 수정 중 오류가 발생했습니다.');
+  }
+};
+
+/**
+ * 📝 특정 하위 카테고리 수정
+ * @param {string} subCategoryId - 수정할 하위 카테고리 ID
+ * @param {Object} updateData - 수정할 데이터 (예: { name: '새 하위 카테고리명' })
+ * @returns {Promise<Object>} 수정된 하위 카테고리 정보
+ */
+export const updateSubCategory = async (subCategoryId, updateData) => {
+  try {
+    const response = await axios.patch(
+      `/travelItems/sub-category/${subCategoryId}`,
+      updateData
+    );
+    return response.data;
+  } catch (error) {
+    console.error('❌ 하위 카테고리 수정 실패:', error);
+    throw new Error('하위 카테고리 수정 중 오류가 발생했습니다.');
+  }
+};
+
+/**
+ * 🗑 특정 하위 카테고리 삭제
+ * @param {string} categoryId - 삭제할 하위 카테고리 ID
+ * @returns {Promise<void>}
+ */
+export const deleteCategory = async categoryId => {
+  try {
+    await axios.delete(`/travelItems/category/${categoryId}`);
+    console.log(`✅ 카테고리 삭제 완료: ${categoryId}`);
+  } catch (error) {
+    console.error('❌ 하위 카테고리 삭제 실패:', error);
+    throw new Error('하위 카테고리 삭제 중 오류가 발생했습니다.');
+  }
+};
