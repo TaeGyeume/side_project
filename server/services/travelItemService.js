@@ -4,6 +4,10 @@ const path = require('path');
 
 // 상품 생성 서비스
 exports.createTravelItem = async data => {
+  const existingItem = await TravelItem.findOne({name: data.name});
+  if (existingItem) {
+    throw new Error('이미 존재하는 이름입니다. 다른 이름을 입력해주세요.');
+  }
   const newItem = new TravelItem(data);
   return await newItem.save();
 };
@@ -238,6 +242,21 @@ exports.updateTopLevelCategory = async (categoryId, updateData) => {
       throw new Error('해당 최상위 카테고리를 찾을 수 없습니다.');
     }
 
+    // 이름 중복 확인 (자기 자신 제외)
+    if (updateData.name) {
+      const existingCategory = await TravelItem.findOne({
+        name: updateData.name,
+        _id: {$ne: categoryId}, // 현재 카테고리는 제외하고 검색
+        parentCategory: null
+      });
+
+      if (existingCategory) {
+        throw new Error(
+          '이미 존재하는 최상위 카테고리 이름입니다. 다른 이름을 입력해주세요.'
+        );
+      }
+    }
+
     Object.assign(category, updateData);
     await category.save();
 
@@ -256,6 +275,21 @@ exports.updateSubCategory = async (subCategoryId, updateData) => {
 
     if (!subCategory) {
       throw new Error('해당 하위 카테고리를 찾을 수 없습니다.');
+    }
+
+    // 이름 중복 확인 (자기 자신 제외)
+    if (updateData.name) {
+      const existingSubCategory = await TravelItem.findOne({
+        name: updateData.name,
+        _id: {$ne: subCategoryId}, // 현재 카테고리는 제외하고 검색
+        parentCategory: subCategory.parentCategory // 동일한 부모 카테고리 내에서 검색
+      });
+
+      if (existingSubCategory) {
+        throw new Error(
+          '해당 부모 카테고리 내에서 중복된 하위 카테고리 이름이 존재합니다. 다른 이름을 입력해주세요.'
+        );
+      }
     }
 
     Object.assign(subCategory, updateData);
