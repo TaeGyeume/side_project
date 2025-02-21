@@ -8,7 +8,7 @@ const NaverLoginCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('✅ NaverLoginCallback 호출됨');
+    console.log(' NaverLoginCallback 호출됨');
 
     const handleNaverLoginSuccess = async () => {
       try {
@@ -18,10 +18,10 @@ const NaverLoginCallback = () => {
         // 프로필 요청
         await checkAuth();
 
-        console.log('✅ 네이버 로그인 성공, 메인 페이지로 이동');
+        console.log(' 네이버 로그인 성공, 메인 페이지로 이동');
         navigate('/main');
       } catch (error) {
-        console.error('❌ 네이버 로그인 실패:', error);
+        console.error(' 네이버 로그인 실패:', error);
         navigate('/login'); // 인증 실패 시 로그인 페이지로 이동
       }
     };

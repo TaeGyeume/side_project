@@ -77,7 +77,7 @@ export const authAPI = {
   },
 
   getUserProfile: () =>
-    handleRequest(api.get('/auth/profile', requestConfig), '프로필 조회 중 오류 발생'),
+    handleRequest(api.get('/auth/profile', {requestConfig}), '프로필 조회 중 오류 발생'),
 
   checkDuplicate: data => {
     if (!data || Object.values(data).every(val => !val.trim())) {
@@ -153,7 +153,7 @@ export const authAPI = {
     }
   },
 
-  // ✅ 인증 코드 검증 API 추가
+  //  인증 코드 검증 API 추가
   verifyCode: async ({email, code}) => {
     console.log(' [클라이언트] 인증 코드 검증 요청:', email, code); // 디버깅
     return handleRequest(

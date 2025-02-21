@@ -47,7 +47,7 @@ const TourTicketList = () => {
   // 🔹 필터링된 상품 (즐겨찾기 정보 반영)
   const filteredTickets = tickets.map(ticket => ({
     ...ticket,
-    isFavorite: isFavoriteItem(ticket._id) // ✅ 즐겨찾기 상태 반영
+    isFavorite: isFavoriteItem(ticket._id) //  즐겨찾기 상태 반영
   }));
 
   return (
@@ -76,7 +76,7 @@ const TourTicketList = () => {
                 alt={ticket.title}
                 className="ticket-image"
               />
-              {/* ✅ 즐겨찾기 버튼 (즐겨찾기 상태 반영) */}
+              {/*  즐겨찾기 버튼 (즐겨찾기 상태 반영) */}
               <div className="favorite-list-icon">
                 <FavoriteButton
                   itemId={ticket._id}

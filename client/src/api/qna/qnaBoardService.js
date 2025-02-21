@@ -12,30 +12,30 @@ export const createQnaBoard = async data => {
 
     if (hasFiles) {
       requestData = new FormData();
-      console.log('📡 FormData 전송 방식 사용');
+      console.log(' FormData 전송 방식 사용');
 
-      // ✅ 텍스트 데이터 추가
+      //  텍스트 데이터 추가
       requestData.append('category', data.category?.trim() || '');
       requestData.append('title', data.title?.trim() || '');
       requestData.append('content', data.content?.trim() || '');
 
-      // ✅ 이미지 파일 추가
+      //  이미지 파일 추가
       data.images?.forEach(file => {
         if (file) requestData.append('images', file);
       });
 
-      // ✅ 첨부파일 추가
+      //  첨부파일 추가
       data.attachments?.forEach(file => {
         if (file) requestData.append('attachments', file);
       });
 
-      // ✅ FormData 디버깅 로그
-      console.log('📡 최종 전송할 FormData 내용:');
+      //  FormData 디버깅 로그
+      console.log(' 최종 전송할 FormData 내용:');
       for (let [key, value] of requestData.entries()) {
         console.log(`🔹 ${key}:`, value);
       }
     } else {
-      // ✅ JSON 전송 방식
+      //  JSON 전송 방식
       requestData = JSON.stringify({
         category: data.category?.trim() || '',
         title: data.title?.trim() || '',
@@ -47,7 +47,7 @@ export const createQnaBoard = async data => {
       console.log(' JSON 전송 방식 사용:', requestData);
     }
 
-    // ✅ Axios 요청 전송 (headers는 자동 설정)
+    //  Axios 요청 전송 (headers는 자동 설정)
     const response = await axios.post(`${API_BASE_URL}`, requestData, {
       headers: hasFiles ? undefined : {'Content-Type': 'application/json'}, // FormData 사용 시 헤더 제거
       withCredentials: true

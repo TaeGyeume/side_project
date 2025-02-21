@@ -12,7 +12,7 @@ module.exports = {
           https: require.resolve('https-browserify'),
           os: require.resolve('os-browserify/browser'),
           path: require.resolve('path-browserify'),
-          process: require.resolve('process'), // ✅ 수정된 부분
+          process: require.resolve('process'), // 수정된 부분
           querystring: require.resolve('querystring-es3'),
           stream: require.resolve('stream-browserify'),
           url: require.resolve('url/'),
