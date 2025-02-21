@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { getReviews, likeReview } from '../../api/review/reviewService';
-import { AiOutlineLike, AiOutlineMore } from 'react-icons/ai';
+import React, {useEffect, useState} from 'react';
+import {getReviews, likeReview} from '../../api/review/reviewService';
+import {AiOutlineLike, AiOutlineMore} from 'react-icons/ai';
 import './styles/ReviewList.css';
 import authAPI from '../../api/auth/auth';
 
-const ReviewList = ({ productId }) => {
+const ReviewList = ({productId}) => {
   const [reviews, setReviews] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState({}); // 열린 메뉴 상태
@@ -33,33 +33,33 @@ const ReviewList = ({ productId }) => {
     fetchCurrentUser();
   }, [productId]);
 
-  const toggleMenu = (reviewId) => {
-    setMenuOpen((prev) => ({
+  const toggleMenu = reviewId => {
+    setMenuOpen(prev => ({
       ...prev,
-      [reviewId]: !prev[reviewId],
+      [reviewId]: !prev[reviewId]
     }));
   };
 
-  const handleLike = async (reviewId) => {
+  const handleLike = async reviewId => {
     try {
       const data = await likeReview(reviewId);
-      setReviews((prevReviews) =>
-        prevReviews.map((r) => (r._id === reviewId ? { ...r, likes: data.likes } : r))
+      setReviews(prevReviews =>
+        prevReviews.map(r => (r._id === reviewId ? {...r, likes: data.likes} : r))
       );
     } catch (err) {
       alert('좋아요 처리 실패');
     }
   };
 
-  const handleEdit = (reviewId) => {
+  const handleEdit = reviewId => {
     alert(`리뷰 ${reviewId} 수정하기`);
   };
 
-  const handleDelete = (reviewId) => {
+  const handleDelete = reviewId => {
     alert(`리뷰 ${reviewId} 삭제하기`);
   };
 
-  const handleAddComment = (reviewId) => {
+  const handleAddComment = reviewId => {
     alert(`리뷰 ${reviewId}에 댓글 추가`);
   };
 
@@ -68,11 +68,15 @@ const ReviewList = ({ productId }) => {
       {reviews.length === 0 ? (
         <p className="no-reviews">등록된 리뷰가 없습니다.</p>
       ) : (
-        reviews.map((review) => (
+        reviews.map(review => (
           <div key={review._id} className="review-card">
             <div className="review-header">
-              <span className="review-username">{review.userId.username || '익명 사용자'}</span>
-              <span className="review-date">{new Date(review.createdAt).toISOString().substring(0, 10)}</span>
+              <span className="review-username">
+                {review.userId.username || '익명 사용자'}
+              </span>
+              <span className="review-date">
+                {new Date(review.createdAt).toISOString().substring(0, 10)}
+              </span>
             </div>
 
             {review.images && review.images.length > 0 && (
@@ -98,7 +102,10 @@ const ReviewList = ({ productId }) => {
 
               {/* 케밥 메뉴 */}
               <div className="kebab-menu">
-                <AiOutlineMore onClick={() => toggleMenu(review._id)} className="kebab-icon" />
+                <AiOutlineMore
+                  onClick={() => toggleMenu(review._id)}
+                  className="kebab-icon"
+                />
 
                 {menuOpen[review._id] && (
                   <div className="menu-options">
@@ -107,14 +114,22 @@ const ReviewList = ({ productId }) => {
                       <>
                         {currentUser._id === review.userId._id && (
                           <>
-                            <button onClick={() => handleEdit(review._id)}>수정하기</button>
-                            <button onClick={() => handleDelete(review._id)}>삭제하기</button>
+                            <button onClick={() => handleEdit(review._id)}>
+                              수정하기
+                            </button>
+                            <button onClick={() => handleDelete(review._id)}>
+                              삭제하기
+                            </button>
                           </>
                         )}
                         {currentUser.isAdmin && (
                           <>
-                            <button onClick={() => handleAddComment(review._id)}>댓글 달기</button>
-                            <button onClick={() => handleDelete(review._id)}>삭제하기</button>
+                            <button onClick={() => handleAddComment(review._id)}>
+                              댓글 달기
+                            </button>
+                            <button onClick={() => handleDelete(review._id)}>
+                              삭제하기
+                            </button>
                           </>
                         )}
                       </>

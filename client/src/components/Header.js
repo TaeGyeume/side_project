@@ -80,7 +80,7 @@ const Header = () => {
         position="sticky"
         sx={{
           backgroundImage:
-            'linear-gradient(90deg,rgb(200, 196, 255) 0%,rgb(162, 192, 255) 50%,rgb(218, 194, 255) 100%)',
+            'linear-gradient(90deg, rgb(0, 181, 204) 0%, rgb(0, 51, 102) 100%)', // 오션 블루 → 다크 블루
           boxShadow: 3
         }}>
         <Toolbar>
