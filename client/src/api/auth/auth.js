@@ -8,39 +8,27 @@ const requestConfig = {
   }
 };
 
-let isRefreshing = false; // 리프레시 토큰 요청 상태 관리
+// let isRefreshing = false; // 리프레시 토큰 요청 상태 관리
 
-// 공통 요청 처리 함수 (에러 핸들링 + 리프레시 토큰 처리 추가)
 const handleRequest = async (requestPromise, errorMessage) => {
   try {
     const response = await requestPromise;
     return response.data;
   } catch (error) {
-    const originalRequest = error.config; // 요청의 설정을 가져옴
-    if (!originalRequest) {
-      console.error('오류: 요청 객체가 없습니다.', error);
-      throw new Error('요청 객체가 존재하지 않습니다.');
-    }
+    const originalRequest = error.config;
 
-    // 401 Unauthorized 처리 (리프레시 토큰 재발급)
     if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        return Promise.reject(error);
-      }
-
-      originalRequest._retry = true; // 재시도 방지 flag 설정
-      isRefreshing = true;
-
-      try {
-        console.log('액세스 토큰 만료, 리프레시 토큰 요청 중...');
-        await authAPI.refreshToken(); // 새 액세스 토큰 요청
-        isRefreshing = false;
-        return api(originalRequest); // 원래 요청 다시 시도
-      } catch (refreshError) {
-        console.error('리프레시 토큰 만료, 로그인 필요');
-        authAPI.logoutUser();
-        isRefreshing = false;
-        throw refreshError;
+      console.log('401 Unauthorized 발생: 리프레시 토큰 요청 시도');
+      if (!originalRequest._retry) {
+        originalRequest._retry = true;
+        try {
+          await authAPI.refreshToken(); // 리프레시 토큰 요청
+          return api(originalRequest); // 원래 요청 다시 시도
+        } catch (refreshError) {
+          console.error('리프레시 토큰 만료, 로그인 필요');
+          authAPI.logoutUser(); // 로그아웃 처리
+          throw refreshError;
+        }
       }
     }
 
@@ -77,7 +65,7 @@ export const authAPI = {
   },
 
   getUserProfile: () =>
-    handleRequest(api.get('/auth/profile', {requestConfig}), '프로필 조회 중 오류 발생'),
+    handleRequest(api.get('/auth/profile', requestConfig), '프로필 조회 중 오류 발생'),
 
   checkDuplicate: data => {
     if (!data || Object.values(data).every(val => !val.trim())) {
@@ -130,6 +118,7 @@ export const authAPI = {
         api.post('/auth/refresh-token', {}, requestConfig),
         '리프레시 토큰 갱신 중 오류 발생'
       );
+      console.log('✅ 새 액세스 토큰 수신:', response);
       return response;
     } catch (error) {
       console.error('리프레시 토큰 갱신 실패');

@@ -38,9 +38,9 @@ const FavoriteButton = ({itemId, itemType, initialFavoriteStatus}) => {
   return (
     <button
       onClick={handleFavoriteToggle}
-      className={`favorite-button ${isFavorite ? 'favorite' : ''}`} //  UI 업데이트
+      className={`favorite-button ${isFavorite ? 'favorite' : ''}`} // UI 업데이트
       disabled={loading}>
-      <i className={`fas fa-bookmark ${isFavorite ? 'favorite' : ''}`} />
+      <i className={isFavorite ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark'} />
     </button>
   );
 };
