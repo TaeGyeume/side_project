@@ -6,7 +6,7 @@ import './styles/QnaBoardWrite.css';
 const QnaBoardWrite = () => {
   const navigate = useNavigate();
 
-  // ✅ 폼 상태 관리
+  //  폼 상태 관리
   const [formData, setFormData] = useState({
     category: '',
     title: '',
@@ -15,11 +15,11 @@ const QnaBoardWrite = () => {
     attachments: []
   });
 
-  const [imagePreviews, setImagePreviews] = useState([]); // ✅ 이미지 미리보기
-  const [fileNames, setFileNames] = useState([]); // ✅ 첨부파일 리스트
+  const [imagePreviews, setImagePreviews] = useState([]); //  이미지 미리보기
+  const [fileNames, setFileNames] = useState([]); //  첨부파일 리스트
   const [loading, setLoading] = useState(false);
 
-  // ✅ 카테고리 옵션
+  //  카테고리 옵션
   const categories = [
     '회원 정보 문의',
     '회원 가입 문의',
@@ -33,31 +33,34 @@ const QnaBoardWrite = () => {
     '기타 문의'
   ];
 
-  // ✅ 입력 변경 핸들러
+  //  입력 변경 핸들러
   const handleChange = e => {
     setFormData({...formData, [e.target.name]: e.target.value});
   };
 
-  // ✅ 파일 업로드 핸들러
+  //  파일 업로드 핸들러
   const handleFileChange = e => {
     const {name, files} = e.target;
+    const fileArray = Array.from(files);
 
     if (name === 'images') {
-      // ✅ 이미지 미리보기 처리
-      const previews = Array.from(files).map(file => URL.createObjectURL(file));
+      // 이미지 미리보기 생성
+      const previews = fileArray.map(file => URL.createObjectURL(file));
       setImagePreviews(previews);
     } else if (name === 'attachments') {
-      // ✅ 첨부파일 리스트 처리
-      const fileList = Array.from(files).map(file => file.name);
+      // 첨부파일 리스트 업데이트
+      const fileList = fileArray.map(file => file.name);
       setFileNames(fileList);
     }
 
-    setFormData({...formData, [name]: files});
+    setFormData({...formData, [name]: fileArray});
   };
 
-  // ✅ 게시글 제출 핸들러
+  //  게시글 제출 핸들러
   const handleSubmit = async e => {
     e.preventDefault();
+
+    console.log('🚀 업로드 데이터:', formData);
 
     if (!formData.category || !formData.title || !formData.content) {
       alert('카테고리, 제목, 내용을 입력하세요.');
@@ -72,30 +75,36 @@ const QnaBoardWrite = () => {
       form.append('title', formData.title);
       form.append('content', formData.content);
 
-      // 파일 추가
-      if (formData.images.length > 0) {
-        Array.from(formData.images).forEach(file => form.append('images', file));
-      }
-      if (formData.attachments.length > 0) {
-        Array.from(formData.attachments).forEach(file =>
-          form.append('attachments', file)
-        );
-      }
+      // 🔹 이미지 추가
+      formData.images.forEach(file => {
+        if (file instanceof File) {
+          form.append('images', file);
+        }
+      });
 
-      console.log('📡 전송할 FormData 내용:');
+      // 🔹 첨부파일 추가
+      formData.attachments.forEach(file => {
+        if (file instanceof File) {
+          form.append('attachments', file);
+        }
+      });
+
+      console.log('✅ 전송할 FormData 내용:');
       for (let [key, value] of form.entries()) {
         console.log(`🔹 ${key}:`, value);
       }
 
-      const response = await createQnaBoard(form, true); // 'true'는 multipart 처리
-      alert('게시글이 작성되었습니다.');
+      // ✅ Axios 요청 실행 (headers를 지정하지 않음)
+      await createQnaBoard(form);
+
+      alert('게시글이 성공적으로 등록되었습니다!');
       navigate('/qna');
     } catch (error) {
       console.error('❌ QnA 게시글 작성 오류:', error);
       alert('게시글 작성에 실패했습니다.');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -145,7 +154,7 @@ const QnaBoardWrite = () => {
           onChange={handleFileChange}
         />
 
-        {/* ✅ 이미지 미리보기 */}
+        {/* 이미지 미리보기 */}
         <div className="image-preview-container">
           {imagePreviews.map((src, index) => (
             <img
@@ -167,7 +176,7 @@ const QnaBoardWrite = () => {
           onChange={handleFileChange}
         />
 
-        {/* ✅ 첨부파일 리스트 */}
+        {/* 첨부파일 리스트 */}
         <ul className="file-list">
           {fileNames.map((file, index) => (
             <li key={index}>{file}</li>

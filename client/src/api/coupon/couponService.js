@@ -1,7 +1,7 @@
 import axios from '../../api/axios';
 
 /**
- * ✅ 새로운 쿠폰 추가
+ * 새로운 쿠폰 추가
  * @param {Object} couponData - 추가할 쿠폰 데이터
  * @returns {Promise<Object>}
  */
@@ -10,7 +10,7 @@ export const createCoupon = async couponData => {
 };
 
 /**
- * ✅ 모든 쿠폰 가져오기
+ * 모든 쿠폰 가져오기
  * @returns {Promise<Array>} - 쿠폰 목록
  */
 export const fetchCoupons = async () => {
@@ -23,7 +23,7 @@ export const fetchCoupons = async () => {
 };
 
 /**
- * ✅ 유저의 등급에 맞는 쿠폰 가져오기
+ * 유저의 등급에 맞는 쿠폰 가져오기
  * @param {string} membershipLevel - 현재 유저의 등급
  * @returns {Promise<Array>} - 해당 등급의 쿠폰 목록
  */
@@ -39,7 +39,7 @@ export const fetchCouponsByMembership = async membershipLevel => {
 };
 
 /**
- * ✅ 유저가 쿠폰 다운로드 (쿠폰 받기)
+ * 유저가 쿠폰 다운로드 (쿠폰 받기)
  * @param {string} userId - 유저 ID
  * @param {string} couponId - 받을 쿠폰 ID
  * @returns {Promise<Object>}
@@ -54,7 +54,7 @@ export const claimCoupon = async (userId, couponId) => {
 };
 
 /**
- * ✅ 특정 쿠폰 삭제하기
+ * 특정 쿠폰 삭제하기
  * @param {string} couponId - 삭제할 쿠폰의 ID
  */
 export const deleteCoupon = async couponId => {
@@ -67,7 +67,7 @@ export const deleteCoupon = async couponId => {
 };
 
 /**
- * ✅ 내가 받은 쿠폰 조회
+ * 내가 받은 쿠폰 조회
  * @param {string} userId - 현재 로그인한 유저 ID
  * @returns {Promise<Array>} - 받은 쿠폰 목록
  */

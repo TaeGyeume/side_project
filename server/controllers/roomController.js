@@ -7,9 +7,9 @@ const fs = require('fs');
 exports.createRoom = async (req, res) => {
   try {
     const roomData = req.body;
-    const imageFiles = req.files; // 🔥 파일 가져오기
+    const imageFiles = req.files; // 파일 가져오기
 
-    // **🔥 amenities가 문자열이면 배열로 변환**
+    // **amenities가 문자열이면 배열로 변환**
     if (typeof roomData.amenities === 'string') {
       try {
         roomData.amenities = JSON.parse(roomData.amenities);
@@ -27,14 +27,14 @@ exports.createRoom = async (req, res) => {
   }
 };
 
-// ✅ 객실 업데이트 컨트롤러 (이미지 업로드 지원)
+// 객실 업데이트 컨트롤러 (이미지 업로드 지원)
 exports.updateRoom = async (req, res) => {
   try {
     const {roomId} = req.params; // URL에서 객실 ID 추출
     const updatedData = req.body; // 요청 데이터
-    const imageFiles = req.files; // 🔥 파일 가져오기
+    const imageFiles = req.files; // 파일 가져오기
 
-    // 🔥 amenities가 문자열이면 배열로 변환
+    // amenities가 문자열이면 배열로 변환
     if (typeof updatedData.amenities === 'string') {
       try {
         updatedData.amenities = JSON.parse(updatedData.amenities);
@@ -59,7 +59,7 @@ exports.updateRoom = async (req, res) => {
   }
 };
 
-// ✅ 객실 삭제 컨트롤러
+// 객실 삭제 컨트롤러
 exports.deleteRoom = async (req, res) => {
   try {
     const {roomId} = req.params;
@@ -95,71 +95,71 @@ exports.getRoomById = async (req, res) => {
   }
 };
 
-// ✅ 개별 객실 이미지 삭제 API (디버깅 추가)
+// 개별 객실 이미지 삭제 API (디버깅 추가)
 exports.deleteRoomImage = async (req, res) => {
   try {
     const {roomId} = req.params;
-    console.log('📌 DELETE 요청에서 받은 roomId:', roomId);
-    console.log('📌 DELETE 요청에서 받은 body:', req.body);
+    console.log('DELETE 요청에서 받은 roomId:', roomId);
+    console.log('DELETE 요청에서 받은 body:', req.body);
 
     let deletedImages = req.body.deletedImages;
 
-    // ✅ deletedImages가 undefined인지 확인
+    // deletedImages가 undefined인지 확인
     if (!deletedImages) {
-      console.log('❌ 삭제할 이미지 목록이 없습니다.');
+      console.log('삭제할 이미지 목록이 없습니다.');
       return res.status(400).json({message: '삭제할 이미지 목록이 없습니다.'});
     }
 
-    // ✅ JSON 변환 확인
+    // JSON 변환 확인
     if (typeof deletedImages === 'string') {
       try {
         deletedImages = JSON.parse(deletedImages);
       } catch (error) {
-        console.log('❌ JSON 변환 실패:', error);
+        console.log('JSON 변환 실패:', error);
         return res.status(400).json({message: '올바른 JSON 형식이 아닙니다.'});
       }
     }
 
-    console.log('🚀 서버에서 받은 삭제할 이미지 목록:', deletedImages);
+    console.log('서버에서 받은 삭제할 이미지 목록:', deletedImages);
 
     if (!Array.isArray(deletedImages) || deletedImages.length === 0) {
-      console.log('❌ 삭제할 이미지 목록이 비어 있습니다.');
+      console.log('삭제할 이미지 목록이 비어 있습니다.');
       return res.status(400).json({message: '삭제할 이미지가 없습니다.'});
     }
 
-    // ✅ 해당 객실 찾기
+    // 해당 객실 찾기
     const room = await Room.findById(roomId);
     if (!room) {
-      console.log('❌ 해당 roomId의 객실을 찾을 수 없음:', roomId);
+      console.log('해당 roomId의 객실을 찾을 수 없음:', roomId);
       return res.status(404).json({message: '객실을 찾을 수 없습니다.'});
     }
 
-    console.log('✅ 객실 찾기 성공:', room);
+    console.log('객실 찾기 성공:', room);
 
-    // ✅ 기존 이미지 목록 확인
-    console.log('📌 현재 객실의 이미지 목록:', room.images);
+    // 기존 이미지 목록 확인
+    console.log('현재 객실의 이미지 목록:', room.images);
 
-    // ✅ 삭제할 이미지가 객실에 존재하는지 확인
+    // 삭제할 이미지가 객실에 존재하는지 확인
     const imagesToRemove = deletedImages.filter(img => room.images.includes(img));
     if (imagesToRemove.length === 0) {
-      console.log('❌ 삭제할 이미지가 객실에 존재하지 않음:', deletedImages);
+      console.log('삭제할 이미지가 객실에 존재하지 않음:', deletedImages);
       return res
         .status(404)
         .json({message: '해당 이미지는 객실에 등록되어 있지 않습니다.'});
     }
 
-    console.log('🗑️ 삭제할 이미지 목록:', imagesToRemove);
+    console.log('삭제할 이미지 목록:', imagesToRemove);
 
-    // ✅ DB에서 이미지 제거
+    // DB에서 이미지 제거
     room.images = room.images.filter(img => !deletedImages.includes(img));
     await room.save();
 
-    console.log('✅ DB에서 이미지 삭제 완료. 남은 이미지 목록:', room.images);
+    console.log('DB에서 이미지 삭제 완료. 남은 이미지 목록:', room.images);
 
-    // ✅ 서버에서 실제 이미지 파일 삭제
+    // 서버에서 실제 이미지 파일 삭제
     imagesToRemove.forEach(imagePath => {
       if (!imagePath) {
-        console.warn('⚠️ 잘못된 이미지 경로가 감지됨:', imagePath);
+        console.warn('잘못된 이미지 경로가 감지됨:', imagePath);
         return;
       }
 
@@ -168,15 +168,15 @@ exports.deleteRoomImage = async (req, res) => {
         '../uploads',
         imagePath.replace('/uploads/', '')
       );
-      console.log('🗑️ 삭제할 파일 경로:', absoluteFilePath);
+      console.log('삭제할 파일 경로:', absoluteFilePath);
 
       if (fs.existsSync(absoluteFilePath)) {
         fs.unlink(absoluteFilePath, err => {
-          if (err) console.error('❌ 이미지 삭제 오류:', err);
-          else console.log('✅ 이미지 삭제 성공:', absoluteFilePath);
+          if (err) console.error('이미지 삭제 오류:', err);
+          else console.log('이미지 삭제 성공:', absoluteFilePath);
         });
       } else {
-        console.warn('⚠️ 삭제할 이미지 파일이 존재하지 않음:', absoluteFilePath);
+        console.warn('삭제할 이미지 파일이 존재하지 않음:', absoluteFilePath);
       }
     });
 
@@ -184,7 +184,7 @@ exports.deleteRoomImage = async (req, res) => {
       .status(200)
       .json({message: '이미지가 삭제되었습니다.', images: room.images});
   } catch (error) {
-    console.error('🔥 이미지 삭제 오류:', error);
+    console.error('이미지 삭제 오류:', error);
     return res.status(500).json({message: '서버 오류로 인해 이미지 삭제 실패'});
   }
 };

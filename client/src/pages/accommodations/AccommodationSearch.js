@@ -2,13 +2,29 @@
 import React from 'react';
 import {useNavigate} from 'react-router-dom';
 import SearchBar from '../../components/accommodations/SearchBar';
+import AdBanner from '../../components/ad/AdBanner';
 
-// ✅ 오늘 날짜를 YYYY-MM-DD 포맷으로 반환하는 함수
+// 오늘 날짜를 YYYY-MM-DD 포맷으로 반환하는 함수
 const getFormattedDate = (daysToAdd = 0) => {
   const date = new Date();
   date.setDate(date.getDate() + daysToAdd);
   return date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
 };
+
+const bannerData = [
+  {
+    image: '/images/ad/accommodation1.jpg'
+  },
+  {
+    image: '/images/ad/accommodation2.png'
+  },
+  {
+    image: '/images/ad/accommodation3.png'
+  },
+  {
+    image: '/images/ad/accommodation4.jpg'
+  }
+];
 
 const AccommodationSearch = () => {
   const navigate = useNavigate();
@@ -23,7 +39,7 @@ const AccommodationSearch = () => {
 
     searchTerm = searchTerm.trim() || '서울';
 
-    // ✅ 기본 필터값 설정
+    // 기본 필터값 설정
     const defaultFilters = {
       startDate: startDate || getFormattedDate(1), // 내일 날짜
       endDate: endDate || getFormattedDate(2), // 모레 날짜
@@ -33,7 +49,7 @@ const AccommodationSearch = () => {
       sortBy: 'default'
     };
 
-    // ✅ 검색 버튼 클릭 시 기본 필터값 포함하여 검색 결과 페이지로 이동
+    // 검색 버튼 클릭 시 기본 필터값 포함하여 검색 결과 페이지로 이동
     navigate(
       `/accommodations/results?city=${searchTerm}&startDate=${defaultFilters.startDate}&endDate=${defaultFilters.endDate}` +
         `&adults=${adults}&minPrice=${defaultFilters.minPrice}&maxPrice=${defaultFilters.maxPrice}` +
@@ -45,6 +61,8 @@ const AccommodationSearch = () => {
     <div className="container mt-3">
       <h2>숙소 검색</h2>
       <SearchBar onSearch={handleSearch} />
+
+      <AdBanner banners={bannerData} />
     </div>
   );
 };

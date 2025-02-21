@@ -1,10 +1,10 @@
 import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import {searchAccommodations} from '../../api/accommodation/accommodationService';
-import {getUserFavorites} from '../../api/user/favoriteService'; // ✅ 즐겨찾기 목록 가져오기 추가
+import {getUserFavorites} from '../../api/user/favoriteService'; // 즐겨찾기 목록 가져오기 추가
 import {SearchBar, FilterPanel, AccommodationCard} from '../../components/accommodations';
 
-// ✅ 오늘 날짜를 YYYY-MM-DD 포맷으로 반환하는 함수
+// 오늘 날짜를 YYYY-MM-DD 포맷으로 반환하는 함수
 const getFormattedDate = (daysToAdd = 0) => {
   const date = new Date();
   date.setDate(date.getDate() + daysToAdd);
@@ -14,14 +14,14 @@ const getFormattedDate = (daysToAdd = 0) => {
 const AccommodationResults = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [accommodations, setAccommodations] = useState([]);
-  const [favorites, setFavorites] = useState([]); // ✅ 즐겨찾기 목록 추가
+  const [favorites, setFavorites] = useState([]); // 즐겨찾기 목록 추가
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const observerRef = useRef(null);
-  const loadingRef = useRef(false); // ✅ 중복 요청 방지
+  const loadingRef = useRef(false); // 중복 요청 방지
 
-  // ✅ 필터 상태 (초기값 설정 + URL 인코딩 해결)
+  // 필터 상태 (초기값 설정 + URL 인코딩 해결)
   const [filters, setFilters] = useState(() => ({
     city: decodeURIComponent(searchParams.get('city') || '서울'),
     startDate: searchParams.get('startDate') || getFormattedDate(1),
@@ -33,17 +33,17 @@ const AccommodationResults = () => {
     sortBy: searchParams.get('sortBy') || 'default'
   }));
 
-  // ✅ 즐겨찾기 목록 불러오기
+  // 즐겨찾기 목록 불러오기
   const fetchFavorites = async () => {
     try {
       const response = await getUserFavorites();
-      setFavorites(response.favorites.map(fav => fav.itemId)); // ✅ 즐겨찾기 ID만 저장
+      setFavorites(response.favorites.map(fav => fav.itemId)); // 즐겨찾기 ID만 저장
     } catch (error) {
-      // console.error('❌ 즐겨찾기 목록 가져오기 오류:', error);
+      // console.error('즐겨찾기 목록 가져오기 오류:', error);
     }
   };
 
-  // ✅ 숙소 데이터 불러오기 함수
+  // 숙소 데이터 불러오기 함수
   const fetchAccommodations = useCallback(
     async (updatedFilters, newPage = 1, reset = false) => {
       if (loadingRef.current || newPage > totalPages) return;
@@ -52,7 +52,7 @@ const AccommodationResults = () => {
       setLoading(true);
 
       try {
-        console.log('📌 검색 요청 params:', {...updatedFilters, page: newPage});
+        console.log('검색 요청 params:', {...updatedFilters, page: newPage});
         const {accommodations: newData, totalPages: newTotalPages} =
           await searchAccommodations(updatedFilters, newPage);
 
@@ -76,7 +76,7 @@ const AccommodationResults = () => {
     [totalPages]
   );
 
-  // ✅ 즐겨찾기 상태 업데이트 함수
+  // 즐겨찾기 상태 업데이트 함수
   const handleFavoriteToggle = (itemId, newStatus) => {
     setFavorites(prevFavorites => {
       if (newStatus) {
@@ -87,7 +87,7 @@ const AccommodationResults = () => {
     });
   };
 
-  // ✅ 검색 실행 (SearchBar에서 호출)
+  // 검색 실행 (SearchBar에서 호출)
   const handleSearch = ({searchTerm, startDate, endDate, adults}) => {
     if (!searchTerm || typeof searchTerm !== 'string') {
       alert('유효한 검색어를 입력해주세요!');
@@ -99,32 +99,32 @@ const AccommodationResults = () => {
     const newFilters = {...filters, city: searchTerm, startDate, endDate, adults};
     setFilters(newFilters);
     setSearchParams(newFilters);
-    fetchAccommodations(newFilters, 1, true); // ✅ 검색 요청 실행 (데이터 초기화)
+    fetchAccommodations(newFilters, 1, true); // 검색 요청 실행 (데이터 초기화)
   };
 
-  // ✅ 필터 변경 시 API 요청 실행
+  // 필터 변경 시 API 요청 실행
   const handleFilterChange = useCallback(newFilters => {
     setFilters(prev => ({...prev, ...newFilters}));
   }, []);
 
   useEffect(() => {
-    setSearchParams(filters); // ✅ 렌더링 후에 실행
-    fetchAccommodations(filters, 1, true); // ✅ 렌더링 후에 실행
+    setSearchParams(filters); // 렌더링 후에 실행
+    fetchAccommodations(filters, 1, true); // 렌더링 후에 실행
   }, [filters, setSearchParams, fetchAccommodations]);
 
-  // ✅ 숙소 데이터를 불러올 때 즐겨찾기도 함께 불러오기
+  // 숙소 데이터를 불러올 때 즐겨찾기도 함께 불러오기
   useEffect(() => {
     fetchAccommodations(filters, 1, true);
-    fetchFavorites(); // ✅ 즐겨찾기 목록도 가져오기
+    fetchFavorites(); // 즐겨찾기 목록도 가져오기
   }, [filters, fetchAccommodations]);
 
-  // ✅ 푸터 위에서 observer 감지하도록 설정
+  // 푸터 위에서 observer 감지하도록 설정
   useEffect(() => {
     fetchAccommodations(filters, 1, true);
     fetchFavorites();
   }, [filters, fetchAccommodations]);
 
-  // ✅ Intersection Observer (푸터보다 위에서 감지되도록 조정)
+  // Intersection Observer (푸터보다 위에서 감지되도록 조정)
   useEffect(() => {
     if (!observerRef.current) return;
     const observer = new IntersectionObserver(
@@ -156,8 +156,8 @@ const AccommodationResults = () => {
               key={acc._id}
               accommodation={acc}
               queryOptions={filters}
-              isFavorite={favorites.includes(acc._id)} // ✅ 즐겨찾기 여부 전달
-              onFavoriteToggle={handleFavoriteToggle} // ✅ 즐겨찾기 상태 변경 함수 전달
+              isFavorite={favorites.includes(acc._id)} // 즐겨찾기 여부 전달
+              onFavoriteToggle={handleFavoriteToggle} // 즐겨찾기 상태 변경 함수 전달
             />
           ))}
           <div ref={observerRef} style={{height: '50px', background: 'transparent'}} />

@@ -4,7 +4,7 @@ import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
-// ✅ 공항별 대표 이미지 매핑
+// 공항별 대표 이미지 매핑
 const FLIGHT_IMAGES = {
   제주: '/images/flightscard/jeju.jpg',
   부산: '/images/flightscard/busan.jpg',
@@ -14,7 +14,7 @@ const FLIGHT_IMAGES = {
   여수: '/images/flightscard/yeosu.jpg'
 };
 
-// ✅ IATA 코드 → 한글 도시명 변환
+// IATA 코드 → 한글 도시명 변환
 const AIRPORT_NAMES = {
   GMP: '서울', // 김포공항 → 서울
   PUS: '부산', // 김해공항 → 부산
@@ -32,13 +32,13 @@ const FlightCardList = ({flights}) => {
     navigate('/flights/results', {state: {selectedFlight: flight}});
   };
 
-  // ✅ 김포공항 출발 & 각 도착 공항별 가장 저렴한 항공편 선택
+  // 김포공항 출발 & 각 도착 공항별 가장 저렴한 항공편 선택
   const uniqueFlights = [];
   const seenAirports = new Set();
 
   flights
-    .filter(flight => flight.departure.airport === 'GMP') // ✅ 김포공항 출발 필터링
-    .sort((a, b) => a.price - b.price) // ✅ 가격 기준 정렬 (저렴한 것 우선)
+    .filter(flight => flight.departure.airport === 'GMP') // 김포공항 출발 필터링
+    .sort((a, b) => a.price - b.price) // 가격 기준 정렬 (저렴한 것 우선)
     .forEach(flight => {
       if (!seenAirports.has(flight.arrival.airport)) {
         seenAirports.add(flight.arrival.airport);
@@ -46,7 +46,7 @@ const FlightCardList = ({flights}) => {
       }
     });
 
-  // ✅ 슬라이더 설정
+  // 슬라이더 설정
   const settings = {
     dots: false,
     infinite: true,
@@ -63,7 +63,7 @@ const FlightCardList = ({flights}) => {
         🧸 나를 위한 리셋, 마음을 담은 국내 여행 💕 🧳
       </h2>
 
-      {/* ✅ 슬라이더를 감싸는 div에 position: relative 추가 */}
+      {/* 슬라이더를 감싸는 div에 position: relative 추가 */}
       <div className="position-relative">
         <Slider {...settings}>
           {uniqueFlights.map(flight => {
@@ -113,7 +113,7 @@ const FlightCardList = ({flights}) => {
   );
 };
 
-// ✅ 커스텀 화살표 (Next)
+// 커스텀 화살표 (Next)
 const NextArrow = ({onClick}) => (
   <div
     className="slick-arrow slick-next"
@@ -139,7 +139,7 @@ const NextArrow = ({onClick}) => (
   </div>
 );
 
-// ✅ 커스텀 화살표 (Prev)
+// 커스텀 화살표 (Prev)
 const PrevArrow = ({onClick}) => (
   <div
     className="slick-arrow slick-prev"

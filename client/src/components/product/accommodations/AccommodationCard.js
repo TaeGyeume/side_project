@@ -4,7 +4,7 @@ import {createSearchParams, useNavigate} from 'react-router-dom';
 import {deleteAccommodation} from '../../../api/accommodation/accommodationService';
 import './styles/AccommodationCard.css';
 
-// ✅ 기본 날짜 설정 함수 (오늘 + n일)
+// 기본 날짜 설정 함수 (오늘 + n일)
 const getFormattedDate = (daysToAdd = 0) => {
   const date = new Date();
   date.setDate(date.getDate() + daysToAdd);
@@ -16,9 +16,9 @@ const AccommodationCard = ({
   queryOptions = {},
   onAccommodationDeleted
 }) => {
-  const navigate = useNavigate(); // ✅ 페이지 이동을 위한 `useNavigate` 사용
+  const navigate = useNavigate(); // 페이지 이동을 위한 `useNavigate` 사용
 
-  // ✅ 기본 필터값 설정 (queryOptions가 없을 경우 적용)
+  // 기본 필터값 설정 (queryOptions가 없을 경우 적용)
   const params = {
     city: queryOptions.city || '서울',
     startDate: queryOptions.startDate || getFormattedDate(1), // 내일
@@ -30,7 +30,7 @@ const AccommodationCard = ({
     sortBy: queryOptions.sortBy || 'default'
   };
 
-  // ✅ 카드 클릭 시 상세 페이지로 이동
+  // 카드 클릭 시 상세 페이지로 이동
   const handleCardClick = () => {
     const url = `/accommodations/${accommodation._id}/detail?${createSearchParams(
       params
@@ -38,13 +38,13 @@ const AccommodationCard = ({
     window.open(url, '_blank');
   };
 
-  // ✅ 수정 페이지로 이동
+  // 수정 페이지로 이동
   const handleModifyClick = e => {
     e.stopPropagation(); // 카드 클릭 이벤트 방지
     navigate(`/product/accommodations/modify/${accommodation._id}`);
   };
 
-  // ✅ 숙소 삭제 핸들러
+  // 숙소 삭제 핸들러
   const handleDeleteClick = async e => {
     e.stopPropagation(); // 카드 클릭 이벤트 방지
 
@@ -56,7 +56,7 @@ const AccommodationCard = ({
     try {
       await deleteAccommodation(accommodation._id);
 
-      alert('✅ 숙소가 삭제되었습니다.');
+      alert('숙소가 삭제되었습니다.');
 
       if (onAccommodationDeleted) {
         onAccommodationDeleted(accommodation._id); // 부모 컴포넌트에서 목록 업데이트
@@ -64,12 +64,12 @@ const AccommodationCard = ({
         window.location.reload(); // 현재 페이지 새로고침
       }
     } catch (err) {
-      console.error('❌ 숙소 삭제 오류:', err);
-      alert('❌ 숙소 삭제에 실패했습니다.');
+      console.error('숙소 삭제 오류:', err);
+      alert('숙소 삭제에 실패했습니다.');
     }
   };
 
-  // ✅ 이미지 URL 변환 로직 추가
+  // 이미지 URL 변환 로직 추가
   const SERVER_URL = 'http://localhost:5000';
   let imageUrl = accommodation.images?.[0] || '/default-image.jpg';
 

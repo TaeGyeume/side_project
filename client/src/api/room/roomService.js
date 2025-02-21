@@ -19,7 +19,7 @@ export const getRoomById = async roomId => {
     const response = await axios.get(`/rooms/${roomId}`);
     return response.data;
   } catch (error) {
-    console.error('❌ 객실 정보 가져오기 실패:', error);
+    console.error('객실 정보 가져오기 실패:', error);
     throw new Error('객실 정보를 가져오는 중 오류 발생');
   }
 };

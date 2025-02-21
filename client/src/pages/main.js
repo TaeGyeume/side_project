@@ -10,7 +10,7 @@ const Main = () => {
       <ConsoleLogo />
       <h2 className="text-center mb-4">메인페이지입니다</h2>
 
-      {/* ✅ Flexbox 기반 레이아웃 적용 */}
+      {/* Flexbox 기반 레이아웃 적용 */}
       <div className="main-layout">
         {/* 메인 컨텐츠 */}
         <div className="main-content">

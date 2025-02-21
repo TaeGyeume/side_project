@@ -12,7 +12,7 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
   useEffect(() => {
     const handleScroll = () => {
       // 스크롤 위치가 100px 이상이면 Sidebar가 따라 움직이도록 설정
-      setSidebarTop(window.scrollY > 100 ? window.scrollY - 80 : 0);
+      setSidebarTop(window.scrollY > 100 ? window.scrollY - 20 : 0); // 누가 수정했게? 이제 사이드바 다 보이지롱 ><
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -62,7 +62,7 @@ const Sidebar = ({activeSection, onSelectCategory}) => {
                 </Nav.Link>
               </Nav.Item>
 
-              {/* ✅ 쿠폰 관리 탭 */}
+              {/* 쿠폰 관리 탭 */}
               <Nav.Item style={{whiteSpace: 'nowrap'}}>
                 <Nav.Link
                   style={

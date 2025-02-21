@@ -1,59 +1,104 @@
-로그인 폼 디자인 .login-input {
-  padding: 10px;
-  font-size: 1rem;
-  border-radius: 10px;
-  margin-bottom: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* 로그인 페이지 기본 설정 */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
-/* 로그인 버튼 스타일 */
-.btn-login {
-  padding: 15px;
-  border-radius: 8px;
-  font-size: 1.1rem;
+.login-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  padding: 50px;
+}
+
+/* 왼쪽 부분 */
+.login-left {
+  flex: 1;
+  padding: 30px;
+  background-color: #673ab7;
+  color: white;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.login-left h1 {
+  font-size: 40px;
+  margin-bottom: 20px;
+}
+
+.login-left span {
+  color: #ffeb3b;
+}
+
+.welcome-text {
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+/* 오른쪽 로그인 폼 */
+.login-right {
+  flex: 1;
+  padding: 30px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.login-title {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-button {
+  margin-top: 20px;
+  background-color: #673ab7;
+  color: white;
+  font-size: 16px;
+  padding: 10px;
   transition: background-color 0.3s ease;
 }
 
-.btn-login:hover {
-  background-color: #1565c0;
+.login-button:hover {
+  background-color: #5e2d91;
+}
+
+/* 링크 스타일 */
+.additional-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.link {
+  color: #673ab7;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
 }
 
 /* 에러 메시지 */
 .alert-danger {
-  font-weight: bold;
-  background-color: #f8d7da;
   color: #721c24;
+  background-color: #f8d7da;
   border-color: #f5c6cb;
-  border-radius: 8px;
-}
-
-/* 아이디 찾기, 비밀번호 찾기 링크 스타일 */
-a.text-muted:hover {
-  color: #000;
-  text-decoration: underline;
-}
-
-a.text-muted {
-  font-size: 0.9rem;
-}
-
-.text-center {
-  margin-top: 1.5rem;
-}
-
-/* 폼 박스의 그림자 */
-form {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-h2 {
-  font-weight: 600;
-  color: #1a73e8;
-}
-
-/* 소셜 로그인 버튼 스타일 */
-.social-btns {
-  display: flex;
-  flex-direction: column;
-  padding-top: 1.5rem;
+  padding: 10px;
+  margin-bottom: 20px;
+  font-weight: bold;
 }

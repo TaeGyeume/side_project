@@ -8,37 +8,30 @@ const requestConfig = {
   }
 };
 
-let isRefreshing = false; // 리프레시 토큰 요청 상태 관리
+// let isRefreshing = false; // 리프레시 토큰 요청 상태 관리
 
-// 공통 요청 처리 함수 (에러 핸들링 + 리프레시 토큰 처리 추가)
 const handleRequest = async (requestPromise, errorMessage) => {
   try {
     const response = await requestPromise;
     return response.data;
   } catch (error) {
-    const originalRequest = requestPromise.config;
+    const originalRequest = error.config;
 
-    // 401 Unauthorized 발생 시 리프레시 토큰으로 재시도
     if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        return Promise.reject(error);
-      }
-
-      originalRequest._retry = true; // 재시도 방지 flag 설정
-      isRefreshing = true;
-
-      try {
-        console.log('액세스 토큰 만료, 리프레시 토큰 요청 중...');
-        await authAPI.refreshToken(); // 새 액세스 토큰 요청
-        isRefreshing = false;
-        return api(originalRequest); // 원래 요청 다시 시도
-      } catch (refreshError) {
-        console.error('리프레시 토큰 만료, 로그인 필요');
-        authAPI.logoutUser();
-        isRefreshing = false;
-        throw refreshError;
+      console.log('401 Unauthorized 발생: 리프레시 토큰 요청 시도');
+      if (!originalRequest._retry) {
+        originalRequest._retry = true;
+        try {
+          await authAPI.refreshToken(); // 리프레시 토큰 요청
+          return api(originalRequest); // 원래 요청 다시 시도
+        } catch (refreshError) {
+          console.error('리프레시 토큰 만료, 로그인 필요');
+          authAPI.logoutUser(); // 로그아웃 처리
+          throw refreshError;
+        }
       }
     }
+
     throw error.response?.data || new Error(errorMessage);
   }
 };
@@ -96,7 +89,7 @@ export const authAPI = {
       '비밀번호 변경 중 오류 발생'
     ),
 
-  // ✅ 비밀번호 찾기 요청에서만 withCredentials 제거
+  //  비밀번호 찾기 요청에서만 withCredentials 제거
   forgotPassword: email =>
     handleRequest(
       api.post(
@@ -125,6 +118,7 @@ export const authAPI = {
         api.post('/auth/refresh-token', {}, requestConfig),
         '리프레시 토큰 갱신 중 오류 발생'
       );
+      console.log('✅ 새 액세스 토큰 수신:', response);
       return response;
     } catch (error) {
       console.error('리프레시 토큰 갱신 실패');
@@ -132,25 +126,25 @@ export const authAPI = {
     }
   },
 
-  // ✅ 아이디 찾기 API 요청
+  //  아이디 찾기 API 요청
   findUserId: async email => {
-    console.log('🔍 아이디 찾기 요청 시작:', email); // ✅ 요청 확인
+    console.log(' 아이디 찾기 요청 시작:', email); //  요청 확인
     try {
       const response = await handleRequest(
         api.post('/auth/find-userid', {email}, requestConfig),
         '아이디 찾기 요청 중 오류 발생'
       );
-      console.log('✅ 아이디 찾기 API 응답:', response); // ✅ 서버 응답 확인
+      console.log(' 아이디 찾기 API 응답:', response); //  서버 응답 확인
       return response;
     } catch (error) {
-      console.error('❌ 아이디 찾기 API 요청 실패:', error.response?.data || error); // ✅ 오류 로그 출력
+      console.error(' 아이디 찾기 API 요청 실패:', error.response?.data || error); //  오류 로그 출력
       throw error;
     }
   },
 
-  // ✅ 인증 코드 검증 API 추가
+  //  인증 코드 검증 API 추가
   verifyCode: async ({email, code}) => {
-    console.log('🔍 [클라이언트] 인증 코드 검증 요청:', email, code); // 디버깅
+    console.log(' [클라이언트] 인증 코드 검증 요청:', email, code); // 디버깅
     return handleRequest(
       api.post('/auth/verify-code', {email, code}, requestConfig),
       '인증 코드 확인 요청 중 오류 발생'

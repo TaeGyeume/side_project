@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {fetchFlights} from '../../api/flight/flights';
 
-// ✅ 항공사별 로고 파일 매핑
+// 항공사별 로고 파일 매핑
 const AIRLINE_LOGOS = {
   대한항공: 'korean.png',
   아시아나항공: 'asiana.png',
@@ -12,7 +12,7 @@ const AIRLINE_LOGOS = {
   제주항공: 'jejuair.png'
 };
 
-// ✅ 항공사 한글명 매핑
+// 항공사 한글명 매핑
 const AIRLINE_NAMES = {
   'KOREAN AIR': '대한항공',
   'ASIANA AIRLINE': '아시아나항공',
@@ -20,7 +20,7 @@ const AIRLINE_NAMES = {
   'EASTAR JET': '이스타항공'
 };
 
-// ✅ 시간 포맷 변환 함수 (0700 → 07:00)
+// 시간 포맷 변환 함수 (0700 → 07:00)
 const formatTime = timeString => {
   if (!timeString || typeof timeString !== 'string' || timeString.length !== 4) {
     return '시간 미정';
@@ -34,11 +34,10 @@ const FlightList = () => {
   useEffect(() => {
     const loadFlights = async () => {
       try {
-        console.log('📡 모든 항공편 데이터 가져오기...');
         const data = await fetchFlights();
         setFlights(data || []);
       } catch (error) {
-        console.error('🚨 항공편 데이터를 불러오는 데 실패했습니다:', error);
+        console.error('항공편 데이터를 불러오는 데 실패했습니다:', error);
       }
     };
     loadFlights();
@@ -46,10 +45,10 @@ const FlightList = () => {
 
   return (
     <div className="container-md mt-4" style={{maxWidth: '900px'}}>
-      <h2 className="fw-bold mb-4 text-center">✈️ 모든 항공편 리스트</h2>
+      <h2 className="fw-bold mb-4 text-center">모든 항공편 리스트</h2>
       <div className="row justify-content-center">
         {flights.length === 0 ? (
-          <p className="text-muted text-center">🚫 검색된 항공편이 없습니다.</p>
+          <p className="text-muted text-center">검색된 항공편이 없습니다.</p>
         ) : (
           flights.map(flight => {
             const logoFile = AIRLINE_LOGOS[flight?.airline] || 'default.png';
@@ -58,13 +57,11 @@ const FlightList = () => {
               <div key={flight?._id} className="col-12 mb-3">
                 <div
                   className="card p-3 shadow-sm d-flex flex-row align-items-center"
-                  style={{minHeight: '80px'}}
-                >
+                  style={{minHeight: '80px'}}>
                   {/* 항공사 로고 및 정보 */}
                   <div
                     className="d-flex align-items-center me-3"
-                    style={{flexBasis: '200px'}}
-                  >
+                    style={{flexBasis: '200px'}}>
                     <img
                       src={`/images/logos/${logoFile}`}
                       alt={airlineKorean}
@@ -109,8 +106,7 @@ const FlightList = () => {
                   {/* 가격 */}
                   <div
                     className="text-end ms-auto"
-                    style={{flexBasis: '130px', whiteSpace: 'nowrap'}}
-                  >
+                    style={{flexBasis: '130px', whiteSpace: 'nowrap'}}>
                     <p className="fs-5 fw-bold text-primary mb-0">
                       {flight?.price ? flight.price.toLocaleString() : '0'}원
                     </p>

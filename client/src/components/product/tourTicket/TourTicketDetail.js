@@ -28,7 +28,7 @@ const TourTicketDetail = () => {
 
   useEffect(() => {
     if (ticket) {
-      setSelectedTickets(new Set([ticket._id])); // ✅ 항상 현재 상품이 선택된 상태 유지
+      setSelectedTickets(new Set([ticket._id])); // 항상 현재 상품이 선택된 상태 유지
     }
 
     if (!ticket || ticket.images.length <= 1) return; // 이미지가 하나면 슬라이드 X

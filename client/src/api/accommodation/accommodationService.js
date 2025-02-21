@@ -10,7 +10,7 @@ export const fetchSuggestions = async query => {
     const response = await axios.get('/accommodations/autocomplete', {params: {query}});
     return [...response.data.locations, ...response.data.accommodations];
   } catch (error) {
-    console.error('❌ 자동완성 오류:', error);
+    console.error('자동완성 오류:', error);
     return [];
   }
 };
@@ -44,7 +44,7 @@ export const fetchAccommodations = async () => {
     const response = await axios.get('/accommodations/list');
     return response.data.accommodations;
   } catch (error) {
-    console.error('❌ 숙소 리스트 불러오기 실패:', error);
+    console.error('숙소 리스트 불러오기 실패:', error);
     throw new Error('숙소 데이터를 불러오는 중 오류가 발생했습니다.');
   }
 };
@@ -62,7 +62,7 @@ export const fetchAccommodationDetail = async (accommodationId, params) => {
     });
     return response.data;
   } catch (error) {
-    console.error('❌ 숙소 상세 정보 오류:', error);
+    console.error('숙소 상세 정보 오류:', error);
     throw new Error('숙소 정보를 불러오는 중 오류 발생');
   }
 };
@@ -84,7 +84,7 @@ export const searchAccommodations = async (filters, page = 1) => {
       totalPages: response.data.totalPages || 1
     };
   } catch (error) {
-    console.error('❌ 숙소 검색 오류:', error);
+    console.error('숙소 검색 오류:', error);
     throw new Error('숙소 검색 중 오류 발생');
   }
 };
@@ -123,7 +123,7 @@ export const fetchRoomList = async accommodationId => {
     const response = await axios.get(`/accommodations/${accommodationId}/rooms`);
     return response.data.availableRooms;
   } catch (error) {
-    console.error('❌ 객실 목록 불러오기 실패:', error);
+    console.error('객실 목록 불러오기 실패:', error);
     return [];
   }
 };
@@ -138,7 +138,7 @@ export const fetchAccommodationById = async accommodationId => {
     const response = await axios.get(`/accommodations/${accommodationId}`);
     const data = response.data;
 
-    // ✅ `coordinates.coordinates` 배열이 없을 경우 예외처리
+    // `coordinates.coordinates` 배열이 없을 경우 예외처리
     const coordinatesData = Array.isArray(data.coordinates?.coordinates)
       ? data.coordinates.coordinates
       : [126.978, 37.5665]; // 기본값 설정
@@ -153,7 +153,7 @@ export const fetchAccommodationById = async accommodationId => {
       images: data.images || []
     };
   } catch (error) {
-    console.error('❌ 숙소 정보 불러오기 오류:', error);
-    throw new Error('숙소 정보를 불러오는 중 오류 발생');
+    console.error('숙소 정보 불러오기 오류:', error);
+    throw new Error('숙소 정보를 불러오는 d중 오류 발생');
   }
 };

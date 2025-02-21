@@ -7,22 +7,22 @@ import {
   createQnaComment,
   deleteQnaComment
 } from '../../api/qna/qnaBoardService';
-import {getUserProfile} from '../../api/user/user'; // ✅ 사용자 정보 조회 API
+import {getUserProfile} from '../../api/user/user'; //  사용자 정보 조회 API
 import './styles/QnaBoardDetail.css'; // 스타일 파일 (별도로 생성 필요)
 
 const QnaBoardDetail = () => {
   const {qnaBoardId} = useParams();
-  console.log('📌 QnA 게시글 ID:', qnaBoardId);
+  console.log(' QnA 게시글 ID:', qnaBoardId);
 
   const navigate = useNavigate();
-  const [user, setUser] = useState(null); // ✅ 현재 로그인한 사용자 정보
+  const [user, setUser] = useState(null); //  현재 로그인한 사용자 정보
   const [qnaBoard, setQnaBoard] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [commentLoading, setCommentLoading] = useState(false);
 
-  // ✅ 현재 로그인한 사용자 정보를 가져오기
+  //  현재 로그인한 사용자 정보를 가져오기
   const fetchUser = async () => {
     try {
       const response = await getUserProfile();
@@ -36,7 +36,7 @@ const QnaBoardDetail = () => {
     const fetchQnaBoard = async () => {
       try {
         const data = await getQnaBoardById(qnaBoardId);
-        console.log('📥 QnA 게시글 데이터:', data);
+        console.log(' QnA 게시글 데이터:', data);
         setQnaBoard(data);
         setLoading(false);
       } catch (error) {
@@ -45,7 +45,7 @@ const QnaBoardDetail = () => {
           // alert('게시글을 찾을 수 없습니다.');
           navigate('/qna'); // 목록 페이지로 리디렉션
         } else {
-          // console.error('❌ QnA 게시글 조회 오류:', error);
+          // console.error(' QnA 게시글 조회 오류:', error);
         }
       }
     };
@@ -55,7 +55,7 @@ const QnaBoardDetail = () => {
         const response = await getQnaComments(qnaBoardId);
         setComments(response.comments);
       } catch (error) {
-        console.error('❌ QnA 댓글 조회 오류:', error);
+        console.error(' QnA 댓글 조회 오류:', error);
       }
     };
 
@@ -64,13 +64,13 @@ const QnaBoardDetail = () => {
     fetchComments();
   }, [qnaBoardId, navigate]);
 
-  // ✅ QnA 게시글 삭제
+  //  QnA 게시글 삭제
   const handleDeleteQnaBoard = async () => {
     if (!user) return alert('로그인이 필요합니다.');
 
     if (window.confirm('정말로 삭제하시겠습니까?')) {
       try {
-        console.log('🛠 게시글 삭제 요청:', {
+        console.log(' 게시글 삭제 요청:', {
           boardId: qnaBoardId,
           userId: user._id, // 현재 로그인한 사용자 ID
           roles: user.roles // 현재 사용자 역할
@@ -80,7 +80,7 @@ const QnaBoardDetail = () => {
         // alert('게시글이 삭제되었습니다.');
         navigate('/qna'); // 목록으로 이동
       } catch (error) {
-        // console.error('❌ QnA 게시글 삭제 오류:', error);
+        // console.error(' QnA 게시글 삭제 오류:', error);
         // alert('게시글 삭제 중 오류 발생');
       }
     }
@@ -110,7 +110,7 @@ const QnaBoardDetail = () => {
 
       setNewComment('');
     } catch (error) {
-      console.error('❌ QnA 댓글 작성 오류:', error);
+      console.error(' QnA 댓글 작성 오류:', error);
     }
     setCommentLoading(false);
   };
@@ -126,7 +126,7 @@ const QnaBoardDetail = () => {
           prevComments.filter(comment => comment._id !== commentId)
         );
       } catch (error) {
-        console.error('❌ QnA 댓글 삭제 오류:', error);
+        console.error(' QnA 댓글 삭제 오류:', error);
         alert('댓글 삭제 중 오류 발생');
       }
     }

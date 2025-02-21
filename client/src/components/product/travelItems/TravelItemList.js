@@ -1,21 +1,20 @@
 import React, {useState, useEffect} from 'react';
 import {fetchAllTravelItems} from '../../../api/travelItem/travelItemService';
 import TravelItemCard from './TravelItemCard';
+import {Box, Typography, CircularProgress} from '@mui/material';
 
 const TravelItemList = ({limit = null}) => {
-  // ✅ limit 추가 (기본값: null)
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // ✅ 모든 최하위 상품 불러오기
   useEffect(() => {
     const fetchItems = async () => {
       try {
         const data = await fetchAllTravelItems();
         setItems(data);
       } catch (error) {
-        console.error('❌ 상품 리스트 불러오기 실패:', error);
+        console.error('상품 리스트 불러오기 실패:', error);
         setError('상품 데이터를 불러오는 중 오류가 발생했습니다.');
       } finally {
         setLoading(false);
@@ -26,32 +25,51 @@ const TravelItemList = ({limit = null}) => {
   }, []);
 
   return (
-    <div className="container mt-4">
-      <h2>🛍️ 여행용품 리스트</h2>
+    <Box sx={{maxWidth: 1000, mx: 'auto', mt: 4, px: 2}}>
+      <Typography variant="h4" fontWeight="bold" gutterBottom textAlign="center">
+        🛍️ 여행용품 리스트
+      </Typography>
 
-      {/* ✅ 로딩 상태 표시 */}
-      {loading && <p>⏳ 상품 데이터를 불러오는 중...</p>}
+      {/* 로딩 상태 표시 */}
+      {loading && (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+          <CircularProgress />
+        </Box>
+      )}
 
-      {/* ✅ 오류 발생 시 메시지 표시 */}
-      {error && <p className="text-danger">{error}</p>}
+      {/* 오류 발생 시 메시지 표시 */}
+      {error && (
+        <Typography variant="body1" color="error" textAlign="center">
+          {error}
+        </Typography>
+      )}
 
-      {/* ✅ 상품 목록 표시 (최대 limit 개수) */}
+      {/* 상품 목록 (한 줄에 3개씩) */}
       {!loading && !error && (
-        <div className="row">
+        <Box
+          display="flex"
+          flexWrap="wrap"
+          justifyContent="center"
+          gap={3} // 카드 간 간격 조정
+          mt={3}>
           {items.length > 0 ? (
             items
-              .slice(0, limit || items.length) // ✅ 최대 `limit` 개수만 표시
+              .slice(0, limit || items.length) // 최대 `limit` 개수만 표시
               .map(item => (
-                <div key={item._id} className="col-md-4 mb-4">
+                <Box key={item._id} sx={{width: '31%'}}>
+                  {' '}
+                  {/* 한 줄에 3개씩 */}
                   <TravelItemCard travelItem={item} />
-                </div>
+                </Box>
               ))
           ) : (
-            <p>등록된 상품이 없습니다.</p>
+            <Typography variant="body1" textAlign="center">
+              등록된 상품이 없습니다.
+            </Typography>
           )}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };
 

@@ -57,7 +57,7 @@ exports.createBooking = async bookingData => {
       ? bookingData.endDates
       : [bookingData.endDates];
 
-    console.log('📌 [서버] 변환된 데이터:', {roomIds, startDates, endDates});
+    console.log('[서버] 변환된 데이터:', {roomIds, startDates, endDates});
 
     const {
       merchant_uid,
@@ -79,7 +79,7 @@ exports.createBooking = async bookingData => {
     let appliedCoupon = null;
     if (couponId) {
       console.log(
-        `📌 [서버] 쿠폰 예약 처리 시작 - couponId: ${couponId}, userId: ${userId}`
+        `[서버] 쿠폰 예약 처리 시작 - couponId: ${couponId}, userId: ${userId}`
       );
 
       const userCoupon = await UserCoupon.findOne({
@@ -91,22 +91,22 @@ exports.createBooking = async bookingData => {
 
       if (userCoupon) {
         appliedCoupon = userCoupon._id;
-        console.log(`✅ [서버] 쿠폰 예약 처리 완료 - userCouponId: ${appliedCoupon}`);
+        console.log(`[서버] 쿠폰 예약 처리 완료 - userCouponId: ${appliedCoupon}`);
       } else {
-        console.warn(`⚠️ [서버] 유효한 쿠폰을 찾을 수 없음! couponId: ${couponId}`);
+        console.warn(`[서버] 유효한 쿠폰을 찾을 수 없음! couponId: ${couponId}`);
       }
     }
 
-    // ✅ `PENDING` 상태일 때 쿠폰을 무조건 `false`로 유지
+    // `PENDING` 상태일 때 쿠폰을 무조건 `false`로 유지
     if (appliedCoupon) {
       const userCoupon = await UserCoupon.findById(appliedCoupon);
       if (userCoupon) {
-        userCoupon.isUsed = false; // ✅ PENDING 상태에서는 무조건 false
+        userCoupon.isUsed = false; // PENDING 상태에서는 무조건 false
         await userCoupon.save();
       }
     }
 
-    // ✅ 추가: 마일리지 차감 로직
+    // 추가: 마일리지 차감 로직
     const user = await User.findById(userId);
     if (!user) {
       return {status: 404, message: '사용자를 찾을 수 없습니다.'};
@@ -116,7 +116,7 @@ exports.createBooking = async bookingData => {
       return {status: 400, message: '마일리지가 부족합니다.'};
     }
 
-    // ✅ 최종 결제 금액 업데이트
+    // 최종 결제 금액 업데이트
     const updatedFinalPrice = totalPrice - discountAmount - usedMileage;
     if (updatedFinalPrice < 0) {
       return {status: 400, message: '사용할 마일리지가 결제 금액보다 클 수 없습니다.'};
@@ -134,58 +134,55 @@ exports.createBooking = async bookingData => {
       merchant_uid,
       totalPrice: bookingData.totalPrice,
       discountAmount: discountAmount || 0,
-      finalPrice: updatedFinalPrice, // ✅ 마일리지 반영된 최종 가격
-      usedMileage, // ✅ 사용한 마일리지 저장
-      userCouponId: appliedCoupon, // ✅ 사용한 유저 쿠폰 저장
+      finalPrice: updatedFinalPrice, // 마일리지 반영된 최종 가격
+      usedMileage, // 사용한 마일리지 저장
+      userCouponId: appliedCoupon, // 사용한 유저 쿠폰 저장
       paymentsStatus: 'PENDING',
       ...rest
     });
 
     await newBooking.save();
-    // console.log('📌 [서버] 예약 생성 완료:', newBooking);
     exports.scheduleAutoConfirm(newBooking._id, newBooking.createdAt);
 
     return {status: 200, booking: newBooking, message: '예약 생성 완료'};
   } catch (error) {
     console.error('예약 생성 오류:', error);
-    // ✅ 오류 발생 시 쿠폰 복구
+    // 오류 발생 시 쿠폰 복구
     if (appliedCoupon) {
       console.warn(
-        `⚠️ [서버] 예약 오류 발생으로 쿠폰 복구 진행 - couponId: ${appliedCoupon}`
+        `[서버] 예약 오류 발생으로 쿠폰 복구 진행 - couponId: ${appliedCoupon}`
       );
 
       try {
         const userCoupon = await UserCoupon.findById(appliedCoupon);
         if (userCoupon) {
-          userCoupon.isUsed = false; // ✅ 다시 사용 가능하도록 변경
+          userCoupon.isUsed = false; // 다시 사용 가능하도록 변경
           await userCoupon.save();
-          console.log(`✅ [서버] 쿠폰 복구 완료 - couponId: ${appliedCoupon}`);
+          console.log(`[서버] 쿠폰 복구 완료 - couponId: ${appliedCoupon}`);
         }
       } catch (couponError) {
-        console.error(`❌ [서버] 쿠폰 복구 중 오류 발생: ${couponError.message}`);
+        console.error(`[서버] 쿠폰 복구 중 오류 발생: ${couponError.message}`);
       }
     }
 
-    // ✅ 오류 발생 시 마일리지 복구
+    // 오류 발생 시 마일리지 복구
     if (usedMileage > 0) {
       try {
         const user = await User.findById(bookingData.userId);
         if (user) {
           user.mileage += usedMileage;
           await user.save();
-          console.log(
-            `✅ [서버] 오류 발생으로 사용된 마일리지 복구 완료 - ${usedMileage}P`
-          );
-          // ✅ 사용된 마일리지를 복구하는 내역도 기록
+          console.log(`[서버] 오류 발생으로 사용된 마일리지 복구 완료 - ${usedMileage}P`);
+          // 사용된 마일리지를 복구하는 내역도 기록
           await userMileageService.addMileageWithHistory(
             user,
             usedMileage,
             `예약 오류로 마일리지 환불 (${usedMileage.toLocaleString()}P)`
           );
-          console.log(`✅ [서버] 오류 발생 시 마일리지 복구 내역 저장 완료`);
+          console.log(`[서버] 오류 발생 시 마일리지 복구 내역 저장 완료`);
         }
       } catch (mileageError) {
-        console.error(`❌ [서버] 마일리지 복구 중 오류 발생: ${mileageError.message}`);
+        console.error(`[서버] 마일리지 복구 중 오류 발생: ${mileageError.message}`);
       }
     }
 
@@ -200,12 +197,12 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
       headers: {Authorization: accessToken}
     });
 
-    console.log('📌 [서버] PortOne 결제 정보:', data.response); // ✅ 결제 정보 로그 추가
+    console.log('[서버] PortOne 결제 정보:', data.response); // 결제 정보 로그 추가
     const paymentData = data.response;
 
-    // ✅ 해당 merchant_uid에 대한 모든 예약 찾기
+    // 해당 merchant_uid에 대한 모든 예약 찾기
     const bookings = await Booking.find({merchant_uid});
-    console.log('📌 [서버] 조회된 예약 정보:', bookings); // ✅ 예약 데이터 확인
+    console.log('[서버] 조회된 예약 정보:', bookings); // 예약 데이터 확인
 
     if (!bookings.length) throw new Error('예약 데이터를 찾을 수 없습니다.');
 
@@ -214,17 +211,17 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
       0
     );
 
-    // ✅ 전체 예약 가격 합산
+    // 전체 예약 가격 합산
     let totalOriginalPrice = bookings.reduce(
       (sum, booking) => sum + (booking.totalPrice || 0),
       0
     );
-    console.log('📌 [서버] 예약 총 가격:', totalOriginalPrice);
+    console.log('[서버] 예약 총 가격:', totalOriginalPrice);
 
     let discountAmount = 0;
 
     let expectedFinalAmount = totalOriginalPrice - discountAmount - totalUsedMileage;
-    console.log('📌 [서버] 예상 결제 금액:', expectedFinalAmount);
+    console.log('[서버] 예상 결제 금액:', expectedFinalAmount);
 
     const mongoose = require('mongoose');
     // ObjectId 변환 함수
@@ -232,30 +229,30 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
       return mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : null;
     };
 
-    // ✅ 쿠폰 검증
+    // 쿠폰 검증
     if (couponId) {
-      console.log('📌 [서버] 쿠폰 검증 시작 - couponId:', couponId, 'userId:', userId);
+      console.log('[서버] 쿠폰 검증 시작 - couponId:', couponId, 'userId:', userId);
 
       const userCoupon = await UserCoupon.findOne({
         _id: toObjectId(couponId), // 쿠폰 ID 변환
         user: toObjectId(userId), // 사용자 ID 변환
         isUsed: false,
         expiresAt: {$gte: new Date()}
-      }).populate('coupon'); // ✅ 실제 쿠폰 데이터 가져오기
+      }).populate('coupon'); // 실제 쿠폰 데이터 가져오기
 
-      console.log('📌 [서버] 조회된 UserCoupon:', userCoupon);
+      console.log('[서버] 조회된 UserCoupon:', userCoupon);
 
       if (!userCoupon || !userCoupon.coupon) {
-        console.error('❌ [서버] 쿠폰을 찾을 수 없음 또는 만료됨!');
+        console.error('[서버] 쿠폰을 찾을 수 없음 또는 만료됨!');
         return {status: 400, message: '사용 가능한 쿠폰을 찾을 수 없습니다.'};
       }
 
-      const actualCouponId = userCoupon.coupon._id; // ✅ `UserCoupon`에서 `coupon._id`를 가져옴
-      console.log('📌 [서버] 변환된 실제 쿠폰 ID:', actualCouponId);
+      const actualCouponId = userCoupon.coupon._id; // `UserCoupon`에서 `coupon._id`를 가져옴
+      console.log('[서버] 변환된 실제 쿠폰 ID:', actualCouponId);
 
       const coupon = userCoupon.coupon;
 
-      // ✅ 최소 구매 금액 체크
+      // 최소 구매 금액 체크
       if (totalOriginalPrice < coupon.minPurchaseAmount) {
         return {
           status: 400,
@@ -263,7 +260,7 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
         };
       }
 
-      // ✅ 할인 금액 계산
+      // 할인 금액 계산
       if (coupon.discountType === 'percentage') {
         discountAmount = (totalOriginalPrice * coupon.discountValue) / 100;
         if (coupon.maxDiscountAmount > 0) {
@@ -273,34 +270,24 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
         discountAmount = coupon.discountValue;
       }
 
-      // ✅ 최종 결제 금액 업데이트
+      // 최종 결제 금액 업데이트
       expectedFinalAmount = totalOriginalPrice - discountAmount;
 
-      // ✅ 쿠폰을 사용 처리
+      // 쿠폰을 사용 처리
       userCoupon.isUsed = true;
       await userCoupon.save();
     }
 
-    // ✅ 결제 금액 검증 (expectedFinalAmount가 항상 올바르게 업데이트됨)
-    console.log('📌 [서버] 결제 금액 검증:', {
-      totalOriginalPrice,
-      discountAmount,
-      totalUsedMileage,
-      expectedFinalAmount,
-      portOneAmount: paymentData.amount
-    });
-
     if (Math.abs(paymentData.amount - expectedFinalAmount) >= 0.01) {
       console.error(
-        `❌ 결제 금액 불일치! 포트원: ${paymentData.amount}, 예상 결제 금액: ${expectedFinalAmount}`
+        `결제 금액 불일치! 포트원: ${paymentData.amount}, 예상 결제 금액: ${expectedFinalAmount}`
       );
 
       return {status: 400, message: '결제 금액 불일치'};
     }
 
-    // ✅ [1] 마일리지 사용 확정
+    // [1] 마일리지 사용 확정
     if (totalUsedMileage > 0) {
-      console.log(`✅ [서버] 마일리지 ${totalUsedMileage}P 사용 확정`);
       await userMileageService.useMileage(
         userId,
         totalUsedMileage,
@@ -334,13 +321,13 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
                 break;
 
               case 'flight': {
-                // ✈️ ✅ 항공편 좌석 감소 로직 추가
+                // 항공편 좌석 감소 로직 추가
                 product = await Flight.findById(productId);
                 if (!product) {
                   throw new Error('항공편 정보를 찾을 수 없습니다.');
                 }
 
-                // ✅ 좌석 감소 처리
+                // 좌석 감소 처리
                 if (product.seatsAvailable < counts[index]) {
                   throw new Error(
                     `잔여 좌석이 부족합니다. (남은 좌석: ${product.seatsAvailable})`
@@ -349,7 +336,7 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
 
                 product.seatsAvailable -= counts[index];
                 await product.save();
-                console.log(`✈️ 항공편(${productId}) 좌석 ${counts[index]}석 감소 완료`);
+                console.log(`항공편(${productId}) 좌석 ${counts[index]}석 감소 완료`);
                 break;
               }
 
@@ -368,23 +355,23 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
                 while (currentDate < endDate) {
                   const dateStr = currentDate.toISOString().split('T')[0];
 
-                  // ✅ 해당 날짜의 예약 개수 가져오기
+                  // 해당 날짜의 예약 개수 가져오기
                   let reservedIndex = product.reservedDates.findIndex(
                     d => d.date.toISOString().split('T')[0] === dateStr
                   );
                   let reservedCountOnDate =
                     reservedIndex !== -1 ? product.reservedDates[reservedIndex].count : 0;
 
-                  // ✅ 예약 가능 여부 체크
+                  // 예약 가능 여부 체크
                   if (reservedCountOnDate + counts[index] > product.availableCount) {
-                    console.error(`❌ ${dateStr} 날짜에 예약 가능한 객실 부족!`);
+                    console.error(`${dateStr} 날짜에 예약 가능한 객실 부족!`);
                     return {
                       status: 400,
                       message: `${dateStr} 날짜에 예약 가능한 객실이 부족합니다.`
                     };
                   }
 
-                  // ✅ 예약 반영
+                  // 예약 반영
                   if (reservedIndex !== -1) {
                     product.reservedDates[reservedIndex].count += counts[index];
                   } else {
@@ -397,7 +384,7 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
                   currentDate.setDate(currentDate.getDate() + 1);
                 }
 
-                // ✅ 객실 가용 여부 업데이트 (availableCount 반영)
+                // 객실 가용 여부 업데이트 (availableCount 반영)
                 const totalReserved = product.reservedDates.reduce(
                   (acc, d) => acc + d.count,
                   0
@@ -419,7 +406,7 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
           })
         );
 
-        // ✅ [2] 마일리지 1% 적립
+        // 마일리지 1% 적립
         const earnedMileage = Math.floor(booking.totalPrice * 0.01);
         await userMileageService.addMileageWithHistory(
           userId,
@@ -444,20 +431,20 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
       })
     );
 
-    console.log('✅ [서버] 결제 검증 성공');
+    console.log('[서버] 결제 검증 성공');
     return {status: 200, message: '결제 검증 성공'};
   } catch (error) {
     console.error('결제 검증 오류:', error);
 
-    // ✅ 결제 실패 시 사용한 마일리지 복구 (중복 방지)
+    // 결제 실패 시 사용한 마일리지 복구 (중복 방지)
     const bookings = await Booking.find({merchant_uid});
     await Promise.all(
       bookings.map(async booking => {
         if (booking.usedMileage > 0) {
-          // ✅ 예약이 이미 취소된 상태면 복구 실행 안 함
+          // 예약이 이미 취소된 상태면 복구 실행 안 함
           if (booking.paymentStatus === 'CANCELED') {
             console.log(
-              `⚠️ [서버] 예약 ${booking._id}은 취소 상태이므로 마일리지 복구 생략`
+              `[서버] 예약 ${booking._id}은 취소 상태이므로 마일리지 복구 생략`
             );
             return;
           }
@@ -467,21 +454,21 @@ exports.verifyPayment = async ({imp_uid, merchant_uid, couponId = null, userId})
             booking.usedMileage,
             `결제 실패로 마일리지 환불 (${booking.usedMileage.toLocaleString()}P)`
           );
-          console.log(`✅ [서버] 마일리지 복구 완료: ${booking.usedMileage}P`);
+          console.log(`[서버] 마일리지 복구 완료: ${booking.usedMileage}P`);
         }
       })
     );
 
-    // ✅ 결제 실패 시 쿠폰을 다시 사용 가능하게 복원
+    // 결제 실패 시 쿠폰을 다시 사용 가능하게 복원
     const booking = await Booking.findOne({merchant_uid});
     if (booking && booking.userCouponId) {
       console.warn(
-        `⚠️ [서버] 결제 실패로 쿠폰 복원 - userCouponId: ${booking.userCouponId}`
+        `[서버] 결제 실패로 쿠폰 복원 - userCouponId: ${booking.userCouponId}`
       );
 
       const userCoupon = await UserCoupon.findById(booking.userCouponId);
       if (userCoupon && userCoupon.isUsed === 'reserved') {
-        userCoupon.isUsed = false; // ✅ 결제 실패 시 다시 사용 가능하도록 설정
+        userCoupon.isUsed = false; // 결제 실패 시 다시 사용 가능하도록 설정
         await userCoupon.save();
       }
     }
@@ -494,17 +481,17 @@ exports.cancelBooking = async bookingIds => {
   try {
     const isObjectId = id => mongoose.Types.ObjectId.isValid(id);
 
-    // ✅ `bookingIds`가 단일 값일 경우 배열로 변환
+    // `bookingIds`가 단일 값일 경우 배열로 변환
     if (!Array.isArray(bookingIds)) {
       bookingIds = [bookingIds];
     }
 
     // `_id`(ObjectId)와 `merchant_uid`(문자열) 구분
-    const objectIds = bookingIds.filter(id => isObjectId(id)); // ✅ ObjectId만 필터링
-    const merchantUids = bookingIds.filter(id => !isObjectId(id)); // ✅ merchant_uid 필터링
+    const objectIds = bookingIds.filter(id => isObjectId(id)); // ObjectId만 필터링
+    const merchantUids = bookingIds.filter(id => !isObjectId(id)); // merchant_uid 필터링
 
     console.log(
-      '📌 [서버] 취소 요청 - ObjectIds:',
+      '[서버] 취소 요청 - ObjectIds:',
       objectIds,
       'MerchantUids:',
       merchantUids
@@ -512,7 +499,7 @@ exports.cancelBooking = async bookingIds => {
 
     // `_id` 또는 `merchant_uid`를 기준으로 예약 조회
     const bookings = await Booking.find({
-      $or: [{_id: {$in: objectIds}}, {merchant_uid: {$in: merchantUids}}] // ✅ 둘 다 검색 가능하도록 수정
+      $or: [{_id: {$in: objectIds}}, {merchant_uid: {$in: merchantUids}}] // 둘 다 검색 가능하도록 수정
     });
 
     if (!bookings.length) {
@@ -521,9 +508,9 @@ exports.cancelBooking = async bookingIds => {
 
     await Promise.all(
       bookings.map(async booking => {
-        // ✅ 중복 복구 방지를 위한 체크
+        // 중복 복구 방지를 위한 체크
         if (booking.paymentStatus === 'CANCELED') {
-          console.log(`⚠️ [서버] 이미 취소된 예약 - Booking ID: ${booking._id}`);
+          console.log(`[서버] 이미 취소된 예약 - Booking ID: ${booking._id}`);
           return;
         }
 
@@ -564,7 +551,7 @@ exports.cancelBooking = async bookingIds => {
                     product.seatsAvailable += prodCounts[index];
                     await product.save();
                     console.log(
-                      `✅ [서버] 항공편 좌석 복구 완료 - flightId: ${productId}, 복구 좌석 수: ${prodCounts[index]}`
+                      `[서버] 항공편 좌석 복구 완료 - flightId: ${productId}, 복구 좌석 수: ${prodCounts[index]}`
                     );
                   }
                   break;
@@ -573,7 +560,7 @@ exports.cancelBooking = async bookingIds => {
                   product = await Room.findById(bookingRoomIds[index]);
                   if (!product) {
                     console.error(
-                      `❌ [서버] 객실 정보 찾을 수 없음 - roomId: ${bookingRoomIds[index]}`
+                      `[서버] 객실 정보 찾을 수 없음 - roomId: ${bookingRoomIds[index]}`
                     );
                     return;
                   }
@@ -585,7 +572,7 @@ exports.cancelBooking = async bookingIds => {
                   while (currentDate < endDate) {
                     const dateStr = currentDate.toISOString().split('T')[0];
 
-                    // ✅ 해당 날짜의 예약 개수 가져오기
+                    // 해당 날짜의 예약 개수 가져오기
                     let reservedIndex = product.reservedDates.findIndex(
                       d => d.date.toISOString().split('T')[0] === dateStr
                     );
@@ -593,7 +580,7 @@ exports.cancelBooking = async bookingIds => {
                     if (reservedIndex !== -1) {
                       product.reservedDates[reservedIndex].count -= prodCounts[index];
 
-                      // ✅ 만약 0개가 되면 해당 날짜 데이터를 제거
+                      // 만약 0개가 되면 해당 날짜 데이터를 제거
                       if (product.reservedDates[reservedIndex].count <= 0) {
                         product.reservedDates.splice(reservedIndex, 1);
                       }
@@ -602,7 +589,7 @@ exports.cancelBooking = async bookingIds => {
                     currentDate.setDate(currentDate.getDate() + 1);
                   }
 
-                  // ✅ 객실 가용 여부 업데이트
+                  // 객실 가용 여부 업데이트
                   const totalReserved = product.reservedDates.reduce(
                     (acc, d) => acc + d.count,
                     0
@@ -611,7 +598,7 @@ exports.cancelBooking = async bookingIds => {
 
                   await product.save();
                   console.log(
-                    `✅ [서버] 객실 예약 취소 완료 - roomId: ${bookingRoomIds[index]}`
+                    `[서버] 객실 예약 취소 완료 - roomId: ${bookingRoomIds[index]}`
                   );
                   break;
 
@@ -628,83 +615,63 @@ exports.cancelBooking = async bookingIds => {
           })
         );
 
-        // ✅ 사용된 쿠폰 복구 처리
+        // 사용된 쿠폰 복구 처리
         if (userCouponId) {
           try {
             const userCoupon = await UserCoupon.findById(userCouponId);
             if (userCoupon) {
-              userCoupon.isUsed = false; // ✅ 쿠폰 다시 사용 가능하도록 변경
+              userCoupon.isUsed = false; // 쿠폰 다시 사용 가능하도록 변경
               await userCoupon.save();
               console.log(
-                `✅ [서버] 취소된 예약의 쿠폰 복구 완료 - couponId: ${userCouponId}`
+                `[서버] 취소된 예약의 쿠폰 복구 완료 - couponId: ${userCouponId}`
               );
             }
           } catch (couponError) {
-            console.error(`❌ [서버] 쿠폰 복구 중 오류 발생: ${couponError.message}`);
+            console.error(`[서버] 쿠폰 복구 중 오류 발생: ${couponError.message}`);
           }
         }
 
-        // ✅ 적립된 마일리지 차감 (중복 방지)
+        // 적립된 마일리지 차감 (중복 방지)
         const earnedMileage = Math.floor(totalPrice * 0.01); // 적립된 마일리지 계산
         if (earnedMileage > 0) {
           try {
-            console.log(
-              `🔍 [서버] 예약 취소로 인해 적립된 마일리지 ${earnedMileage}P 차감`
-            );
-
             await userMileageService.useMileage(
               userId,
               earnedMileage,
               `예약 취소로 마일리지 적립 취소 (${earnedMileage.toLocaleString()}P)`
             );
-
-            console.log(
-              `✅ [서버] 예약 취소로 적립된 마일리지 ${earnedMileage}P 차감 완료`
-            );
           } catch (mileageError) {
             console.error(
-              `❌ [서버] 적립된 마일리지 차감 중 오류 발생: ${mileageError.message}`
+              `[서버] 적립된 마일리지 차감 중 오류 발생: ${mileageError.message}`
             );
           }
         }
 
         booking.paymentStatus = 'CANCELED';
 
-        // ✅ 마일리지 복구 (중복 방지)
+        // 마일리지 복구 (중복 방지)
         if (usedMileage > 0) {
           try {
             const user = await User.findById(userId);
             if (user) {
-              // ✅ 결제 상태가 PENDING 또는 COMPLETED일 때만 복구 실행
+              // 결제 상태가 PENDING 또는 COMPLETED일 때만 복구 실행
               if (['CANCELED'].includes(booking.paymentStatus)) {
-                console.log(
-                  `🔍 [서버] 사용자 ${userId} 현재 마일리지: ${user.mileage}, 복구 예정: ${usedMileage}`
-                );
-
-                // ✅ 사용자 마일리지 복구
-                // user.mileage += usedMileage;
                 await user.save();
 
-                // ✅ 마일리지 복구 내역 추가
+                // 마일리지 복구 내역 추가
                 await userMileageService.addMileageWithHistory(
                   userId,
                   usedMileage,
                   `예약 취소로 마일리지 복구 (${usedMileage.toLocaleString()}P)`
                 );
-
-                console.log(
-                  `✅ [서버] 예약 취소 - 사용된 마일리지 ${usedMileage}P 복구 완료`
-                );
               } else {
                 console.log(
-                  `⚠️ [서버] 예약 상태가 ${booking.paymentStatus}이므로 마일리지 복구 생략`
+                  `[서버] 예약 상태가 ${booking.paymentStatus}이므로 마일리지 복구 생략`
                 );
               }
             }
           } catch (mileageError) {
-            console.error(
-              `❌ [서버] 마일리지 복구 중 오류 발생: ${mileageError.message}`
-            );
+            console.error(`[서버] 마일리지 복구 중 오류 발생: ${mileageError.message}`);
           }
         }
 
@@ -762,7 +729,6 @@ exports.scheduleAutoConfirm = async (bookingId, createdAt) => {
   const utcCreatedAt = new Date(createdAt.getTime() - 9 * 60 * 60 * 1000);
 
   const confirmTime = new Date(utcCreatedAt.getTime() + 5 * 24 * 60 * 60 * 1000); // 5일 뒤 구매 확정으로 바뀜
-  console.log(`⏰ UTC 변환된 예약 확인 스케줄 시간: ${confirmTime}`);
 
   try {
     schedule.scheduleJob(confirmTime, async () => {
@@ -773,7 +739,7 @@ exports.scheduleAutoConfirm = async (bookingId, createdAt) => {
           if (booking.paymentStatus === 'COMPLETED') {
             booking.paymentStatus = 'CONFIRMED';
             await booking.save();
-            console.log(`✅ 예약 ${bookingId} 구매 확정`);
+            console.log(`예약 ${bookingId} 구매 확정`);
           } else {
             console.log(`예약 ${bookingId}의 결제 상태가 'COMPLETED'가 아닙니다.`);
           }
@@ -801,7 +767,7 @@ exports.getBookingDetails = async bookingId => {
       return {status: 404, message: '예약 정보를 찾을 수 없습니다.'};
     }
 
-    // ✅ productIds를 동적으로 populate (투어티켓이면 title 가져오기)
+    // productIds를 동적으로 populate (투어티켓이면 title 가져오기)
     const populatedProducts = await Promise.all(
       booking.productIds.map(async (productId, index) => {
         const model = booking.types[index]; // 현재 productId의 타입 가져오기
@@ -813,7 +779,7 @@ exports.getBookingDetails = async bookingId => {
 
         return {
           _id: product._id,
-          name: model === 'tourTicket' ? product.title : product.name, // ✅ 투어티켓이면 title, 그 외 name
+          name: model === 'tourTicket' ? product.title : product.name, // 투어티켓이면 title, 그 외 name
           price: product.price
         };
       })
@@ -821,11 +787,11 @@ exports.getBookingDetails = async bookingId => {
 
     // `toObject()`로 Mongoose 객체를 일반 JavaScript 객체로 변환
     const bookingData = booking.toObject();
-    bookingData.productIds = populatedProducts.filter(p => p !== null); // ✅ productIds에 각 모델에서 가져온 실제 데이터 추가
+    bookingData.productIds = populatedProducts.filter(p => p !== null); // productIds에 각 모델에서 가져온 실제 데이터 추가
 
     return {status: 200, data: bookingData};
   } catch (error) {
-    console.error('❌ 예약 상세 조회 오류:', error);
+    console.error('예약 상세 조회 오류:', error);
     return {status: 500, message: '서버 오류'};
   }
 };

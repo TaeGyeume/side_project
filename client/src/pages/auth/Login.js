@@ -1,26 +1,29 @@
 import React, {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {authAPI} from '../../api/auth';
 import {useAuthStore} from '../../store/authStore';
-import {useNavigate} from 'react-router-dom';
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  CircularProgress,
+  Paper,
+  Link
+} from '@mui/material';
 import SocialLoginButtons from '../../components/SocialLoginButtons';
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    userid: '',
-    password: ''
-  });
-
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const {fetchUserProfile} = useAuthStore();
+  const [formData, setFormData] = useState({userid: '', password: ''});
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // 입력값 변경 핸들러
   const handleChange = e => {
     setFormData({...formData, [e.target.name]: e.target.value});
   };
 
-  // 폼 제출 핸들러
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
@@ -31,14 +34,12 @@ const Login = () => {
       await fetchUserProfile();
       navigate('/main');
     } catch (error) {
-      console.error('로그인 오류:', error);
-
       if (error.response?.status === 401) {
         setError('아이디 또는 비밀번호가 잘못되었습니다.');
       } else if (error.response?.status === 500) {
         setError('서버에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
       } else {
-        setError(error.response?.data?.message || '로그인에 실패했습니다.');
+        setError(error.response?.data?.message || '아이디 또는 비밀번호를 확인해주세요.');
       }
     } finally {
       setLoading(false);
@@ -46,66 +47,128 @@ const Login = () => {
   };
 
   return (
-    <div className="container mt-5">
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <h2 className="text-center mb-4">로그인</h2>
-          {error && <div className="alert alert-danger">{error}</div>}
-          <form onSubmit={handleSubmit} className="p-4 border rounded shadow">
-            <div className="mb-3">
-              <label className="form-label">아이디</label>
-              <input
-                type="text"
-                name="userid"
-                className="form-control"
-                placeholder="아이디를 입력하세요"
-                value={formData.userid}
-                onChange={handleChange}
-                required
-              />
-            </div>
+    <Box
+      sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundImage:
+          "url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        zIndex: 1000
+      }}>
+      <Paper
+        elevation={6}
+        sx={{
+          padding: 5,
+          width: '400px',
+          borderRadius: '20px',
+          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 4px 40px rgba(0, 0, 0, 0.3)',
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}>
+        <Typography variant="h5" sx={{color: '#000', fontWeight: 'bold', mb: 2}}>
+          로그인
+        </Typography>
 
-            <div className="mb-3">
-              <label className="form-label">비밀번호</label>
-              <input
-                type="password"
-                name="password"
-                className="form-control"
-                placeholder="비밀번호를 입력하세요"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-            </div>
+        {error && (
+          <Typography variant="body2" color="error" sx={{mb: 2}}>
+            {error}
+          </Typography>
+        )}
 
-            <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-              {loading ? '로그인 중...' : '로그인'}
-            </button>
-          </form>
+        <form onSubmit={handleSubmit} style={{width: '100%'}}>
+          <TextField
+            fullWidth
+            label="아이디"
+            name="userid"
+            variant="outlined"
+            margin="normal"
+            value={formData.userid}
+            onChange={handleChange}
+            required
+            InputProps={{
+              style: {color: '#000'}
+            }}
+            sx={{
+              input: {color: '#000'},
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {borderColor: 'rgba(0, 0, 0, 0.5)'},
+                '&:hover fieldset': {borderColor: 'rgba(0, 0, 0, 0.8)'}
+              },
+              '& .MuiInputLabel-root': {color: '#000'}
+            }}
+          />
+          <TextField
+            fullWidth
+            label="비밀번호"
+            name="password"
+            type="password"
+            variant="outlined"
+            margin="normal"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            InputProps={{
+              style: {color: '#000'}
+            }}
+            sx={{
+              input: {color: '#000'},
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {borderColor: 'rgba(0, 0, 0, 0.5)'},
+                '&:hover fieldset': {borderColor: 'rgba(0, 0, 0, 0.8)'}
+              },
+              '& .MuiInputLabel-root': {color: '#000'}
+            }}
+          />
+          <Button
+            fullWidth
+            variant="contained"
+            sx={{
+              mt: 2,
+              bgcolor: 'black',
+              color: 'white',
+              borderRadius: '50px',
+              '&:hover': {bgcolor: 'gray'}
+            }}
+            type="submit"
+            disabled={loading}>
+            {loading ? <CircularProgress size={24} color="inherit" /> : '로그인'}
+          </Button>
+        </form>
 
-          {/* ✅ 아이디 찾기 링크 추가 */}
-          <div className="text-center mt-3">
-            <a href="/find-userid" className="text-decoration-none">
-              아이디 찾기
-            </a>
-          </div>
-
-          {/* ✅ 비밀번호 찾기 (기존 코드 유지) */}
-          <div className="text-center mt-3">
-            <a href="/forgot-password" className="text-decoration-none">
-              비밀번호를 잊으셨나요?
-            </a>
-          </div>
-
-          <div className="text-center mt-3">
-            <a href="/register" className="text-decoration-none">
+        <Box sx={{mt: 3}}>
+          <Link href="/find-userid" underline="hover" sx={{color: '#000'}}>
+            아이디 찾기
+          </Link>
+          <span style={{color: '#000'}}> | </span>
+          <Link href="/forgot-password" underline="hover" sx={{color: '#000'}}>
+            비밀번호 찾기
+          </Link>
+          <Box sx={{mt: 2}}>
+            <Link href="/register" underline="hover" sx={{color: '#000'}}>
               회원가입
-            </a>
-            <SocialLoginButtons />
-          </div>
-        </div>
-      </div>
-    </div>
+            </Link>
+          </Box>
+        </Box>
+
+        {/* 소셜 로그인 버튼 */}
+        <SocialLoginButtons />
+      </Paper>
+    </Box>
   );
 };
 
