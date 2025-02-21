@@ -1,12 +1,10 @@
 import React, {useState, useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
 import axios from '../../api/axios';
 import TravelItemCard from '../../components/product/travelItems/TravelItemCard';
 import {getUserFavorites} from '../../api/user/favoriteService';
 import {Box, Button, Typography, CircularProgress} from '@mui/material';
 
 const TravelItemListPage = () => {
-  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [topCategories, setTopCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
@@ -88,9 +86,7 @@ const TravelItemListPage = () => {
         sx={{
           width: '100%',
           height: 'auto',
-          borderRadius: 2,
-          mb: 2,
-          boxShadow: 2
+          borderRadius: 2
         }}
       />
 
@@ -103,8 +99,7 @@ const TravelItemListPage = () => {
           width: '100%',
           height: 'auto',
           borderRadius: 2,
-          mb: 3,
-          boxShadow: 2
+          mb: 3
         }}
       />
 
