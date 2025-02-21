@@ -63,9 +63,11 @@ const createQnaBoard = async (req, res) => {
 
     //  폼 필드 값 처리
     bb.on('field', (name, value) => {
-      console.log(` 폼 필드 수신: ${name} = ${value}`);
+      console.log(`📌 폼 필드 수신: ${name} = ${value}`);
       if (value && value.trim() !== '') {
         formData[name] = value.trim();
+      } else {
+        console.warn(`⚠️ 필드 데이터가 비어 있음: ${name}`);
       }
     });
 

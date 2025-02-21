@@ -166,7 +166,7 @@ exports.loginUser = async ({userid, password}, res) => {
     {id: user._id, roles: user.roles},
     process.env.JWT_SECRET,
     {
-      expiresIn: '7d'
+      expiresIn: '15m' // 액세스 토큰은 15분 유효
     }
   );
 
@@ -174,7 +174,7 @@ exports.loginUser = async ({userid, password}, res) => {
     {id: user._id, roles: user.roles},
     process.env.REFRESH_TOKEN_SECRET,
     {
-      expiresIn: '7d'
+      expiresIn: '7d' // 리프레시 토큰은 7일 유효
     }
   );
 
@@ -192,18 +192,16 @@ exports.loginUser = async ({userid, password}, res) => {
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
     secure: isProduction,
-    // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
-    sameSite: 'None', //  크로스 사이트 요청 허용
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // 크로스 사이트 쿠키 허용
     path: '/',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 15분
+    maxAge: 15 * 60 * 1000 // 15분
   });
 
   // 리프레시 토큰 쿠키 저장
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: isProduction,
-    // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
-    sameSite: 'None', //  크로스 사이트 요청 허용
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // 크로스 사이트 쿠키 허용
     path: '/',
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
   });
@@ -323,20 +321,21 @@ exports.resetPassword = async ({userId, token, currentPassword, newPassword}) =>
 // 로그아웃 서비스 (쿠키 삭제)
 exports.logoutUser = async (res, userId) => {
   if (userId) {
-    await RefreshToken.deleteMany({userId}); //  유저의 모든 리프레시 토큰 삭제
+    await RefreshToken.deleteMany({userId}); // 유저의 모든 리프레시 토큰 삭제
   }
 
   res.clearCookie('accessToken', {
     httpOnly: true,
     secure: isProduction,
-    sameSite: 'None',
-    path: '/'
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // 크로스 사이트 쿠키 허용
+    path: '/' // 쿠키 삭제 경로 설정
   });
+
   res.clearCookie('refreshToken', {
     httpOnly: true,
     secure: isProduction,
-    sameSite: 'None',
-    path: '/'
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // 크로스 사이트 쿠키 허용
+    path: '/' // 쿠키 삭제 경로 설정
   });
 };
 
@@ -359,7 +358,7 @@ exports.refreshAccessToken = async (refreshToken, res) => {
       {id: decoded.id, roles: decoded.roles},
       process.env.JWT_SECRET,
       {
-        expiresIn: '7d'
+        expiresIn: '15m' // 새 액세스 토큰은 15분 유효
       }
     );
 
@@ -367,7 +366,7 @@ exports.refreshAccessToken = async (refreshToken, res) => {
       {id: decoded.id, roles: decoded.roles},
       process.env.REFRESH_TOKEN_SECRET,
       {
-        expiresIn: '7d'
+        expiresIn: '7d' // 새 리프레시 토큰은 7일 유효
       }
     );
 
@@ -384,8 +383,7 @@ exports.refreshAccessToken = async (refreshToken, res) => {
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: isProduction,
-      // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
-      sameSite: 'None', //  크로스 사이트 요청 허용
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // 크로스 사이트 쿠키 허용
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
@@ -394,10 +392,9 @@ exports.refreshAccessToken = async (refreshToken, res) => {
     res.cookie('accessToken', newAccessToken, {
       httpOnly: true,
       secure: isProduction,
-      // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
-      sameSite: 'None', //  크로스 사이트 요청 허용
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // 크로스 사이트 쿠키 허용
       path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      maxAge: 15 * 60 * 1000 // 15분
     });
 
     return newAccessToken;
@@ -405,7 +402,7 @@ exports.refreshAccessToken = async (refreshToken, res) => {
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: isProduction,
-      sameSite: 'None',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // 크로스 사이트 쿠키 허용
       path: '/'
     });
     throw new Error('유효하지 않은 리프레시 토큰입니다.');

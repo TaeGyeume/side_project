@@ -66,8 +66,7 @@ const authMiddleware = async (req, res, next) => {
           secure: process.env.NODE_ENV === 'production',
           httpOnly: true,
           maxAge: 15 * 60 * 1000, // 15분
-          // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax' // 크로스 사이트 요청 허용 배포환경일떄 주석제거
-          sameSite: 'None' // 크로스 사이트 요청 허용
+          sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax' // 크로스 사이트 쿠키 허용
         });
 
         // 클라이언트에서 쿠키를 받을 수 있도록 설정 추가

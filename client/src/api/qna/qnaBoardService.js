@@ -4,54 +4,51 @@ const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api/qna';
 
 //  QnA 게시글 생성 (Busboy 사용)
-// ✅ QnA 게시글 생성 (Busboy 사용)
 export const createQnaBoard = async data => {
   try {
     const hasFiles =
       (data.images && data.images.length > 0) ||
       (data.attachments && data.attachments.length > 0);
+
     let requestData;
+    let headers = {};
 
     if (hasFiles) {
       requestData = new FormData();
 
-      // 🔹 텍스트 데이터 추가
       requestData.append('category', data.category?.trim() || '');
       requestData.append('title', data.title?.trim() || '');
       requestData.append('content', data.content?.trim() || '');
 
-      // 🔹 이미지 파일 추가
-      if (data.images) {
-        Array.from(data.images).forEach(file => {
-          if (file instanceof File) requestData.append('images', file);
-        });
-      }
+      data.images?.forEach(file => {
+        if (file instanceof File) {
+          requestData.append('images', file);
+        }
+      });
 
-      // 🔹 첨부파일 추가
-      if (data.attachments) {
-        Array.from(data.attachments).forEach(file => {
-          if (file instanceof File) requestData.append('attachments', file);
-        });
-      }
+      data.attachments?.forEach(file => {
+        if (file instanceof File) {
+          requestData.append('attachments', file);
+        }
+      });
 
-      console.log('✅ 최종 전송할 FormData 내용:');
-      for (let [key, value] of requestData.entries()) {
-        console.log(`🔹 ${key}:`, value);
-      }
+      headers = {'Content-Type': 'multipart/form-data'}; // ✅ 명확하게 설정
     } else {
-      // 🔹 JSON 전송 방식 (파일이 없을 때)
-      requestData = {
-        category: data.category?.trim() || '',
-        title: data.title?.trim() || '',
-        content: data.content?.trim() || '',
-        images: [],
-        attachments: []
-      };
+      requestData = new FormData(); // ✅ 파일이 없어도 FormData로 강제
+      requestData.append('category', data.category?.trim() || '');
+      requestData.append('title', data.title?.trim() || '');
+      requestData.append('content', data.content?.trim() || '');
+      headers = {'Content-Type': 'multipart/form-data'};
     }
 
-    // 🚨 **Content-Type을 설정하지 않음 (Axios가 자동 설정)**
+    console.log('✅ 최종 전송할 FormData 내용:');
+    for (let [key, value] of requestData.entries()) {
+      console.log(`🔹 ${key}:`, value);
+    }
+
     const response = await axios.post(`${API_BASE_URL}`, requestData, {
-      withCredentials: true // ✅ 쿠키 포함 요청
+      headers,
+      withCredentials: true
     });
 
     return response.data;

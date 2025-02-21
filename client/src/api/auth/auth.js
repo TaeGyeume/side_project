@@ -8,7 +8,7 @@ const requestConfig = {
   }
 };
 
-// let isRefreshing = false; // 리프레시 토큰 요청 상태 관리
+let isRefreshing = false; // 리프레시 토큰 요청 상태 관리
 
 const handleRequest = async (requestPromise, errorMessage) => {
   try {
@@ -50,11 +50,20 @@ export const authAPI = {
       '회원가입 요청 중 오류 발생'
     ),
 
-  loginUser: loginData =>
-    handleRequest(
-      api.post('/auth/login', loginData, requestConfig),
-      '로그인 요청 중 오류 발생'
-    ),
+  loginUser: async userData => {
+    try {
+      console.log('🚀 로그인 요청:', userData);
+      const response = await api.post('/auth/login', userData, {withCredentials: true});
+
+      console.log('✅ 로그인 성공 응답:', response);
+      console.log('📌 브라우저 쿠키:', document.cookie); // 쿠키 확인
+
+      return response;
+    } catch (error) {
+      console.error('❌ 로그인 실패:', error?.response?.data?.message || error.message);
+      throw error;
+    }
+  },
 
   logoutUser: async () => {
     await handleRequest(
