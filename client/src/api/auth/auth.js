@@ -77,7 +77,7 @@ export const authAPI = {
   },
 
   getUserProfile: () =>
-    handleRequest(api.get('/auth/profile', requestConfig), '프로필 조회 중 오류 발생'),
+    handleRequest(api.get('/auth/profile', {requestConfig}), '프로필 조회 중 오류 발생'),
 
   checkDuplicate: data => {
     if (!data || Object.values(data).every(val => !val.trim())) {
