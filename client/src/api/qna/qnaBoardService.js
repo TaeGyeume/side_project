@@ -4,6 +4,7 @@ const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api/qna';
 
 //  QnA 게시글 생성 (Busboy 사용)
+// ✅ QnA 게시글 생성 (파일 포함 가능)
 export const createQnaBoard = async data => {
   try {
     const hasFiles =
@@ -14,45 +15,44 @@ export const createQnaBoard = async data => {
     if (hasFiles) {
       requestData = new FormData();
 
-      //  텍스트 데이터 추가
+      // 🔹 텍스트 데이터 추가
       requestData.append('category', data.category?.trim() || '');
       requestData.append('title', data.title?.trim() || '');
       requestData.append('content', data.content?.trim() || '');
 
-      //  이미지 파일 추가
+      // 🔹 이미지 파일 추가
       data.images?.forEach(file => {
         if (file) requestData.append('images', file);
       });
 
-      //  첨부파일 추가
+      // 🔹 첨부파일 추가
       data.attachments?.forEach(file => {
         if (file) requestData.append('attachments', file);
       });
 
-      console.log(' 최종 전송할 FormData 내용:');
+      console.log('✅ 최종 전송할 FormData 내용:');
       for (let [key, value] of requestData.entries()) {
         console.log(`🔹 ${key}:`, value);
       }
     } else {
-      //  JSON 전송 방식
-      requestData = JSON.stringify({
+      // 🔹 JSON 전송 방식
+      requestData = {
         category: data.category?.trim() || '',
         title: data.title?.trim() || '',
         content: data.content?.trim() || '',
-        images: data.images || [],
-        attachments: data.attachments || []
-      });
+        images: [],
+        attachments: []
+      };
     }
 
-    //  Axios 요청 실행
+    // 🚨 **중요: Content-Type 헤더를 직접 설정하지 않음!**
     const response = await axios.post(`${API_BASE_URL}`, requestData, {
-      headers: hasFiles ? undefined : {'Content-Type': 'application/json'}, // FormData 사용 시 헤더 제거
       withCredentials: true
     });
 
     return response.data;
   } catch (error) {
-    console.error(' QnA 게시글 생성 오류:', error.response?.data || error.message);
+    console.error('⛔ QnA 게시글 생성 오류:', error.response?.data || error.message);
     throw error;
   }
 };
