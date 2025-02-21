@@ -6,7 +6,6 @@ import {searchFlights} from '../../api/flight/flights';
 import LoadingScreen from './LoadingScreen';
 
 import {
-  Container,
   Paper,
   Typography,
   FormControl,
@@ -14,7 +13,6 @@ import {
   Select,
   MenuItem,
   Button,
-  Box,
   OutlinedInput,
   TextField,
   IconButton,
@@ -247,7 +245,7 @@ const RoundTripSearch = () => {
             sx={{
               minWidth: '100px',
               height: '56px',
-              backgroundColor: 'primary.light',
+              backgroundColor: '#303f9f',
               color: 'primary.contrastText'
             }}>
             검색

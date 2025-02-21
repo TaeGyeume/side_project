@@ -61,10 +61,37 @@ const Flights = () => {
         exclusive
         onChange={handleTripChange}
         sx={{display: 'flex', justifyContent: 'center', mb: 2}}>
-        <ToggleButton value={false} sx={{px: 4}}>
+        <ToggleButton
+          value={false}
+          sx={{
+            px: 4,
+            backgroundColor: isRoundTrip ? '#e0e0e0' : '#5c6bc0', // 선택 여부에 따라 색상 변경
+            color: isRoundTrip ? 'black' : 'white', // 선택 여부에 따라 텍스트 색상 변경
+            '&.Mui-selected': {
+              backgroundColor: '#3949ab', // 선택된 버튼의 배경색 강조
+              color: 'white', // 선택된 버튼의 글씨 색
+              '&:hover': {
+                backgroundColor: '#3949ab' // 마우스 오버 시 색상 유지
+              }
+            }
+          }}>
           편도
         </ToggleButton>
-        <ToggleButton value={true} sx={{px: 4}}>
+
+        <ToggleButton
+          value={true}
+          sx={{
+            px: 4,
+            backgroundColor: isRoundTrip ? '#3949ab' : '#e0e0e0',
+            color: isRoundTrip ? 'white' : 'black',
+            '&.Mui-selected': {
+              backgroundColor: '#3949ab',
+              color: 'white',
+              '&:hover': {
+                backgroundColor: '#3949ab'
+              }
+            }
+          }}>
           왕복
         </ToggleButton>
       </ToggleButtonGroup>
