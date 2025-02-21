@@ -50,7 +50,7 @@ export const useAuthStore = create(
         try {
           console.log('🚪 로그아웃 요청 시작');
           await authAPI.logoutUser();
-          clearCookies(); // 🔥 브라우저 쿠키 삭제 추가
+          clearCookies(); // 🔥 브라우저 쿠키 삭제
           set({user: null, isAuthenticated: false});
           console.log('✅ 로그아웃 완료, 상태 초기화');
         } catch (error) {
@@ -80,7 +80,7 @@ export const useAuthStore = create(
               await get().fetchUserProfile();
             } catch (refreshError) {
               console.error('❌ 리프레시 토큰 실패:', refreshError);
-              clearCookies(); // 🔥 브라우저 쿠키 삭제 추가
+              clearCookies(); // 🔥 브라우저 쿠키 삭제
               set({user: null, isAuthenticated: false});
               throw refreshError;
             }
@@ -98,9 +98,16 @@ export const useAuthStore = create(
   )
 );
 
-// ✅ 브라우저 쿠키 삭제 함수 추가
+// ✅ 브라우저 쿠키 삭제 함수 개선
 const clearCookies = () => {
-  document.cookie = 'accessToken=; Max-Age=0; path=/;';
-  document.cookie = 'refreshToken=; Max-Age=0; path=/;';
-  console.log('🗑 브라우저 쿠키 삭제 완료');
+  console.log('🗑 브라우저 쿠키 삭제 시작');
+
+  // 모든 쿠키 삭제
+  const cookies = document.cookie.split('; ');
+  for (let cookie of cookies) {
+    const [name] = cookie.split('=');
+    document.cookie = `${name}=; Max-Age=0; path=/; domain=${window.location.hostname}`;
+  }
+
+  console.log('✅ 브라우저 쿠키 삭제 완료');
 };
