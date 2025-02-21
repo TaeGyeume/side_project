@@ -7,7 +7,7 @@
 }
 
 .favorite-button .fa-bookmark {
-  color: gray; /* 기본 색상 */
+  color: rgb(52, 52, 52); /* 기본 색상 */
 }
 
 .favorite-button.favorite .fa-bookmark {
