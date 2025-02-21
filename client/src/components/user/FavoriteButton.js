@@ -7,7 +7,7 @@ const FavoriteButton = ({itemId, itemType, initialFavoriteStatus}) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // ✅ 초기값이 변경되면 업데이트
+    //  초기값이 변경되면 업데이트
     setIsFavorite(initialFavoriteStatus);
   }, [initialFavoriteStatus]);
 
@@ -22,7 +22,7 @@ const FavoriteButton = ({itemId, itemType, initialFavoriteStatus}) => {
       setIsFavorite(prev => !prev); // 낙관적 UI 업데이트
 
       const response = await toggleFavorite(itemId, itemType);
-      console.log('✅ Favorite toggled:', response);
+      console.log(' Favorite toggled:', response);
 
       if (!(response.status === 'success' || response.message?.includes('success'))) {
         setIsFavorite(prev => !prev); // 서버 응답 실패 시 롤백
@@ -38,7 +38,7 @@ const FavoriteButton = ({itemId, itemType, initialFavoriteStatus}) => {
   return (
     <button
       onClick={handleFavoriteToggle}
-      className={`favorite-button ${isFavorite ? 'favorite' : ''}`} // ✅ UI 업데이트
+      className={`favorite-button ${isFavorite ? 'favorite' : ''}`} //  UI 업데이트
       disabled={loading}>
       <i className={`fas fa-bookmark ${isFavorite ? 'favorite' : ''}`} />
     </button>

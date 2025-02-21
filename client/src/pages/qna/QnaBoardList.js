@@ -24,7 +24,7 @@ const QnaBoardList = () => {
         setQnaBoards(response.qnaBoards);
         setTotalPages(response.totalPages || 1);
       } catch (error) {
-        console.error('❌ 데이터 로드 중 오류 발생:', error);
+        console.error(' 데이터 로드 중 오류 발생:', error);
       } finally {
         setLoading(false);
       }
@@ -47,7 +47,7 @@ const QnaBoardList = () => {
         setQnaBoards(prevBoards => prevBoards.filter(qna => qna._id !== qnaBoardId));
         alert('게시글이 삭제되었습니다.');
       } catch (error) {
-        console.error('❌ 게시글 삭제 오류:', error);
+        console.error(' 게시글 삭제 오류:', error);
         alert('게시글 삭제 중 오류가 발생했습니다.');
       }
     }

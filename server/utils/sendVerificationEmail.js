@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 
-// ✅ 이메일 발송 설정
+//  이메일 발송 설정
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com', // SMTP 서버 (네이버: smtp.naver.com)
   port: 465, // SSL (보안 전송)
@@ -12,14 +12,14 @@ const transporter = nodemailer.createTransport({
 });
 
 /**
- * ✅ 아이디 찾기 인증 코드 이메일 전송 함수
+ *  아이디 찾기 인증 코드 이메일 전송 함수
  * @param {string} email 수신자 이메일
  * @param {string} verificationCode 6자리 인증 코드
  */
 const sendVerificationEmail = async (email, verificationCode) => {
   try {
     console.log('📩 [이메일 전송] 이메일:', email); // ✅ 이메일 주소 확인
-    console.log('🔢 [이메일 전송] 인증 코드:', verificationCode); // ✅ 인증 코드 확인
+    console.log('🔢 [이메일 전송] 인증 코드:', verificationCode); //  인증 코드 확인
 
     const mailOptions = {
       from: `"Our Real Trip Support" <${process.env.EMAIL_USER}>`,
@@ -40,7 +40,7 @@ const sendVerificationEmail = async (email, verificationCode) => {
       `
     };
 
-    console.log('📤 [이메일 전송] 메일 옵션 생성 완료, 전송 시작...'); // ✅ 메일 옵션 확인
+    console.log('📤 [이메일 전송] 메일 옵션 생성 완료, 전송 시작...'); //  메일 옵션 확인
 
     // ✅ 이메일 전송
     const info = await transporter.sendMail(mailOptions);

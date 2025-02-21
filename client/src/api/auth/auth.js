@@ -16,9 +16,13 @@ const handleRequest = async (requestPromise, errorMessage) => {
     const response = await requestPromise;
     return response.data;
   } catch (error) {
-    const originalRequest = requestPromise.config;
+    const originalRequest = error.config; // 요청의 설정을 가져옴
+    if (!originalRequest) {
+      console.error('오류: 요청 객체가 없습니다.', error);
+      throw new Error('요청 객체가 존재하지 않습니다.');
+    }
 
-    // 401 Unauthorized 발생 시 리프레시 토큰으로 재시도
+    // 401 Unauthorized 처리 (리프레시 토큰 재발급)
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return Promise.reject(error);
@@ -39,6 +43,7 @@ const handleRequest = async (requestPromise, errorMessage) => {
         throw refreshError;
       }
     }
+
     throw error.response?.data || new Error(errorMessage);
   }
 };
@@ -72,7 +77,7 @@ export const authAPI = {
   },
 
   getUserProfile: () =>
-    handleRequest(api.get('/auth/profile', requestConfig), '프로필 조회 중 오류 발생'),
+    handleRequest(api.get('/auth/profile', {requestConfig}), '프로필 조회 중 오류 발생'),
 
   checkDuplicate: data => {
     if (!data || Object.values(data).every(val => !val.trim())) {
@@ -96,7 +101,7 @@ export const authAPI = {
       '비밀번호 변경 중 오류 발생'
     ),
 
-  // ✅ 비밀번호 찾기 요청에서만 withCredentials 제거
+  //  비밀번호 찾기 요청에서만 withCredentials 제거
   forgotPassword: email =>
     handleRequest(
       api.post(
@@ -132,25 +137,25 @@ export const authAPI = {
     }
   },
 
-  // ✅ 아이디 찾기 API 요청
+  //  아이디 찾기 API 요청
   findUserId: async email => {
-    console.log('🔍 아이디 찾기 요청 시작:', email); // ✅ 요청 확인
+    console.log(' 아이디 찾기 요청 시작:', email); //  요청 확인
     try {
       const response = await handleRequest(
         api.post('/auth/find-userid', {email}, requestConfig),
         '아이디 찾기 요청 중 오류 발생'
       );
-      console.log('✅ 아이디 찾기 API 응답:', response); // ✅ 서버 응답 확인
+      console.log(' 아이디 찾기 API 응답:', response); //  서버 응답 확인
       return response;
     } catch (error) {
-      console.error('❌ 아이디 찾기 API 요청 실패:', error.response?.data || error); // ✅ 오류 로그 출력
+      console.error(' 아이디 찾기 API 요청 실패:', error.response?.data || error); //  오류 로그 출력
       throw error;
     }
   },
 
-  // ✅ 인증 코드 검증 API 추가
+  //  인증 코드 검증 API 추가
   verifyCode: async ({email, code}) => {
-    console.log('🔍 [클라이언트] 인증 코드 검증 요청:', email, code); // 디버깅
+    console.log(' [클라이언트] 인증 코드 검증 요청:', email, code); // 디버깅
     return handleRequest(
       api.post('/auth/verify-code', {email, code}, requestConfig),
       '인증 코드 확인 요청 중 오류 발생'
