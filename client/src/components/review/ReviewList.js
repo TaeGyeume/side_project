@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {getReviews, likeReview} from '../../api/review/reviewService';
 import {AiOutlineLike, AiOutlineMore} from 'react-icons/ai';
 import './styles/ReviewList.css';
@@ -7,13 +7,13 @@ import authAPI from '../../api/auth/auth';
 const ReviewList = ({productId}) => {
   const [reviews, setReviews] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-  const [menuOpen, setMenuOpen] = useState({}); // 열린 메뉴 상태
+  const [menuOpen, setMenuOpen] = useState(null); // 하나의 메뉴만 열리도록 변경
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const fetchReviews = async () => {
       try {
         const data = await getReviews(productId);
-        console.log('리뷰 데이터:', data);
         setReviews(data);
       } catch (err) {
         console.error('리뷰 조회 오류:', err);
@@ -33,11 +33,22 @@ const ReviewList = ({productId}) => {
     fetchCurrentUser();
   }, [productId]);
 
+  // 외부 클릭 감지하여 드롭다운 닫기
+  useEffect(() => {
+    const handleClickOutside = event => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setMenuOpen(null); // 드롭다운 닫기
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const toggleMenu = reviewId => {
-    setMenuOpen(prev => ({
-      ...prev,
-      [reviewId]: !prev[reviewId]
-    }));
+    setMenuOpen(prev => (prev === reviewId ? null : reviewId));
   };
 
   const handleLike = async reviewId => {
@@ -77,6 +88,56 @@ const ReviewList = ({productId}) => {
               <span className="review-date">
                 {new Date(review.createdAt).toISOString().substring(0, 10)}
               </span>
+
+              <div className="review-actions" ref={dropdownRef}>
+                <button className="like-button" onClick={() => handleLike(review._id)}>
+                  <AiOutlineLike /> {review.likes || 0}
+                </button>
+
+                <div className="kebab-menu">
+                  <AiOutlineMore
+                    onClick={() => toggleMenu(review._id)}
+                    className="kebab-icon"
+                  />
+
+                  {menuOpen === review._id && (
+                    <div className="menu-options">
+                      {currentUser ? (
+                        <>
+                          {currentUser._id === review.userId._id && (
+                            <>
+                              <button onClick={() => handleEdit(review._id)}>
+                                수정하기
+                              </button>
+                              <button onClick={() => handleDelete(review._id)}>
+                                삭제하기
+                              </button>
+                            </>
+                          )}
+
+                          {currentUser.roles?.includes('admin') && (
+                            <>
+                              <button onClick={() => handleAddComment(review._id)}>
+                                댓글 달기
+                              </button>
+                              <button onClick={() => handleDelete(review._id)}>
+                                삭제하기
+                              </button>
+                            </>
+                          )}
+
+                          {!currentUser.roles?.includes('admin') &&
+                            currentUser._id !== review.userId._id && (
+                              <p>권한이 없습니다</p>
+                            )}
+                        </>
+                      ) : (
+                        <p>로그인이 필요합니다</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {review.images && review.images.length > 0 && (
@@ -93,53 +154,6 @@ const ReviewList = ({productId}) => {
             )}
 
             <p className="review-text">{review.content}</p>
-
-            <div className="review-actions">
-              {/* 좋아요 버튼 */}
-              <button className="like-button" onClick={() => handleLike(review._id)}>
-                <AiOutlineLike /> {review.likes || 0}
-              </button>
-
-              {/* 케밥 메뉴 */}
-              <div className="kebab-menu">
-                <AiOutlineMore
-                  onClick={() => toggleMenu(review._id)}
-                  className="kebab-icon"
-                />
-
-                {menuOpen[review._id] && (
-                  <div className="menu-options">
-                    {currentUser &&
-                    (currentUser.isAdmin || currentUser._id === review.userId._id) ? (
-                      <>
-                        {currentUser._id === review.userId._id && (
-                          <>
-                            <button onClick={() => handleEdit(review._id)}>
-                              수정하기
-                            </button>
-                            <button onClick={() => handleDelete(review._id)}>
-                              삭제하기
-                            </button>
-                          </>
-                        )}
-                        {currentUser.isAdmin && (
-                          <>
-                            <button onClick={() => handleAddComment(review._id)}>
-                              댓글 달기
-                            </button>
-                            <button onClick={() => handleDelete(review._id)}>
-                              삭제하기
-                            </button>
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <p>권한이 없습니다</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         ))
       )}
