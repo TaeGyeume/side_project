@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import {createBooking, verifyPayment} from '../../api/booking/bookingService';
 import {authAPI} from '../../api/auth/index';
 
@@ -14,7 +14,6 @@ const AIRLINE_LOGOS = {
 };
 
 const RoundTripConfirm = () => {
-  const {id} = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const {
@@ -25,12 +24,14 @@ const RoundTripConfirm = () => {
   } = location.state || {};
   const [user, setUser] = useState(null);
   const [usedMileage, setUsedMileage] = useState(0);
+  const [remainingMileage, setRemainingMileage] = useState(0); // 실시간 보유 마일리지 반영
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await authAPI.getUserProfile();
         setUser(userData);
+        setRemainingMileage(userData.mileage); // 초기 보유 마일리지 설정
       } catch (error) {
         console.error('사용자 정보를 가져오는 중 오류 발생:', error);
       }
@@ -47,6 +48,21 @@ const RoundTripConfirm = () => {
       (selectedReturn?.price || 0) +
       (selectedFlight?.price || 0)) *
     passengers;
+
+  const maxUsableMileage = Math.min(user?.mileage || 0, totalPrice); // 보유 마일리지 vs 상품 가격 중 작은 값 선택
+
+  const handleMileageChange = e => {
+    const inputMileage = Number(e.target.value);
+    const validMileage =
+      inputMileage > maxUsableMileage ? maxUsableMileage : inputMileage;
+    setUsedMileage(validMileage);
+    setRemainingMileage((user?.mileage || 0) - validMileage); // 🔥 보유 마일리지 업데이트
+  };
+
+  const handleUseAllMileage = () => {
+    setUsedMileage(maxUsableMileage);
+    setRemainingMileage((user?.mileage || 0) - maxUsableMileage); // 🔥 보유 마일리지 즉시 반영
+  };
 
   const handleConfirm = async () => {
     if (!user) {
@@ -161,27 +177,29 @@ const RoundTripConfirm = () => {
         {selectedDeparture && <FlightCard flight={selectedDeparture} />}
         {selectedReturn && <FlightCard flight={selectedReturn} />}
         <div className="col-12 text-center mt-3">
-          <h4 className="fw-bold">💰 총 예약 비용: {totalPrice.toLocaleString()}원</h4>
+          <h4 className="fw-bold">
+            💰 총 예약 비용: {totalPrice.toLocaleString() - usedMileage}원
+          </h4>
         </div>
 
-        {/* 마일리지 입력 UI 추가 */}
+        {/* 🔥 마일리지 입력 UI (실시간 차감 반영) */}
         <div className="col-12 text-center mt-3">
           <label className="fw-bold me-2">🎯 사용할 마일리지:</label>
           <input
             type="number"
             className="form-control d-inline-block w-auto"
             value={usedMileage}
-            onChange={e => {
-              const inputMileage = Number(e.target.value);
-              setUsedMileage(
-                inputMileage > (user?.mileage || 0) ? user.mileage : inputMileage
-              );
-            }}
+            onChange={handleMileageChange}
             min="0"
-            max={user?.mileage || 0}
+            max={maxUsableMileage}
           />
+          <button
+            className="btn btn-sm btn-outline-primary ms-2"
+            onClick={handleUseAllMileage}>
+            모두 사용
+          </button>
           <small className="text-muted ms-2">
-            보유 마일리지: {user?.mileage?.toLocaleString() || 0}P
+            보유 마일리지: {remainingMileage.toLocaleString()}P
           </small>
         </div>
 

@@ -15,6 +15,8 @@ const BookingForm = () => {
   const [userCoupons, setUserCoupons] = useState([]);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [discountAmount, setDiscountAmount] = useState(0);
+  const [usedMileage, setUsedMileage] = useState(0);
+  const [remainingMileage, setRemainingMileage] = useState(0);
 
   const defaultStartDate = searchParams.get('startDate') || '';
   const defaultEndDate = searchParams.get('endDate') || '';
@@ -39,6 +41,7 @@ const BookingForm = () => {
       try {
         const userData = await authAPI.getUserProfile();
         setUser(userData);
+        setRemainingMileage(userData.mileage);
         const coupons = await fetchUserCoupons(userData._id);
 
         // 최소 예약 금액 충족하는 쿠폰만 필터링
@@ -88,6 +91,29 @@ const BookingForm = () => {
     setDiscountAmount(discount);
   };
 
+  const totalPrice = formData.rooms.reduce((sum, roomData) => {
+    const nights = Math.ceil(
+      (new Date(roomData.endDate) - new Date(roomData.startDate)) / (1000 * 60 * 60 * 24)
+    );
+    return sum + nights * room.pricePerNight * roomData.count;
+  }, 0);
+
+  const maxUsableMileage = Math.min(user?.mileage || 0, totalPrice - discountAmount);
+
+  // 마일리지 입력 핸들러
+  const handleMileageChange = e => {
+    const inputMileage = Number(e.target.value);
+    const validMileage =
+      inputMileage > maxUsableMileage ? maxUsableMileage : inputMileage;
+    setUsedMileage(validMileage);
+    setRemainingMileage((user?.mileage || 0) - validMileage); // 🔥 보유 마일리지 업데이트
+  };
+
+  const handleUseAllMileage = () => {
+    setUsedMileage(maxUsableMileage);
+    setRemainingMileage((user?.mileage || 0) - maxUsableMileage); // 🔥 보유 마일리지 즉시 반영
+  };
+
   /* 예약 생성 및 결제 요청 */
   const handlePayment = async () => {
     if (formData.rooms.some(room => !room.startDate || !room.endDate)) {
@@ -103,18 +129,7 @@ const BookingForm = () => {
     const endDates = formData.rooms.map(room => room.endDate);
     const counts = formData.rooms.map(room => room.count);
 
-    const nights = formData.rooms.map(room =>
-      Math.ceil(
-        (new Date(room.endDate) - new Date(room.startDate)) / (1000 * 60 * 60 * 24)
-      )
-    );
-
-    const totalPrice = nights.reduce(
-      (sum, night, i) => sum + night * room.pricePerNight * counts[i],
-      0
-    );
-
-    const finalPrice = totalPrice - discountAmount;
+    const finalPrice = totalPrice - discountAmount - usedMileage;
 
     try {
       console.log('예약 요청 데이터:', {
@@ -148,6 +163,7 @@ const BookingForm = () => {
         totalPrice, // 총 결제 금액 (할인 전) 추가
         discountAmount, // 할인 금액 추가
         finalPrice, // 최종 결제 금액 (할인 후) 추가
+        usedMileage,
         userId: user._id,
         couponId: selectedCoupon ? selectedCoupon._id : null,
         reservationInfo: {
@@ -184,6 +200,7 @@ const BookingForm = () => {
                 imp_uid: rsp.imp_uid,
                 merchant_uid,
                 couponId: selectedCoupon ? selectedCoupon._id : null,
+                usedMileage,
                 userId: user._id
               });
 
@@ -252,11 +269,29 @@ const BookingForm = () => {
             onCouponSelect={handleCouponSelect}
           />
 
+          <div className="mileage-section">
+            <label>🎯 사용할 마일리지:</label>
+            <input
+              type="number"
+              value={usedMileage}
+              onChange={handleMileageChange}
+              min="0"
+              max={maxUsableMileage}
+            />
+            <button
+              className="btn btn-sm btn-outline-primary"
+              onClick={handleUseAllMileage}>
+              모두 사용
+            </button>
+            <p>보유 마일리지: {remainingMileage.toLocaleString()}P</p>
+          </div>
+
           <p>
             최종 결제 금액:{' '}
             {(
               room.pricePerNight * formData.rooms[0].count -
-              discountAmount
+              discountAmount -
+              usedMileage
             ).toLocaleString()}{' '}
             원
           </p>

@@ -15,6 +15,8 @@ const TravelItemPurchaseForm = () => {
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [formData, setFormData] = useState({count: 1});
+  const [usedMileage, setUsedMileage] = useState(0);
+  const [remainingMileage, setRemainingMileage] = useState(0);
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -31,6 +33,7 @@ const TravelItemPurchaseForm = () => {
       try {
         const userData = await authAPI.getUserProfile();
         setUser(userData);
+        setRemainingMileage(userData.mileage);
         const coupons = await fetchUserCoupons(userData._id);
 
         const validCoupons = coupons.filter(
@@ -48,14 +51,14 @@ const TravelItemPurchaseForm = () => {
     fetchItem();
   }, [itemId, formData.count]);
 
-  const handleCouponSelect = (coupon, discount) => {
-    setSelectedCoupon(coupon);
-    setDiscountAmount(discount);
-  };
+  // const handleMileageChange = e => {
+  //   const inputMileage = Number(e.target.value);
+  //   setUsedMileage(inputMileage > (user?.mileage || 0) ? user.mileage : inputMileage);
+  // };
 
   const handlePayment = async () => {
     const totalPrice = item.price * formData.count;
-    const finalPrice = totalPrice - discountAmount;
+    const finalPrice = totalPrice - discountAmount - usedMileage;
 
     const now = new Date(Date.now() + 9 * 60 * 60 * 1000); // 한국 시간
     const formattedDate = now
@@ -74,6 +77,7 @@ const TravelItemPurchaseForm = () => {
         totalPrice,
         discountAmount,
         finalPrice, // 최종 결제 금액 (할인 후) 추가
+        usedMileage,
         userId: user._id,
         couponId: selectedCoupon ? selectedCoupon._id : null,
         reservationInfo: {
@@ -114,6 +118,7 @@ const TravelItemPurchaseForm = () => {
               imp_uid: rsp.imp_uid,
               merchant_uid,
               couponId: selectedCoupon ? selectedCoupon._id : null,
+              usedMileage,
               userId: user._id
             });
 
@@ -140,6 +145,29 @@ const TravelItemPurchaseForm = () => {
     return <p>⏳ 상품 정보를 불러오는 중...</p>;
   }
 
+  const totalPrice = item.price * formData.count;
+  const maxUsableMileage = Math.min(user?.mileage || 0, totalPrice - discountAmount);
+
+  // ✅ 마일리지 입력 핸들러 (실시간 차감 반영)
+  const handleMileageChange = e => {
+    const inputMileage = Number(e.target.value);
+    const validMileage =
+      inputMileage > maxUsableMileage ? maxUsableMileage : inputMileage;
+    setUsedMileage(validMileage);
+    setRemainingMileage(user?.mileage - validMileage);
+  };
+
+  // ✅ 모든 마일리지 사용 버튼
+  const handleUseAllMileage = () => {
+    setUsedMileage(maxUsableMileage);
+    setRemainingMileage(user?.mileage - maxUsableMileage);
+  };
+
+  const handleCouponSelect = (coupon, discount) => {
+    setSelectedCoupon(coupon);
+    setDiscountAmount(discount);
+  };
+
   return (
     <div className="purchase-form">
       <h3>상품명: {item.name}</h3>
@@ -162,9 +190,25 @@ const TravelItemPurchaseForm = () => {
         onCouponSelect={handleCouponSelect}
       />
 
+      {/* ✅ 마일리지 입력 UI 추가 (실시간 차감 반영) */}
+      <div className="mileage-section">
+        <label>🎯 사용할 마일리지:</label>
+        <input
+          type="number"
+          value={usedMileage}
+          onChange={handleMileageChange}
+          min="0"
+          max={maxUsableMileage}
+        />
+        <button className="btn btn-sm btn-outline-primary" onClick={handleUseAllMileage}>
+          모두 사용
+        </button>
+        <p>보유 마일리지: {remainingMileage.toLocaleString()}P</p>
+      </div>
+
       <p>
-        최종 결제 금액: {(item.price * formData.count - discountAmount).toLocaleString()}{' '}
-        원
+        최종 결제 금액:{' '}
+        {(item.price * formData.count - discountAmount - usedMileage).toLocaleString()} 원
       </p>
 
       <button onClick={handlePayment} className="payment-btn">
