@@ -23,11 +23,11 @@ const createVerificationCode = async email => {
       used: false
     });
 
-    await verification.save(); // ✅ MongoDB에 저장
-    console.log('✅ [DB 저장 성공] 인증 코드:', verification); // 🔥 로그 추가
+    await verification.save(); //  MongoDB에 저장
+    console.log(' [DB 저장 성공] 인증 코드:', verification); //  로그 추가
     return code;
   } catch (error) {
-    console.error('❌ 인증 코드 저장 오류:', error.message);
+    console.error(' 인증 코드 저장 오류:', error.message);
     throw new Error('인증 코드 저장 오류 발생');
   }
 };
@@ -35,7 +35,7 @@ const createVerificationCode = async email => {
 // 인증 코드 검증 함수
 exports.verifyCode = async (email, code) => {
   try {
-    console.log('🔎 [서비스] 인증 코드 확인 요청:', email, code);
+    console.log(' [서비스] 인증 코드 확인 요청:', email, code);
 
     const verification = await Verification.findOne({
       email,
@@ -44,23 +44,23 @@ exports.verifyCode = async (email, code) => {
     });
 
     if (!verification) {
-      console.error('❌ [서비스] 잘못된 인증 코드 또는 코드가 없음:', email, code);
+      console.error(' [서비스] 잘못된 인증 코드 또는 코드가 없음:', email, code);
       throw new Error('잘못된 인증 코드입니다.');
     }
 
     // 인증 코드 만료 여부 확인
     if (new Date() > verification.expiresAt) {
-      console.error('❌ [서비스] 인증 코드 만료됨:', email, code);
+      console.error(' [서비스] 인증 코드 만료됨:', email, code);
       throw new Error('인증 코드가 만료되었습니다.');
     }
 
     verification.used = true; // 사용된 인증 코드로 변경
-    await verification.save(); // ✅ MongoDB에서 상태 업데이트
-    console.log('✅ [서비스] 인증 코드 검증 성공:', email, code);
+    await verification.save(); //  MongoDB에서 상태 업데이트
+    console.log(' [서비스] 인증 코드 검증 성공:', email, code);
 
     return true;
   } catch (error) {
-    console.error('❌ [서비스] 인증 코드 검증 실패:', error.message);
+    console.error(' [서비스] 인증 코드 검증 실패:', error.message);
     throw new Error(error.message);
   }
 };
@@ -68,27 +68,27 @@ exports.verifyCode = async (email, code) => {
 // 이메일로 아이디 찾기 서비스
 exports.findUserIdByEmail = async email => {
   try {
-    console.log('📩 [서비스] 이메일 확인:', email);
+    console.log(' [서비스] 이메일 확인:', email);
 
     const user = await User.findOne({email});
-    console.log('🔎 [서비스] 검색된 사용자:', user);
+    console.log(' [서비스] 검색된 사용자:', user);
 
     if (!user) {
-      console.log('❌ [서비스] 이메일로 가입된 아이디 없음:', email);
+      console.log(' [서비스] 이메일로 가입된 아이디 없음:', email);
       throw new Error('해당 이메일로 가입된 아이디가 없습니다.');
     }
 
-    // ✅ 인증 코드 생성 및 DB에 저장 (기존 코드에서 빠진 부분 추가)
+    //  인증 코드 생성 및 DB에 저장 (기존 코드에서 빠진 부분 추가)
     const verificationCode = await createVerificationCode(email);
-    console.log('🔢 [서비스] 생성된 인증 코드:', verificationCode); // ✅ 인증 코드 확인
+    console.log(' [서비스] 생성된 인증 코드:', verificationCode); //  인증 코드 확인
 
-    console.log('📤 [서비스] 이메일 전송 시작...');
+    console.log(' [서비스] 이메일 전송 시작...');
     await sendVerificationEmail(email, verificationCode);
-    console.log('✅ [서비스] 인증 코드 이메일 발송 완료');
+    console.log(' [서비스] 인증 코드 이메일 발송 완료');
 
     return {message: '아이디 찾기 인증 코드가 이메일로 발송되었습니다.'};
   } catch (error) {
-    console.error('❌ [서비스] 아이디 찾기 오류:', error.message);
+    console.error(' [서비스] 아이디 찾기 오류:', error.message);
     throw new Error('아이디 찾기 중 오류 발생');
   }
 };
@@ -192,7 +192,8 @@ exports.loginUser = async ({userid, password}, res) => {
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? 'None' : 'Lax',
+    // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+    sameSite: 'None', //  크로스 사이트 요청 허용
     path: '/',
     maxAge: 7 * 24 * 60 * 60 * 1000 // 15분
   });
@@ -201,7 +202,8 @@ exports.loginUser = async ({userid, password}, res) => {
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? 'None' : 'Lax',
+    // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+    sameSite: 'None', //  크로스 사이트 요청 허용
     path: '/',
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
   });
@@ -281,7 +283,7 @@ exports.forgotPassword = async email => {
 exports.resetPassword = async ({userId, token, currentPassword, newPassword}) => {
   let user = null;
 
-  // 🔐 로그인된 사용자의 비밀번호 변경 (현재 비밀번호 확인)
+  //  로그인된 사용자의 비밀번호 변경 (현재 비밀번호 확인)
   if (userId) {
     user = await User.findById(userId);
     if (!user) throw new Error('사용자를 찾을 수 없습니다.');
@@ -290,7 +292,7 @@ exports.resetPassword = async ({userId, token, currentPassword, newPassword}) =>
     if (!isMatch) throw new Error('현재 비밀번호가 일치하지 않습니다.');
   }
 
-  // 📧 비밀번호 재설정 (비밀번호 찾기 후 이메일 링크로 받은 토큰 기반)
+  //  비밀번호 재설정 (비밀번호 찾기 후 이메일 링크로 받은 토큰 기반)
   if (token) {
     user = await User.findOne({
       passwordResetExpires: {$gt: Date.now()}
@@ -300,7 +302,7 @@ exports.resetPassword = async ({userId, token, currentPassword, newPassword}) =>
       throw new Error('토큰이 유효하지 않거나 만료되었습니다.');
     }
 
-    // 🔑 토큰 검증 (bcrypt.compare 사용)
+    //  토큰 검증 (bcrypt.compare 사용)
     const isValidToken = await bcrypt.compare(token, user.passwordResetToken);
     if (!isValidToken) {
       throw new Error('토큰이 유효하지 않습니다.');
@@ -309,7 +311,7 @@ exports.resetPassword = async ({userId, token, currentPassword, newPassword}) =>
 
   if (!user) throw new Error('비밀번호를 변경할 수 없습니다.');
 
-  // 🔒 새 비밀번호 설정
+  //  새 비밀번호 설정
   user.password = await bcrypt.hash(newPassword, 10);
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
@@ -382,7 +384,8 @@ exports.refreshAccessToken = async (refreshToken, res) => {
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? 'None' : 'Lax',
+      // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+      sameSite: 'None', //  크로스 사이트 요청 허용
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
@@ -391,7 +394,8 @@ exports.refreshAccessToken = async (refreshToken, res) => {
     res.cookie('accessToken', newAccessToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? 'None' : 'Lax',
+      // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+      sameSite: 'None', //  크로스 사이트 요청 허용
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });

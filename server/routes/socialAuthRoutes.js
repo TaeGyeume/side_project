@@ -21,7 +21,7 @@ const generateTokens = user => {
   return {accessToken, refreshToken};
 };
 // =======================
-// ✅ Google 로그인 라우터
+//  Google 로그인 라우터
 // =======================
 
 // Google 로그인 시작
@@ -38,7 +38,8 @@ router.get(
     res.cookie('accessToken', tokens.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+      sameSite: 'None', //  크로스 사이트 요청 허용
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
     });
@@ -47,7 +48,8 @@ router.get(
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+      sameSite: 'None', //  크로스 사이트 요청 허용
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
     });
@@ -75,7 +77,8 @@ router.get(
     res.cookie('accessToken', tokens.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+      sameSite: 'None', //  크로스 사이트 요청 허용
       path: '/',
       maxAge: 15 * 60 * 1000 // 15분
     });
@@ -84,7 +87,8 @@ router.get(
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+      sameSite: 'None', //  크로스 사이트 요청 허용
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
     });
@@ -111,7 +115,8 @@ router.get(
     res.cookie('accessToken', tokens.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+      sameSite: 'None', //  크로스 사이트 요청 허용
       path: '/',
       maxAge: 15 * 60 * 1000 // 15분
     });
@@ -120,7 +125,8 @@ router.get(
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+      sameSite: 'None', //  크로스 사이트 요청 허용
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
     });
@@ -146,7 +152,8 @@ router.get(
     res.cookie('accessToken', tokens.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+      sameSite: 'None', //  크로스 사이트 요청 허용
       path: '/',
       maxAge: 15 * 60 * 1000
     });
@@ -154,7 +161,8 @@ router.get(
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      // sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+      sameSite: 'None', //  크로스 사이트 요청 허용
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });

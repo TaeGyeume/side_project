@@ -60,7 +60,7 @@ const QnaBoardWrite = () => {
   const handleSubmit = async e => {
     e.preventDefault();
 
-    console.log('🚀 업로드 데이터:', formData);
+    console.log(' 업로드 데이터:', formData);
 
     if (!formData.category || !formData.title || !formData.content) {
       alert('카테고리, 제목, 내용을 입력하세요.');
@@ -89,18 +89,18 @@ const QnaBoardWrite = () => {
         }
       });
 
-      console.log('✅ 전송할 FormData 내용:');
+      console.log(' 전송할 FormData 내용:');
       for (let [key, value] of form.entries()) {
         console.log(`🔹 ${key}:`, value);
       }
 
-      // ✅ Axios 요청 실행 (headers를 지정하지 않음)
+      //  Axios 요청 실행 (headers를 지정하지 않음)
       await createQnaBoard(form);
 
       alert('게시글이 성공적으로 등록되었습니다!');
       navigate('/qna');
     } catch (error) {
-      console.error('❌ QnA 게시글 작성 오류:', error);
+      console.error(' QnA 게시글 작성 오류:', error);
       alert('게시글 작성에 실패했습니다.');
     } finally {
       setLoading(false);

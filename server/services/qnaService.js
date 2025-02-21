@@ -31,7 +31,7 @@ const createQnaBoard = async (
       throw new Error('유효한 사용자 ID가 필요합니다.');
     }
 
-    // ✅ 게시글 저장
+    //  게시글 저장
     const qnaBoard = new QnaBoard({
       user: userId,
       category,
@@ -41,20 +41,20 @@ const createQnaBoard = async (
       attachments
     });
 
-    console.log('🚀 MongoDB에 저장할 데이터:', qnaBoard);
+    console.log(' MongoDB에 저장할 데이터:', qnaBoard);
 
     await qnaBoard.save();
 
-    console.log('✅ MongoDB 저장 완료:', qnaBoard);
+    console.log(' MongoDB 저장 완료:', qnaBoard);
 
     return qnaBoard;
   } catch (error) {
-    console.error('❌ QnA 게시글 저장 중 오류 발생:', error);
+    console.error(' QnA 게시글 저장 중 오류 발생:', error);
     throw new Error('QnA 게시글 생성 중 오류 발생');
   }
 };
 
-// ✅ QnA 게시글 목록 조회 (페이징 처리)
+//  QnA 게시글 목록 조회 (페이징 처리)
 const getQnaBoards = async (page = 1, limit = 10, category = null) => {
   try {
     const query = category ? {category} : {}; // 특정 카테고리 필터 적용
@@ -77,7 +77,7 @@ const getQnaBoards = async (page = 1, limit = 10, category = null) => {
   }
 };
 
-// ✅ 특정 QnA 게시글 조회 (상세보기)
+//  특정 QnA 게시글 조회 (상세보기)
 const getQnaBoardById = async qnaBoardId => {
   try {
     const qnaBoard = await QnaBoard.findById(qnaBoardId)
@@ -91,7 +91,7 @@ const getQnaBoardById = async qnaBoardId => {
   }
 };
 
-// ✅ QnA 게시글 삭제 (관련 댓글도 함께 삭제)
+//  QnA 게시글 삭제 (관련 댓글도 함께 삭제)
 const deleteQnaBoard = async (qnaBoardId, userId, isAdmin = false) => {
   try {
     const qnaBoard = await QnaBoard.findById(qnaBoardId);
@@ -103,7 +103,7 @@ const deleteQnaBoard = async (qnaBoardId, userId, isAdmin = false) => {
 
     const uploadDir = path.join(__dirname, '../uploads/qna');
 
-    // ✅ 1. 해당 게시글의 이미지 및 첨부파일 삭제
+    //  1. 해당 게시글의 이미지 및 첨부파일 삭제
     [...qnaBoard.images, ...qnaBoard.attachments].forEach(filePath => {
       const fullPath = path.join(uploadDir, path.basename(filePath));
       if (fs.existsSync(fullPath)) {
@@ -111,7 +111,7 @@ const deleteQnaBoard = async (qnaBoardId, userId, isAdmin = false) => {
       }
     });
 
-    // ✅ 2. 게시글 및 댓글 삭제
+    //  2. 게시글 및 댓글 삭제
     await QnaBoard.deleteOne({_id: qnaBoardId});
     await QnaComment.deleteMany({qnaBoard: qnaBoardId});
 
@@ -121,7 +121,7 @@ const deleteQnaBoard = async (qnaBoardId, userId, isAdmin = false) => {
   }
 };
 
-// ✅ QnA 댓글 작성
+//  QnA 댓글 작성
 const createQnaComment = async (qnaBoardId, userId, content, isAdmin = false) => {
   try {
     const qnaBoard = await QnaBoard.findById(qnaBoardId);
@@ -147,7 +147,7 @@ const createQnaComment = async (qnaBoardId, userId, content, isAdmin = false) =>
   }
 };
 
-// ✅ QnA 댓글 목록 조회
+//  QnA 댓글 목록 조회
 const getQnaComments = async (qnaBoardId, page = 1, limit = 5) => {
   try {
     const comments = await QnaComment.find({qnaBoard: qnaBoardId})
@@ -165,7 +165,7 @@ const getQnaComments = async (qnaBoardId, page = 1, limit = 5) => {
   }
 };
 
-// ✅ QnA 댓글 삭제
+//  QnA 댓글 삭제
 const deleteQnaComment = async (commentId, userId, userRoles) => {
   try {
     const comment = await QnaComment.findById(commentId);
@@ -184,7 +184,7 @@ const deleteQnaComment = async (commentId, userId, userRoles) => {
   }
 };
 
-// ✅ QnA 게시글 수정
+//  QnA 게시글 수정
 const updateQnaBoard = async (
   qnaBoardId,
   userId,
@@ -206,7 +206,7 @@ const updateQnaBoard = async (
 
     const uploadDir = path.join(__dirname, '../uploads/qna');
 
-    // ✅ 1. 삭제할 파일 제거 (서버에서 삭제)
+    //  1. 삭제할 파일 제거 (서버에서 삭제)
     if (deletedImages.length > 0) {
       deletedImages.forEach(filePath => {
         const fullPath = path.join(uploadDir, path.basename(filePath));
@@ -225,7 +225,7 @@ const updateQnaBoard = async (
       });
     }
 
-    // ✅ 2. 새로운 이미지 & 첨부파일 추가
+    //  2. 새로운 이미지 & 첨부파일 추가
     qnaBoard.images =
       images.length > 0
         ? images
@@ -235,7 +235,7 @@ const updateQnaBoard = async (
         ? attachments
         : qnaBoard.attachments.filter(att => !deletedAttachments.includes(att));
 
-    // ✅ 3. 나머지 필드 업데이트
+    //  3. 나머지 필드 업데이트
     qnaBoard.category = category || qnaBoard.category;
     qnaBoard.title = title || qnaBoard.title;
     qnaBoard.content = content || qnaBoard.content;
