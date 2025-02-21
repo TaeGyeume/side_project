@@ -6,6 +6,7 @@ import FlightCardList from '../../components/flights/FlightCardList';
 import {fetchFlights} from '../../api/flight/flights';
 import moment from 'moment-timezone';
 import {ToggleButton, ToggleButtonGroup} from '@mui/material';
+import AdBanner from '../../components/ad/AdBanner';
 
 const Flights = () => {
   const [flights, setFlights] = useState([]); // 전체 항공편 데이터
@@ -53,6 +54,21 @@ const Flights = () => {
     }
   };
 
+  const bannerData = [
+    {
+      image: 'images/ad/air1.png'
+    },
+    {
+      image: 'images/ad/air2.png'
+    },
+    {
+      image: 'images/ad/air3.png'
+    },
+    {
+      image: 'images/ad/air4.png'
+    }
+  ];
+
   return (
     <div className="container mt-4">
       {/* 편도/왕복 선택 버튼 */}
@@ -61,16 +77,45 @@ const Flights = () => {
         exclusive
         onChange={handleTripChange}
         sx={{display: 'flex', justifyContent: 'center', mb: 2}}>
-        <ToggleButton value={false} sx={{px: 4}}>
+        <ToggleButton
+          value={false}
+          sx={{
+            px: 4,
+            backgroundColor: isRoundTrip ? '#e0e0e0' : '#5c6bc0', // 선택 여부에 따라 색상 변경
+            color: isRoundTrip ? 'black' : 'white', // 선택 여부에 따라 텍스트 색상 변경
+            '&.Mui-selected': {
+              backgroundColor: '#3949ab', // 선택된 버튼의 배경색 강조
+              color: 'white', // 선택된 버튼의 글씨 색
+              '&:hover': {
+                backgroundColor: '#3949ab' // 마우스 오버 시 색상 유지
+              }
+            }
+          }}>
           편도
         </ToggleButton>
-        <ToggleButton value={true} sx={{px: 4}}>
+
+        <ToggleButton
+          value={true}
+          sx={{
+            px: 4,
+            backgroundColor: isRoundTrip ? '#3949ab' : '#e0e0e0',
+            color: isRoundTrip ? 'white' : 'black',
+            '&.Mui-selected': {
+              backgroundColor: '#3949ab',
+              color: 'white',
+              '&:hover': {
+                backgroundColor: '#3949ab'
+              }
+            }
+          }}>
           왕복
         </ToggleButton>
       </ToggleButtonGroup>
 
       {/* 편도 검색 or 왕복 검색 */}
       {isRoundTrip ? <RoundTripSearch /> : <FlightSearch onSearch={handleSearch} />}
+
+      <AdBanner banners={bannerData} />
 
       <FlightCardList flights={flights} />
     </div>

@@ -16,7 +16,6 @@ import {
   InputLabel,
   Box,
   OutlinedInput,
-  InputAdornment,
   IconButton
 } from '@mui/material';
 import {Add, Remove} from '@mui/icons-material';
@@ -217,7 +216,7 @@ const FlightSearch = () => {
             sx={{
               minWidth: '100px',
               height: '56px',
-              backgroundColor: 'primary.light',
+              backgroundColor: '#303f9f',
               color: 'primary.contrastText'
             }} // 버튼 크기 맞춤
           >

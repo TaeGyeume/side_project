@@ -2,6 +2,7 @@
 import React from 'react';
 import {useNavigate} from 'react-router-dom';
 import SearchBar from '../../components/accommodations/SearchBar';
+import AdBanner from '../../components/ad/AdBanner';
 
 // 오늘 날짜를 YYYY-MM-DD 포맷으로 반환하는 함수
 const getFormattedDate = (daysToAdd = 0) => {
@@ -9,6 +10,21 @@ const getFormattedDate = (daysToAdd = 0) => {
   date.setDate(date.getDate() + daysToAdd);
   return date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
 };
+
+const bannerData = [
+  {
+    image: '/images/ad/accommodation1.jpg'
+  },
+  {
+    image: '/images/ad/accommodation2.png'
+  },
+  {
+    image: '/images/ad/accommodation3.png'
+  },
+  {
+    image: '/images/ad/accommodation4.jpg'
+  }
+];
 
 const AccommodationSearch = () => {
   const navigate = useNavigate();
@@ -45,6 +61,8 @@ const AccommodationSearch = () => {
     <div className="container mt-3">
       <h2>숙소 검색</h2>
       <SearchBar onSearch={handleSearch} />
+
+      <AdBanner banners={bannerData} />
     </div>
   );
 };
