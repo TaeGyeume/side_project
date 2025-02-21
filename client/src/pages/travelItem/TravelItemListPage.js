@@ -3,17 +3,19 @@ import {useNavigate} from 'react-router-dom';
 import axios from '../../api/axios';
 import TravelItemCard from '../../components/product/travelItems/TravelItemCard';
 import {getUserFavorites} from '../../api/user/favoriteService';
+import {Box, Button, Typography, CircularProgress} from '@mui/material';
 
 const TravelItemListPage = () => {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState([]); // 모든 카테고리 저장
-  const [topCategories, setTopCategories] = useState([]); // 최상위 카테고리
-  const [subCategories, setSubCategories] = useState([]); // 하위 카테고리
-  const [selectedCategory, setSelectedCategory] = useState(null); // 선택된 카테고리
-  const [items, setItems] = useState([]); // 선택된 카테고리의 상품들
-  const [favorites, setFavorites] = useState([]); // 즐겨찾기 목록 추가
+  const [categories, setCategories] = useState([]);
+  const [topCategories, setTopCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [items, setItems] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // 모든 카테고리 및 전체 상품 불러오기 (최초 실행)
   useEffect(() => {
     const fetchCategoriesAndItems = async () => {
       try {
@@ -23,20 +25,21 @@ const TravelItemListPage = () => {
         setCategories(allCategories);
         setTopCategories(allCategories.filter(cat => !cat.parentCategory));
 
-        // 처음에는 모든 상품을 불러옴
         fetchItemsByCategory(null);
       } catch (error) {
         console.error('카테고리 불러오기 실패:', error);
+        setError('카테고리를 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        setLoading(false);
       }
     };
 
-    // 사용자 즐겨찾기 목록 불러오기
     const fetchFavorites = async () => {
       try {
         const response = await getUserFavorites();
         setFavorites(response.favorites.map(fav => fav.itemId));
       } catch (error) {
-        // console.error('즐겨찾기 목록 가져오기 오류:', error);
+        console.error('즐겨찾기 목록 가져오기 오류:', error);
       }
     };
 
@@ -44,7 +47,6 @@ const TravelItemListPage = () => {
     fetchFavorites();
   }, []);
 
-  // 특정 카테고리에 속한 상품 불러오기
   const fetchItemsByCategory = async (categoryId = null) => {
     try {
       const endpoint = categoryId
@@ -58,7 +60,6 @@ const TravelItemListPage = () => {
     }
   };
 
-  // 최상위 카테고리 선택 시, 해당 카테고리와 모든 하위 카테고리 상품 표시
   const handleCategoryClick = categoryId => {
     setSelectedCategory(categoryId);
     const filteredSubCategories = categories.filter(
@@ -69,7 +70,6 @@ const TravelItemListPage = () => {
     fetchItemsByCategory(categoryId);
   };
 
-  // 즐겨찾기 토글 핸들러 (클라이언트 상태 업데이트)
   const handleFavoriteToggle = itemId => {
     setFavorites(prevFavorites =>
       prevFavorites.includes(itemId)
@@ -79,52 +79,99 @@ const TravelItemListPage = () => {
   };
 
   return (
-    <div className="container mt-4">
-      <h2>🛍️ 여행용품 조회</h2>
+    <Box sx={{maxWidth: 1200, mx: 'auto', mt: 4, p: 2}}>
+      {/* 광고 이미지 1 */}
+      <Box
+        component="img"
+        src="/images/travelItem/travelItemad1.jpg"
+        alt="광고 배너 1"
+        sx={{
+          width: '100%',
+          height: 'auto',
+          borderRadius: 2,
+          mb: 2,
+          boxShadow: 2
+        }}
+      />
+
+      {/* 광고 이미지 2 (바로 아래 추가) */}
+      <Box
+        component="img"
+        src="/images/travelItem/travelItemad2.jpg"
+        alt="광고 배너 2"
+        sx={{
+          width: '100%',
+          height: 'auto',
+          borderRadius: 2,
+          mb: 3,
+          boxShadow: 2
+        }}
+      />
+
+      <Typography variant="h5" fontWeight="bold" mb={3}>
+        🛍️ 여행용품 조회
+      </Typography>
 
       {/* 카테고리 버튼 */}
-      <div className="d-flex flex-wrap gap-2 mb-3">
+      <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
         {topCategories.map(category => (
-          <button
+          <Button
             key={category._id}
-            className={`btn ${selectedCategory === category._id ? 'btn-dark' : 'btn-light'}`}
+            variant={selectedCategory === category._id ? 'contained' : 'outlined'}
+            color="primary"
             onClick={() => handleCategoryClick(category._id)}>
             {category.name}
-          </button>
+          </Button>
         ))}
-      </div>
+      </Box>
 
       {/* 서브카테고리 버튼 */}
       {subCategories.length > 0 && (
-        <div className="d-flex flex-wrap gap-2 mb-3">
+        <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
           {subCategories.map(subCategory => (
-            <button
+            <Button
               key={subCategory._id}
-              className={`btn ${selectedCategory === subCategory._id ? 'btn-primary' : 'btn-outline-primary'}`}
+              variant={selectedCategory === subCategory._id ? 'contained' : 'outlined'}
+              color="secondary"
               onClick={() => handleCategoryClick(subCategory._id)}>
               {subCategory.name}
-            </button>
+            </Button>
           ))}
-        </div>
+        </Box>
       )}
 
-      {/* 선택한 카테고리의 상품 리스트 */}
-      <div className="row">
-        {items.length > 0 ? (
-          items.map(item => (
-            <div key={item._id} className="col-md-4 mb-4">
+      {/* 로딩 상태 */}
+      {loading && (
+        <Box display="flex" justifyContent="center" my={3}>
+          <CircularProgress />
+        </Box>
+      )}
+
+      {/* 오류 메시지 */}
+      {error && (
+        <Typography color="error" textAlign="center" my={3}>
+          {error}
+        </Typography>
+      )}
+
+      {/* 상품 리스트 */}
+      {!loading && !error && (
+        <Box display="flex" flexWrap="wrap" justifyContent="center" gap={2} mb={3}>
+          {items.length > 0 ? (
+            items.map(item => (
               <TravelItemCard
+                key={item._id}
                 travelItem={item}
-                isFavorite={favorites.includes(item._id)} // 즐겨찾기 상태 전달
-                onFavoriteToggle={handleFavoriteToggle} // 상태 업데이트 함수 전달
+                isFavorite={favorites.includes(item._id)}
+                onFavoriteToggle={handleFavoriteToggle}
               />
-            </div>
-          ))
-        ) : (
-          <p>카테고리를 선택해주세요.</p>
-        )}
-      </div>
-    </div>
+            ))
+          ) : (
+            <Typography textAlign="center">하위 카테고리를 선택해 주세요.</Typography>
+          )}
+        </Box>
+      )}
+    </Box>
   );
 };
 
