@@ -66,7 +66,7 @@ export const useAuthStore = create(
           return;
         }
         try {
-          console.log(' 인증 상태 확인: 프로필 불러오기 시작');
+          // console.log(' 인증 상태 확인: 프로필 불러오기 시작');
           await get().fetchUserProfile();
         } catch (error) {
           if (error.response?.status === 401) {
