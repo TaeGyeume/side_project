@@ -4,8 +4,8 @@ const RefreshToken = require('../models/RefreshToken');
 const User = require('../models/User'); //  유저 정보 가져오기 위해 추가
 
 const authMiddleware = async (req, res, next) => {
-  console.log(' 요청된 쿠키:', req.cookies);
-  console.log(' 요청된 헤더:', req.headers);
+  // console.log(' 요청된 쿠키:', req.cookies);
+  // console.log(' 요청된 헤더:', req.headers);
 
   const accessToken = req.cookies.accessToken || req.headers.authorization?.split(' ')[1];
   const refreshToken = req.cookies.refreshToken;
@@ -20,7 +20,7 @@ const authMiddleware = async (req, res, next) => {
     const decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET);
     req.user = decodedToken; // decodedToken에서 user 정보 추출 후 req.user에 설정
 
-    console.log(' 인증된 사용자:', req.user);
+    // console.log(' 인증된 사용자:', req.user);
 
     next(); // 인증 성공 시 다음 미들웨어 실행
   } catch (error) {
