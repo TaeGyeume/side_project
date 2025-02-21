@@ -16,9 +16,13 @@ const handleRequest = async (requestPromise, errorMessage) => {
     const response = await requestPromise;
     return response.data;
   } catch (error) {
-    const originalRequest = requestPromise.config;
+    const originalRequest = error.config; // 요청의 설정을 가져옴
+    if (!originalRequest) {
+      console.error('오류: 요청 객체가 없습니다.', error);
+      throw new Error('요청 객체가 존재하지 않습니다.');
+    }
 
-    // 401 Unauthorized 발생 시 리프레시 토큰으로 재시도
+    // 401 Unauthorized 처리 (리프레시 토큰 재발급)
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return Promise.reject(error);
@@ -39,6 +43,7 @@ const handleRequest = async (requestPromise, errorMessage) => {
         throw refreshError;
       }
     }
+
     throw error.response?.data || new Error(errorMessage);
   }
 };
