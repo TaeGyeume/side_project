@@ -154,8 +154,6 @@ exports.registerUser = async ({userid, username, email, phone, password, address
 
 // 로그인 서비스 (액세스 토큰 및 리프레시 토큰 쿠키 저장)
 exports.loginUser = async ({userid, password}, res) => {
-  console.log('로그인 요청:', userid);
-
   const user = await User.findOne({userid});
   if (!user) throw new Error('아이디가 존재하지 않습니다.');
 

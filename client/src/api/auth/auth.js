@@ -40,7 +40,6 @@ const handleRequest = async (requestPromise, errorMessage) => {
 const clearCookiesManually = () => {
   document.cookie = 'accessToken=; Max-Age=0; path=/;';
   document.cookie = 'refreshToken=; Max-Age=0; path=/;';
-  console.log('브라우저 쿠키 수동 삭제 완료');
 };
 
 export const authAPI = {
@@ -52,15 +51,10 @@ export const authAPI = {
 
   loginUser: async userData => {
     try {
-      console.log('🚀 로그인 요청:', userData);
       const response = await api.post('/auth/login', userData, {withCredentials: true});
-
-      console.log('✅ 로그인 성공 응답:', response);
-      console.log('📌 브라우저 쿠키:', document.cookie); // 쿠키 확인
 
       return response;
     } catch (error) {
-      console.error('❌ 로그인 실패:', error?.response?.data?.message || error.message);
       throw error;
     }
   },

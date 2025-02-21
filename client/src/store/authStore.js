@@ -31,12 +31,10 @@ export const useAuthStore = create(
       //  로그인 처리
       login: async userData => {
         try {
-          console.log(' 로그인 요청:', userData);
           await authAPI.loginUser(userData);
-          console.log(' 로그인 성공, 프로필 불러오기 시작');
+
           await get().fetchUserProfile();
         } catch (error) {
-          console.error(' 로그인 실패:', error?.response?.data?.message || error.message);
           set({user: null, isAuthenticated: false});
           throw error;
         }
@@ -45,11 +43,9 @@ export const useAuthStore = create(
       //  로그아웃 처리
       logout: async () => {
         try {
-          console.log(' 로그아웃 요청 시작');
           await authAPI.logoutUser();
           clearCookies(); //  브라우저 쿠키 삭제
           set({user: null, isAuthenticated: false});
-          console.log(' 로그아웃 완료, 상태 초기화');
         } catch (error) {
           console.error(
             ' 로그아웃 실패:',
@@ -97,14 +93,10 @@ export const useAuthStore = create(
 
 //  브라우저 쿠키 삭제 함수 개선
 const clearCookies = () => {
-  console.log('🗑 브라우저 쿠키 삭제 시작');
-
   // 모든 쿠키 삭제
   const cookies = document.cookie.split('; ');
   for (let cookie of cookies) {
     const [name] = cookie.split('=');
     document.cookie = `${name}=; Max-Age=0; path=/; domain=${window.location.hostname}`;
   }
-
-  console.log(' 브라우저 쿠키 삭제 완료');
 };
