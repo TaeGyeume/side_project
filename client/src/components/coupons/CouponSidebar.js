@@ -1,3 +1,4 @@
+// src/components/CouponSidebar.js
 import React, {useEffect, useState} from 'react';
 import {
   fetchCouponsByMembership,
@@ -5,9 +6,18 @@ import {
   fetchUserCoupons
 } from '../../api/coupon/couponService';
 import {authAPI} from '../../api/auth';
-import {Card, Button, Spinner} from 'react-bootstrap';
-import {FaChevronDown, FaChevronUp, FaTicketAlt} from 'react-icons/fa';
-import './styles/CouponSidebar.css';
+import {
+  Drawer,
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  IconButton,
+  CircularProgress,
+  Stack
+} from '@mui/material';
+import {FaChevronDown, FaTicketAlt} from 'react-icons/fa';
 
 const CouponSidebar = () => {
   const [user, setUser] = useState(null);
@@ -63,43 +73,81 @@ const CouponSidebar = () => {
   };
 
   return (
-    <div className={`coupon-sidebar ${isOpen ? 'open' : ''}`}>
-      <button className="coupon-toggle-btn" onClick={() => setIsOpen(!isOpen)}>
-        {isOpen ? <FaChevronDown /> : <FaTicketAlt />}
-      </button>
+    <>
+      {/* 토글 버튼 */}
+      <IconButton
+        onClick={() => setIsOpen(true)}
+        sx={{
+          position: 'fixed',
+          right: 20,
+          bottom: 20,
+          backgroundColor: 'primary.main',
+          color: 'white',
+          '&:hover': {backgroundColor: 'primary.dark'}
+        }}>
+        <FaTicketAlt />
+      </IconButton>
 
-      <div className="coupon-container">
-        <h4 className="coupon-header">🎫 쿠폰 목록</h4>
+      {/* 사이드바 (Drawer) */}
+      <Drawer
+        anchor="right"
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        PaperProps={{
+          sx: {width: 320, p: 2, backgroundColor: '#f9f9f9'}
+        }}>
+        {/* 헤더 */}
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Typography variant="h6" fontWeight="bold">
+            🎫 쿠폰 목록
+          </Typography>
+          <IconButton onClick={() => setIsOpen(false)}>
+            <FaChevronDown />
+          </IconButton>
+        </Stack>
 
-        {!user ? (
-          <p className="coupon-text">🔒 로그인 후 쿠폰을 확인할 수 있습니다.</p>
-        ) : loading ? (
-          <Spinner animation="border" role="status">
-            <span className="visually-hidden">쿠폰 로딩 중...</span>
-          </Spinner>
-        ) : coupons.length > 0 ? (
-          <div className="coupon-list">
-            {coupons.map(coupon => (
-              <Card key={coupon._id} className="coupon-card">
-                <Card.Body>
-                  <Card.Title className="coupon-title">{coupon.name}</Card.Title>
-                  <Card.Text className="coupon-text">{coupon.description}</Card.Text>
-                  <Button
-                    variant={claimedCoupons.has(coupon._id) ? 'secondary' : 'success'}
-                    onClick={() => handleClaimCoupon(coupon._id)}
-                    disabled={claimedCoupons.has(coupon._id)}
-                    className="coupon-btn">
-                    {claimedCoupons.has(coupon._id) ? '✅ 받은 쿠폰' : '📥 쿠폰 받기'}
-                  </Button>
-                </Card.Body>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <p className="coupon-text">사용 가능한 쿠폰이 없습니다.</p>
-        )}
-      </div>
-    </div>
+        {/* 쿠폰 내용 */}
+        <Box sx={{mt: 2}}>
+          {!user ? (
+            <Typography color="textSecondary" align="center">
+              🔒 로그인 후 쿠폰을 확인할 수 있습니다.
+            </Typography>
+          ) : loading ? (
+            <Box display="flex" justifyContent="center" mt={2}>
+              <CircularProgress />
+            </Box>
+          ) : coupons.length > 0 ? (
+            <Stack spacing={2}>
+              {coupons.map(coupon => (
+                <Card key={coupon._id} sx={{borderRadius: 2, boxShadow: 2}}>
+                  <CardContent>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {coupon.name}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      {coupon.description}
+                    </Typography>
+                    <Button
+                      fullWidth
+                      variant={claimedCoupons.has(coupon._id) ? 'contained' : 'outlined'}
+                      color={claimedCoupons.has(coupon._id) ? 'secondary' : 'primary'}
+                      onClick={() => handleClaimCoupon(coupon._id)}
+                      disabled={claimedCoupons.has(coupon._id)}
+                      sx={{mt: 1, fontWeight: 'bold'}}>
+                      {claimedCoupons.has(coupon._id) ? '✅ 받은 쿠폰' : '📥 쿠폰 받기'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </Stack>
+          ) : (
+            <Typography align="center" color="textSecondary">
+              사용 가능한 쿠폰이 없습니다.
+            </Typography>
+          )}
+        </Box>
+      </Drawer>
+    </>
   );
 };
 

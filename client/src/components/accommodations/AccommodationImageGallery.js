@@ -13,16 +13,16 @@ const AccommodationImageGallery = ({images, accommodationName, serverUrl}) => {
 
   if (!images || images.length === 0) return null;
 
-  // React Slick 설정
+  // 이미지가 1개일 때 슬라이더 설정을 다르게 적용
   const settings = {
-    dots: true,
-    infinite: true,
+    dots: images.length > 1, // 이미지 1개면 dots 비활성화
+    infinite: images.length > 1, // 이미지 1개면 무한 스크롤 비활성화
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: images.length > 1, // 1개일 때 자동 재생 X
     autoplaySpeed: 3000,
-    arrows: true,
+    arrows: images.length > 1, // 이미지 1개면 화살표 숨김
     beforeChange: (current, next) => {
       document.querySelectorAll('.slick-slide').forEach(slide => {
         if (slide.getAttribute('aria-hidden') === 'true') {
