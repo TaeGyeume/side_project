@@ -35,14 +35,24 @@ exports.claimCoupon = async (userId, couponId) => {
   }
 };
 
-// 사용자가 받은 쿠폰 조회 서비스
+// 사용자가 받은 쿠폰 조회 서비스 (만료 여부 추가)
 exports.fetchUserCoupons = async userId => {
   try {
+    const currentDate = moment().tz('Asia/Seoul').toDate(); // 현재 시간 가져오기
+
     const userCoupons = await UserCoupon.find({user: userId})
       .populate('coupon') // 쿠폰 정보 함께 조회
       .sort({expiresAt: -1}); // 만료일 기준으로 정렬
 
-    return userCoupons;
+    // 만료 여부 추가 (isExpired 필드)
+    const formattedCoupons = userCoupons.map(coupon => {
+      return {
+        ...coupon._doc,
+        isExpired: coupon.expiresAt < currentDate // 현재 시간이 만료일보다 크면 true
+      };
+    });
+
+    return formattedCoupons;
   } catch (error) {
     throw new Error('사용자의 쿠폰 조회 중 오류 발생: ' + error.message);
   }
