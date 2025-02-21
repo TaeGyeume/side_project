@@ -3,7 +3,7 @@ const path = require('path');
 const QnaBoard = require('../models/QnaBoard');
 const QnaComment = require('../models/QnaComment');
 
-// ✅ QnA 게시글 작성
+//  QnA 게시글 작성
 const createQnaBoard = async (
   userId,
   category,
@@ -13,7 +13,7 @@ const createQnaBoard = async (
   attachments = []
 ) => {
   try {
-    console.log('📌 QnA 게시글 저장 데이터:', {
+    console.log(' QnA 게시글 저장 데이터:', {
       userId,
       category,
       title,
@@ -26,7 +26,7 @@ const createQnaBoard = async (
       throw new Error('카테고리, 제목, 내용을 입력해야 합니다.');
     }
 
-    // 🚨 MongoDB 저장 직전 데이터 검사
+    //  MongoDB 저장 직전 데이터 검사
     if (!userId) {
       throw new Error('유효한 사용자 ID가 필요합니다.');
     }
