@@ -89,14 +89,14 @@ const CouponList = () => {
                 borderRadius: 3,
                 boxShadow: 4,
                 backgroundColor:
-                  coupon.discountType === 'percentage' ? '#e3f2fd' : '#e8f5e9', // ✅ 할인 유형별 배경색
+                  coupon.discountType === 'percentage' ? '#e3f2fd' : '#e8f5e9', // 할인 유형별 배경색
                 transition: 'transform 0.2s, box-shadow 0.3s',
                 '&:hover': {
                   transform: 'scale(1.03)',
                   boxShadow: 6
                 }
               }}>
-              {/* ✅ 카드 헤더 (이름 & 할인 타입) */}
+              {/* 카드 헤더 (이름 & 할인 타입) */}
               <Stack direction="row" justifyContent="space-between" alignItems="center">
                 <Typography variant="h6" fontWeight="bold">
                   {coupon.name}
@@ -110,7 +110,7 @@ const CouponList = () => {
                 />
               </Stack>
 
-              {/* ✅ 할인 정보 아이콘과 함께 표시 */}
+              {/* 할인 정보 아이콘과 함께 표시 */}
               <Box sx={{flexGrow: 1, mt: 2}}>
                 <Stack direction="row" spacing={1} alignItems="center">
                   {coupon.discountType === 'percentage' ? (
@@ -155,7 +155,7 @@ const CouponList = () => {
                 </Box>
               </Box>
 
-              {/* ✅ 삭제 버튼 위치 개선 */}
+              {/* 삭제 버튼 위치 개선 */}
               <Stack direction="row" justifyContent="flex-end" mt={2}>
                 <IconButton color="error" onClick={() => handleDelete(coupon._id)}>
                   <DeleteIcon />
