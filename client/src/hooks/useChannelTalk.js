@@ -10,12 +10,12 @@ const useChannelTalk = () => {
   const fetchUserProfile = async () => {
     try {
       const userResponse = await authAPI.getUserProfile(); // getUserProfile 실행
-      // console.log('✅ getUserProfile 응답:', userResponse);
+      // console.log(' getUserProfile 응답:', userResponse);
 
       if (userResponse && userResponse.email) {
         setUserProfile(userResponse); // 정상적인 응답이면 상태 업데이트
       } else {
-        console.warn('⚠️ getUserProfile 응답이 올바르지 않음:', userResponse);
+        console.warn(' getUserProfile 응답이 올바르지 않음:', userResponse);
         setUserProfile({
           username: '방문자',
           email: 'guest@example.com',
@@ -27,7 +27,7 @@ const useChannelTalk = () => {
       if (error.response && error.response.status === 401) {
         console.warn('401 Unauthorized - 게스트 프로필 적용');
       } else {
-        console.error('❌ 사용자 정보 가져오기 실패:', error);
+        console.error(' 사용자 정보 가져오기 실패:', error);
       }
       setUserProfile({
         username: '방문자',
@@ -62,12 +62,12 @@ const useChannelTalk = () => {
       script.src = 'https://cdn.channel.io/plugin/ch-plugin-web.js';
 
       script.onload = () => {
-        // console.log('✅ 채널톡 스크립트 로드 완료');
+        // console.log(' 채널톡 스크립트 로드 완료');
         setIsChannelLoaded(true);
       };
 
       script.onerror = () => {
-        console.error('❌ 채널톡 스크립트 로드 실패!');
+        console.error(' 채널톡 스크립트 로드 실패!');
       };
 
       document.body.appendChild(script);
@@ -77,13 +77,13 @@ const useChannelTalk = () => {
   }, []);
 
   useEffect(() => {
-    // console.log('🔄 userProfile 상태 업데이트:', userProfile);
+    // console.log(' userProfile 상태 업데이트:', userProfile);
 
     // ChannelIO를 초기화: userProfile이 설정되어 있다면 (게스트라도) 초기화 진행
     if (isChannelLoaded && userProfile) {
       const initializeChannelTalk = () => {
         if (window.ChannelIO) {
-          // console.log('✅ ChannelIO 로드됨, 채널톡 초기화 실행');
+          // console.log(' ChannelIO 로드됨, 채널톡 초기화 실행');
           const userEmail = userProfile.email || 'guest@example.com';
           window.ChannelIO('boot', {
             pluginKey: '7761c1dd-62ee-4c88-a887-3625d73200e0',
@@ -94,7 +94,7 @@ const useChannelTalk = () => {
             }
           });
         } else {
-          // console.log('⏳ ChannelIO 로드 대기 중...');
+          // console.log(' ChannelIO 로드 대기 중...');
           setTimeout(initializeChannelTalk, 500);
         }
       };
@@ -103,17 +103,17 @@ const useChannelTalk = () => {
     }
   }, [isChannelLoaded, userProfile]);
 
-  // ✅ 채널톡 토글 기능 추가
+  //  채널톡 토글 기능 추가
   const toggleChannelTalk = () => {
     if (window.ChannelIO) {
       if (isChannelVisible) {
-        window.ChannelIO('hide'); // ✅ 채널톡 닫기
+        window.ChannelIO('hide'); //  채널톡 닫기
       } else {
-        window.ChannelIO('show'); // ✅ 채널톡 열기
+        window.ChannelIO('show'); //  채널톡 열기
       }
-      setIsChannelVisible(prev => !prev); // ✅ 상태 토글
+      setIsChannelVisible(prev => !prev); //  상태 토글
     } else {
-      console.error('❌ ChannelIO가 아직 로드되지 않았습니다.');
+      console.error(' ChannelIO가 아직 로드되지 않았습니다.');
     }
   };
 

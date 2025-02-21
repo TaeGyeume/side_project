@@ -8,16 +8,16 @@ const GoogleLoginCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('✅ GoogleLoginCallback 호출됨');
+    console.log(' GoogleLoginCallback 호출됨');
 
     const handleGoogleLoginSuccess = async () => {
       try {
         setAuthState({isAuthenticated: true});
         await checkAuth();
-        console.log('✅ Google 로그인 성공, 메인 페이지로 이동');
+        console.log(' Google 로그인 성공, 메인 페이지로 이동');
         navigate('/main');
       } catch (error) {
-        console.error('❌ Google 로그인 실패:', error);
+        console.error(' Google 로그인 실패:', error);
         navigate('/login');
       }
     };

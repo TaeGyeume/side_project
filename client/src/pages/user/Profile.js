@@ -56,7 +56,7 @@ const Profile = () => {
     fetchProfile();
   }, [checkAuth]);
 
-  // ✅ 항목별 한글 이름 매핑
+  //  항목별 한글 이름 매핑
   const fieldNames = {
     userid: '아이디',
     username: '이름',
@@ -67,13 +67,13 @@ const Profile = () => {
     mileage: '마일리지'
   };
 
-  // ✅ 입력 값 변경 감지
+  //  입력 값 변경 감지
   const handleChange = e => {
     setUserData({...userData, [editingField]: e.target.value});
     setCheckMessage({...checkMessage, [editingField]: ''});
   };
 
-  // ✅ 중복 확인 API 호출 (userid, email, phone)
+  //  중복 확인 API 호출 (userid, email, phone)
   const handleCheckDuplicate = async () => {
     if (!['userid', 'email', 'phone'].includes(editingField)) return;
 
@@ -96,7 +96,7 @@ const Profile = () => {
     }
   };
 
-  // ✅ 변경된 값만 서버로 전송
+  //  변경된 값만 서버로 전송
   const handleSubmit = async () => {
     setError('');
     setSuccess('');
