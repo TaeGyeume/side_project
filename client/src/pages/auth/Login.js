@@ -62,7 +62,8 @@ const Login = () => {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        minHeight: '100vh'
+        minHeight: '100vh',
+        zIndex: 1000
       }}>
       <Paper
         elevation={6}
