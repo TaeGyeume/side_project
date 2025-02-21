@@ -30,7 +30,7 @@ const EditProfile = () => {
   const navigate = useNavigate();
   const {checkAuth} = useAuthStore();
 
-  // ✅ 사용자 프로필 불러오기 (필요한 데이터만 추출)
+  //  사용자 프로필 불러오기 (필요한 데이터만 추출)
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -62,13 +62,13 @@ const EditProfile = () => {
     fetchProfile();
   }, [navigate, checkAuth]);
 
-  // ✅ 입력 값 변경 감지
+  //  입력 값 변경 감지
   const handleChange = e => {
     setFormData({...formData, [e.target.name]: e.target.value});
     setCheckMessage({...checkMessage, [e.target.name]: ''});
   };
 
-  // ✅ 중복 확인 API 호출
+  //  중복 확인 API 호출
   const handleCheckDuplicate = async field => {
     if (!['userid', 'email', 'phone'].includes(field)) return;
 
@@ -88,7 +88,7 @@ const EditProfile = () => {
     }
   };
 
-  // ✅ 변경된 값만 서버로 전송
+  //  변경된 값만 서버로 전송
   const handleSubmit = async () => {
     setError('');
     setSuccess('');
@@ -130,7 +130,7 @@ const EditProfile = () => {
     setShowModal(false);
   };
 
-  // ✅ 모달 열기
+  //  모달 열기
   const openModal = field => {
     setEditingField(field);
     setShowModal(true);
@@ -153,22 +153,20 @@ const EditProfile = () => {
             </p>
             <button
               className="btn btn-outline-primary btn-sm"
-              onClick={() => openModal(key)}
-            >
+              onClick={() => openModal(key)}>
               수정
             </button>
           </div>
         ))}
       </div>
 
-      {/* ✅ 모달 창 */}
+      {/*  모달 창 */}
       {showModal && (
         <div
           className="modal fade show d-block"
           tabIndex="-1"
           role="dialog"
-          style={{background: 'rgba(0,0,0,0.5)'}}
-        >
+          style={{background: 'rgba(0,0,0,0.5)'}}>
           <div className="modal-dialog" role="document">
             <div className="modal-content">
               <div className="modal-header">
@@ -176,8 +174,7 @@ const EditProfile = () => {
                 <button
                   type="button"
                   className="close"
-                  onClick={() => setShowModal(false)}
-                >
+                  onClick={() => setShowModal(false)}>
                   &times;
                 </button>
               </div>
@@ -192,8 +189,7 @@ const EditProfile = () => {
                 {['userid', 'email', 'phone'].includes(editingField) && (
                   <button
                     className="btn btn-outline-secondary mt-2"
-                    onClick={() => handleCheckDuplicate(editingField)}
-                  >
+                    onClick={() => handleCheckDuplicate(editingField)}>
                     중복 확인
                   </button>
                 )}
@@ -207,8 +203,7 @@ const EditProfile = () => {
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  onClick={() => setShowModal(false)}
-                >
+                  onClick={() => setShowModal(false)}>
                   닫기
                 </button>
                 <button type="button" className="btn btn-primary" onClick={handleSubmit}>

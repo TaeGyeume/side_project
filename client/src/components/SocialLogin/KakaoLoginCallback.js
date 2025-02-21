@@ -8,7 +8,7 @@ const KakaoLoginCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('✅ KakaoLoginCallback 호출됨');
+    console.log(' KakaoLoginCallback 호출됨');
 
     const handleKakaoLoginSuccess = async () => {
       try {
@@ -18,10 +18,10 @@ const KakaoLoginCallback = () => {
         // 프로필 요청
         await checkAuth();
 
-        console.log('✅ 카카오 로그인 성공, 메인 페이지로 이동');
+        console.log(' 카카오 로그인 성공, 메인 페이지로 이동');
         navigate('/main'); // 메인 페이지로 이동
       } catch (error) {
-        console.error('❌ 카카오 로그인 실패:', error);
+        console.error(' 카카오 로그인 실패:', error);
         navigate('/login'); // 로그인 실패 시 로그인 페이지로 이동
       }
     };

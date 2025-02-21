@@ -83,14 +83,14 @@ const Login = () => {
             </button>
           </form>
 
-          {/* ✅ 아이디 찾기 링크 추가 */}
+          {/*  아이디 찾기 링크 추가 */}
           <div className="text-center mt-3">
             <a href="/find-userid" className="text-decoration-none">
               아이디 찾기
             </a>
           </div>
 
-          {/* ✅ 비밀번호 찾기 (기존 코드 유지) */}
+          {/* 비밀번호 찾기 (기존 코드 유지) */}
           <div className="text-center mt-3">
             <a href="/forgot-password" className="text-decoration-none">
               비밀번호를 잊으셨나요?
