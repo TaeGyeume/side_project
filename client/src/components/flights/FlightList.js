@@ -34,7 +34,6 @@ const FlightList = () => {
   useEffect(() => {
     const loadFlights = async () => {
       try {
-        console.log('📡 모든 항공편 데이터 가져오기...');
         const data = await fetchFlights();
         setFlights(data || []);
       } catch (error) {

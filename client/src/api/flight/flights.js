@@ -5,7 +5,6 @@ const API_URL = 'http://localhost:5000/api'; // API 기본 URL
 // 모든 항공편 가져오기
 export const fetchFlights = async () => {
   try {
-    console.log('📡 항공편 리스트 요청...');
     const response = await axios.get(`${API_URL}/flights`); // URL 명확히 설정
     return response.data;
   } catch (error) {

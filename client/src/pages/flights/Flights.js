@@ -6,6 +6,7 @@ import FlightCardList from '../../components/flights/FlightCardList';
 import {fetchFlights} from '../../api/flight/flights';
 import moment from 'moment-timezone';
 import {ToggleButton, ToggleButtonGroup} from '@mui/material';
+import AdBanner from '../../components/ad/AdBanner';
 
 const Flights = () => {
   const [flights, setFlights] = useState([]); // 전체 항공편 데이터
@@ -53,6 +54,21 @@ const Flights = () => {
     }
   };
 
+  const bannerData = [
+    {
+      image: 'images/ad/air1.png'
+    },
+    {
+      image: 'images/ad/air2.png'
+    },
+    {
+      image: 'images/ad/air3.png'
+    },
+    {
+      image: 'images/ad/air4.png'
+    }
+  ];
+
   return (
     <div className="container mt-4">
       {/* 편도/왕복 선택 버튼 */}
@@ -98,6 +114,8 @@ const Flights = () => {
 
       {/* 편도 검색 or 왕복 검색 */}
       {isRoundTrip ? <RoundTripSearch /> : <FlightSearch onSearch={handleSearch} />}
+
+      <AdBanner banners={bannerData} />
 
       <FlightCardList flights={flights} />
     </div>
