@@ -5,15 +5,46 @@ const qnaService = require('../services/qnaService');
 
 const createQnaBoard = async (req, res) => {
   try {
-    //  요청 Content-Type 확인
     const contentType = req.headers['content-type'] || '';
+
     console.log(` 요청 Content-Type: ${contentType}`);
 
+    // JSON 요청일 경우 (파일 없이 게시글 등록)
+    if (contentType.includes('application/json')) {
+      console.log(' 📝 JSON 요청 처리');
+
+      const {category, title, content} = req.body;
+      const userId = req.user?.id;
+
+      if (!category || !title || !content) {
+        return res.status(400).json({error: '카테고리, 제목, 내용을 입력해야 합니다.'});
+      }
+
+      const qnaBoard = await qnaService.createQnaBoard(
+        userId,
+        category,
+        title,
+        content,
+        [],
+        []
+      );
+
+      console.log(' JSON 요청으로 MongoDB 저장 완료:', qnaBoard);
+
+      return res.status(201).json({
+        message: 'QnA 게시글이 성공적으로 등록되었습니다.',
+        qnaBoard
+      });
+    }
+
+    // multipart/form-data 요청일 경우 (파일 포함)
     if (!contentType.includes('multipart/form-data')) {
       return res
         .status(400)
         .json({error: '파일 업로드는 multipart/form-data 형식이어야 합니다.'});
     }
+
+    console.log(' 📎 FormData 요청 처리 (파일 포함)');
 
     const bb = busboy({headers: req.headers});
     const uploadDir = path.join(__dirname, '../uploads/qna');
@@ -28,7 +59,7 @@ const createQnaBoard = async (req, res) => {
 
     let fileUploadPromises = [];
 
-    //  파일 저장
+    // 파일 저장 처리
     bb.on('file', (name, file, info) => {
       console.log(` 파일 업로드 시작: ${info.filename}, 필드명: ${name}`);
       const {filename} = info;
@@ -61,7 +92,7 @@ const createQnaBoard = async (req, res) => {
       );
     });
 
-    //  폼 필드 값 처리
+    // 폼 필드 값 처리
     bb.on('field', (name, value) => {
       console.log(`📌 폼 필드 수신: ${name} = ${value}`);
       if (value && value.trim() !== '') {
@@ -71,7 +102,7 @@ const createQnaBoard = async (req, res) => {
       }
     });
 
-    //  모든 파일 업로드 완료 후 실행
+    // 모든 파일 업로드 완료 후 실행
     bb.on('finish', async () => {
       try {
         console.log(' 모든 파일과 필드 수신 완료');

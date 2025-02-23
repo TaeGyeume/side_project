@@ -61,7 +61,7 @@ const QnaBoardWrite = () => {
 
     console.log('🚀 업로드 데이터:', formData);
 
-    if (!formData.category || !formData.title || !formData.content) {
+    if (!formData.category.trim() || !formData.title.trim() || !formData.content.trim()) {
       alert('카테고리, 제목, 내용을 입력하세요.');
       return;
     }
@@ -72,30 +72,37 @@ const QnaBoardWrite = () => {
       const form = new FormData();
 
       // ✅ 문자열 데이터 추가 (확실히 값이 들어가도록 `trim()` 적용)
-      form.append('category', formData.category ? formData.category.trim() : '');
-      form.append('title', formData.title ? formData.title.trim() : '');
-      form.append('content', formData.content ? formData.content.trim() : '');
+      form.append('category', formData.category.trim());
+      form.append('title', formData.title.trim());
+      form.append('content', formData.content.trim());
 
-      // ✅ 파일이 존재하는지 확인 후 추가
-      formData.images.forEach(file => {
-        if (file instanceof File) {
-          form.append('images', file);
-        }
-      });
-
-      formData.attachments.forEach(file => {
-        if (file instanceof File) {
-          form.append('attachments', file);
-        }
-      });
-
-      // 🚀 FormData 디버깅 (제대로 추가되었는지 확인)
-      console.log('✅ 전송할 FormData 내용:');
-      for (let [key, value] of form.entries()) {
-        console.log(`🔹 ${key}:`, value);
+      // ✅ 파일이 존재하는 경우에만 추가
+      if (formData.images.length > 0) {
+        formData.images.forEach(file => {
+          if (file instanceof File) {
+            form.append('images', file);
+          }
+        });
       }
 
-      await createQnaBoard(form);
+      if (formData.attachments.length > 0) {
+        formData.attachments.forEach(file => {
+          if (file instanceof File) {
+            form.append('attachments', file);
+          }
+        });
+      }
+
+      // 🚀 FormData 디버깅 (콘솔에서 FormData 내용 확인)
+      console.log('✅ 전송할 FormData 내용:');
+      for (let pair of form.entries()) {
+        console.log(`🔹 ${pair[0]}:`, pair[1]);
+      }
+
+      // ✅ 요청 헤더 명확히 설정
+      await createQnaBoard(form, {
+        headers: {'Content-Type': 'multipart/form-data'}
+      });
 
       alert('게시글이 성공적으로 등록되었습니다!');
       navigate('/qna');
