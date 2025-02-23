@@ -28,9 +28,9 @@ const normalizeItemType = itemType => {
 const toggleFavorite = async (userId, itemId, itemType) => {
   try {
     itemType = normalizeItemType(itemType);
-    console.log(
-      ` toggleFavorite called with: userId=${userId}, itemId=${itemId}, itemType=${itemType}`
-    );
+    // console.log(
+    //   ` toggleFavorite called with: userId=${userId}, itemId=${itemId}, itemType=${itemType}`
+    // );
 
     if (!modelMap[itemType]) {
       throw new Error(
@@ -53,16 +53,16 @@ const toggleFavorite = async (userId, itemId, itemType) => {
 
     if (existingFavorite) {
       await Favorite.deleteOne({_id: existingFavorite._id});
-      console.log(` Removed from favorites: ${itemId} (${itemType})`);
+      // console.log(` Removed from favorites: ${itemId} (${itemType})`);
       return {message: 'Favorite removed successfully'};
     } else {
       const favorite = new Favorite({user: userId, item: itemId, itemType});
       await favorite.save();
-      console.log(` Added to favorites: ${itemId} (${itemType})`);
+      // console.log(` Added to favorites: ${itemId} (${itemType})`);
       return {message: 'Favorite added successfully', favorite};
     }
   } catch (error) {
-    console.error(' Error in toggleFavorite service:', error.message);
+    // console.error(' Error in toggleFavorite service:', error.message);
     throw error;
   }
 };
@@ -79,7 +79,7 @@ const getUserFavorites = async userId => {
       })
       .lean();
 
-    console.log(` Retrieved favorites for user ${userId}:`, favorites);
+    // console.log(` Retrieved favorites for user ${userId}:`, favorites);
 
     return favorites.map(fav => ({
       _id: fav._id,

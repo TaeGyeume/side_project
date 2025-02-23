@@ -12,7 +12,7 @@ import './styles/QnaBoardDetail.css'; // 스타일 파일 (별도로 생성 필�
 
 const QnaBoardDetail = () => {
   const {qnaBoardId} = useParams();
-  console.log(' QnA 게시글 ID:', qnaBoardId);
+  // console.log(' QnA 게시글 ID:', qnaBoardId);
 
   const navigate = useNavigate();
   const [user, setUser] = useState(null); //  현재 로그인한 사용자 정보
@@ -36,7 +36,7 @@ const QnaBoardDetail = () => {
     const fetchQnaBoard = async () => {
       try {
         const data = await getQnaBoardById(qnaBoardId);
-        console.log(' QnA 게시글 데이터:', data);
+        // console.log(' QnA 게시글 데이터:', data);
         setQnaBoard(data);
         setLoading(false);
       } catch (error) {

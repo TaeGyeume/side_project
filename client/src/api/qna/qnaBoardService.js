@@ -4,7 +4,6 @@ const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api/qna';
 
 // QnA 게시글 생성 (Busboy 사용)
-// QnA 게시글 생성 (Busboy 사용)
 export const createQnaBoard = async data => {
   try {
     let requestData;
