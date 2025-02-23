@@ -204,6 +204,7 @@ const updateQnaBoard = async (
     console.log('📎 새로 업로드된 이미지:', images);
     console.log('📑 새로 업로드된 첨부파일:', attachments);
 
+    // 1) 게시글 찾기
     const qnaBoard = await QnaBoard.findById(qnaBoardId);
     if (!qnaBoard) throw new Error('QnA 게시글을 찾을 수 없습니다.');
     if (qnaBoard.user.toString() !== userId) {
@@ -212,15 +213,12 @@ const updateQnaBoard = async (
 
     const uploadDir = path.join(__dirname, '../uploads/qna');
 
-    /**
-     * ✅ 1️⃣ 파일 삭제: 실제 파일이 존재할 경우 삭제하는 로직 추가
-     */
+    // 2) 삭제할 파일들 처리
     const deleteFiles = (files, type) => {
       if (!Array.isArray(files)) {
         console.warn(`⚠️ [WARN] ${type}가 배열이 아닙니다:`, files);
         return;
       }
-
       files.forEach(filePath => {
         const fullPath = path.join(uploadDir, path.basename(filePath));
         if (fs.existsSync(fullPath)) {
@@ -229,52 +227,41 @@ const updateQnaBoard = async (
             else console.log(`✅ 삭제된 ${type}: ${fullPath}`);
           });
         } else {
-          console.warn(`⚠️ 삭제할 ${type} 없음: ${fullPath}`);
+          console.warn(`⚠️ 삭제할 ${type}가 존재하지 않음: ${fullPath}`);
         }
       });
     };
 
-    // 삭제할 이미지 & 첨부파일 실행
     deleteFiles(deletedImages, '이미지');
     deleteFiles(deletedAttachments, '첨부파일');
 
-    /**
-     * ✅ 2️⃣ 새로운 이미지 및 첨부파일을 업데이트
-     */
-    console.log('📸 기존 이미지:', qnaBoard.images);
-    console.log('📂 기존 첨부파일:', qnaBoard.attachments);
+    // 3) 기존 이미지에서 deletedImages에 포함된 것은 제외
+    const remainingOldImages = qnaBoard.images.filter(
+      imgPath => !deletedImages.includes(imgPath)
+    );
+    // 새로 들어온 images를 합쳐 최종 배열 구성
+    // => 기존 + 새 이미지
+    const mergedImages = [...remainingOldImages, ...images];
 
-    qnaBoard.images =
-      images.length > 0
-        ? images
-        : qnaBoard.images.filter(img => !deletedImages.includes(img));
+    // 4) 첨부파일도 마찬가지
+    const remainingOldAttachments = qnaBoard.attachments.filter(
+      filePath => !deletedAttachments.includes(filePath)
+    );
+    const mergedAttachments = [...remainingOldAttachments, ...attachments];
 
-    qnaBoard.attachments =
-      attachments.length > 0
-        ? attachments
-        : qnaBoard.attachments.filter(att => !deletedAttachments.includes(att));
+    // 5) DB에 최종 반영
+    qnaBoard.category = category || qnaBoard.category;
+    qnaBoard.title = title || qnaBoard.title;
+    qnaBoard.content = content || qnaBoard.content;
+    qnaBoard.images = mergedImages; // 이미지 병합 결과
+    qnaBoard.attachments = mergedAttachments; // 첨부파일 병합 결과
 
     console.log('✅ 최종 업데이트할 이미지:', qnaBoard.images);
     console.log('✅ 최종 업데이트할 첨부파일:', qnaBoard.attachments);
 
-    /**
-     * ✅ 3️⃣ 나머지 필드 업데이트 및 저장
-     */
-    qnaBoard.category = category || qnaBoard.category;
-    qnaBoard.title = title || qnaBoard.title;
-    qnaBoard.content = content || qnaBoard.content;
-
-    console.log('📌 저장할 데이터:', {
-      category: qnaBoard.category,
-      title: qnaBoard.title,
-      content: qnaBoard.content,
-      images: qnaBoard.images,
-      attachments: qnaBoard.attachments
-    });
-
     await qnaBoard.save();
-    console.log('✅ QnA 게시글 수정 완료:', qnaBoard);
 
+    console.log('✅ QnA 게시글 수정 완료:', qnaBoard);
     return {message: 'QnA 게시글이 수정되었습니다.', qnaBoard};
   } catch (error) {
     console.error('❌ QnA 게시글 수정 중 오류 발생:', error);
