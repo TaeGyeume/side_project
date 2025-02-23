@@ -8,7 +8,7 @@ export const createQnaBoard = async (data, isMultipart) => {
   try {
     let requestData;
 
-    // ✅ 파일이 없으면 JSON 요청 (application/json)
+    //  파일이 없으면 JSON 요청 (application/json)
     if (
       (!data.images || data.images.length === 0) &&
       (!data.attachments || data.attachments.length === 0)
@@ -19,7 +19,7 @@ export const createQnaBoard = async (data, isMultipart) => {
         content: data.content?.trim() || ''
       };
     } else {
-      // ✅ 파일이 있을 경우 multipart/form-data 사용
+      //  파일이 있을 경우 multipart/form-data 사용
       requestData = new FormData();
       if (data.category) requestData.append('category', data.category.trim());
       if (data.title) requestData.append('title', data.title.trim());
@@ -42,22 +42,22 @@ export const createQnaBoard = async (data, isMultipart) => {
       }
     }
 
-    // 🚀 디버깅: requestData 출력
-    console.log('✅ 최종 전송할 데이터:', requestData);
+    //  디버깅: requestData 출력
+    // console.log(' 최종 전송할 데이터:', requestData);
 
-    if (requestData instanceof FormData) {
-      for (let [key, value] of requestData.entries()) {
-        console.log(`🔹 ${key}:`, value);
-      }
-    } else {
-      console.log('🔹 JSON 데이터:', requestData);
-    }
+    // if (requestData instanceof FormData) {
+    //   for (let [key, value] of requestData.entries()) {
+    //     console.log(` ${key}:`, value);
+    //   }
+    // } else {
+    //   console.log(' JSON 데이터:', requestData);
+    // }
 
     const headers = isMultipart
-      ? {} // 🔥 FormData일 경우 Content-Type 자동 설정
+      ? {} //  FormData일 경우 Content-Type 자동 설정
       : {'Content-Type': 'application/json'}; // JSON 요청 시 명시적 지정
 
-    // ✅ 요청 보내기 (JSON 또는 FormData 자동 선택)
+    //  요청 보내기 (JSON 또는 FormData 자동 선택)
     const response = await axios.post(API_BASE_URL, data, {
       headers,
       withCredentials: true
@@ -65,7 +65,7 @@ export const createQnaBoard = async (data, isMultipart) => {
 
     return response.data;
   } catch (error) {
-    console.error('⛔ QnA 게시글 생성 오류:', error.response?.data || error.message);
+    console.error(' QnA 게시글 생성 오류:', error.response?.data || error.message);
     throw error;
   }
 };
@@ -156,16 +156,16 @@ export const updateQnaBoard = async (qnaBoardId, data, isMultipart) => {
     let requestData = data;
     let headers = isMultipart ? {} : {'Content-Type': 'application/json'};
 
-    // 🚀 전송 데이터 디버깅
-    console.log('✅ 수정 요청 데이터:', requestData);
+    //  전송 데이터 디버깅
+    // console.log(' 수정 요청 데이터:', requestData);
 
-    if (isMultipart) {
-      for (let [key, value] of requestData.entries()) {
-        console.log(`🔹 ${key}:`, value);
-      }
-    } else {
-      console.log('🔹 JSON 데이터:', requestData);
-    }
+    // if (isMultipart) {
+    //   for (let [key, value] of requestData.entries()) {
+    //     console.log(` ${key}:`, value);
+    //   }
+    // } else {
+    //   console.log(' JSON 데이터:', requestData);
+    //
 
     const response = await axios.put(`${API_BASE_URL}/${qnaBoardId}`, requestData, {
       headers,
@@ -174,7 +174,7 @@ export const updateQnaBoard = async (qnaBoardId, data, isMultipart) => {
 
     return response.data;
   } catch (error) {
-    console.error('⛔ QnA 게시글 수정 오류:', error.response?.data || error.message);
+    console.error(' QnA 게시글 수정 오류:', error.response?.data || error.message);
     throw error;
   }
 };

@@ -196,13 +196,13 @@ const updateQnaBoard = async (
   deletedAttachments = []
 ) => {
   try {
-    console.log('🛠️ [DEBUG] QnA 게시글 수정 요청 수신');
-    console.log('📌 수정할 게시글 ID:', qnaBoardId);
-    console.log('👤 사용자 ID:', userId);
-    console.log('📂 삭제할 이미지:', deletedImages);
-    console.log('📄 삭제할 첨부파일:', deletedAttachments);
-    console.log('📎 새로 업로드된 이미지:', images);
-    console.log('📑 새로 업로드된 첨부파일:', attachments);
+    // console.log(' [DEBUG] QnA 게시글 수정 요청 수신');
+    // console.log(' 수정할 게시글 ID:', qnaBoardId);
+    // console.log(' 사용자 ID:', userId);
+    // console.log(' 삭제할 이미지:', deletedImages);
+    // console.log(' 삭제할 첨부파일:', deletedAttachments);
+    // console.log(' 새로 업로드된 이미지:', images);
+    // console.log(' 새로 업로드된 첨부파일:', attachments);
 
     // 1) 게시글 찾기
     const qnaBoard = await QnaBoard.findById(qnaBoardId);
@@ -223,11 +223,11 @@ const updateQnaBoard = async (
         const fullPath = path.join(uploadDir, path.basename(filePath));
         if (fs.existsSync(fullPath)) {
           fs.unlink(fullPath, err => {
-            if (err) console.error(`❌ ${type} 삭제 실패: ${fullPath}`, err);
-            else console.log(`✅ 삭제된 ${type}: ${fullPath}`);
+            if (err) console.error(` ${type} 삭제 실패: ${fullPath}`, err);
+            else console.log(` 삭제된 ${type}: ${fullPath}`);
           });
         } else {
-          console.warn(`⚠️ 삭제할 ${type}가 존재하지 않음: ${fullPath}`);
+          console.warn(` 삭제할 ${type}가 존재하지 않음: ${fullPath}`);
         }
       });
     };
@@ -256,15 +256,15 @@ const updateQnaBoard = async (
     qnaBoard.images = mergedImages; // 이미지 병합 결과
     qnaBoard.attachments = mergedAttachments; // 첨부파일 병합 결과
 
-    console.log('✅ 최종 업데이트할 이미지:', qnaBoard.images);
-    console.log('✅ 최종 업데이트할 첨부파일:', qnaBoard.attachments);
+    // console.log(' 최종 업데이트할 이미지:', qnaBoard.images);
+    // console.log(' 최종 업데이트할 첨부파일:', qnaBoard.attachments);
 
     await qnaBoard.save();
 
-    console.log('✅ QnA 게시글 수정 완료:', qnaBoard);
+    // console.log(' QnA 게시글 수정 완료:', qnaBoard);
     return {message: 'QnA 게시글이 수정되었습니다.', qnaBoard};
   } catch (error) {
-    console.error('❌ QnA 게시글 수정 중 오류 발생:', error);
+    // console.error(' QnA 게시글 수정 중 오류 발생:', error);
     throw new Error('QnA 게시글 수정 중 오류 발생: ' + error.message);
   }
 };

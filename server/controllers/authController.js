@@ -1,31 +1,31 @@
 const authService = require('../services/authService');
 const cookieOptions = require('../config/cookieConfig');
 const jwt = require('jsonwebtoken');
-const RefreshToken = require('../models/RefreshToken'); // ✅ 추가
+const RefreshToken = require('../models/RefreshToken'); //  추가
 
-// ✅ 아이디 찾기 컨트롤러 (이메일 입력 → 인증 코드 발송)
+//  아이디 찾기 컨트롤러 (이메일 입력 → 인증 코드 발송)
 exports.findUserId = async (req, res) => {
   try {
     const {email} = req.body;
 
-    // ✅ 요청 데이터 확인
-    console.log('📩 [컨트롤러] 클라이언트에서 받은 이메일:', email);
+    //  요청 데이터 확인
+    // console.log(' [컨트롤러] 클라이언트에서 받은 이메일:', email);
 
     if (!email) {
       return res.status(400).json({message: '이메일을 입력해주세요.'});
     }
 
-    // ✅ 서비스 호출 로그
-    console.log('🔄 [컨트롤러] authService.findUserIdByEmail 호출');
+    //  서비스 호출 로그
+    // console.log(' [컨트롤러] authService.findUserIdByEmail 호출');
 
     const response = await authService.findUserIdByEmail(email);
 
-    // ✅ 응답 로그 확인
-    console.log('✅ [컨트롤러] 서비스에서 반환된 응답:', response);
+    //  응답 로그 확인
+    // console.log(' [컨트롤러] 서비스에서 반환된 응답:', response);
 
     return res.status(200).json(response);
   } catch (error) {
-    console.error('❌ [컨트롤러] 아이디 찾기 중 오류 발생:', error.message);
+    console.error(' [컨트롤러] 아이디 찾기 중 오류 발생:', error.message);
     res.status(500).json({message: '아이디 찾기 중 오류 발생', error: error.message});
   }
 };
@@ -38,7 +38,7 @@ exports.verifyCodeAndFindUserId = async (req, res) => {
       return res.status(400).json({message: '이메일과 인증 코드를 모두 입력해주세요.'});
     }
 
-    console.log('🔑 [서버] 인증 코드 확인 요청:', email, verificationCode);
+    console.log(' [서버] 인증 코드 확인 요청:', email, verificationCode);
 
     // 서비스에서 인증 코드 검증 후 아이디 찾기
     const isVerified = await authService.verifyCode(email, verificationCode);
@@ -53,7 +53,7 @@ exports.verifyCodeAndFindUserId = async (req, res) => {
       throw new Error('인증 코드가 유효하지 않습니다.');
     }
   } catch (error) {
-    console.error('❌ [서버] 인증 코드 검증 실패:', error.message);
+    console.error(' [서버] 인증 코드 검증 실패:', error.message);
     res.status(500).json({message: '인증 코드 검증 실패', error: error.message});
   }
 };
@@ -89,7 +89,8 @@ exports.login = async (req, res) => {
       secure: false, // 배포 환경에서는 secure 활성화
       sameSite: 'None', // 크로스 사이트에서도 쿠키 유지
       path: '/',
-      maxAge: 15 * 60 * 1000 // 액세스 토큰은 15분 유효
+      // maxAge: 15 * 60 * 1000 // 액세스 토큰은 15분 유효
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 토큰은 7일 유효
     };
 
     res.cookie('accessToken', accessToken, tokenCookieOptions);
@@ -208,25 +209,25 @@ exports.logout = async (req, res) => {
 exports.refreshToken = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
-    console.log('✅ [리프레시 요청] 전달된 리프레시 토큰:', refreshToken);
+    console.log(' [리프레시 요청] 전달된 리프레시 토큰:', refreshToken);
 
     if (!refreshToken) {
-      console.error('❌ 리프레시 토큰이 없습니다.');
+      console.error(' 리프레시 토큰이 없습니다.');
       return res.status(401).json({message: '리프레시 토큰이 없습니다.'});
     }
 
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    console.log('✅ [리프레시 요청] 디코딩된 정보:', decoded);
+    console.log(' [리프레시 요청] 디코딩된 정보:', decoded);
 
     const storedToken = await RefreshToken.findOne({
       userId: decoded.id,
       token: refreshToken
     });
 
-    console.log('✅ [리프레시 요청] DB에 저장된 리프레시 토큰:', storedToken);
+    console.log(' [리프레시 요청] DB에 저장된 리프레시 토큰:', storedToken);
 
     if (!storedToken) {
-      console.error('❌ DB에서 리프레시 토큰을 찾을 수 없습니다.');
+      console.error(' DB에서 리프레시 토큰을 찾을 수 없습니다.');
       return res
         .status(403)
         .json({message: '유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요.'});
@@ -238,7 +239,7 @@ exports.refreshToken = async (req, res) => {
       {expiresIn: '1h'}
     );
 
-    console.log('✅ [리프레시 요청] 새로 발급된 액세스 토큰:', newAccessToken);
+    console.log(' [리프레시 요청] 새로 발급된 액세스 토큰:', newAccessToken);
 
     res.cookie('accessToken', newAccessToken, {
       httpOnly: true,

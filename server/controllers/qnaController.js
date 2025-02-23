@@ -8,11 +8,11 @@ const createQnaBoard = async (req, res) => {
   try {
     const contentType = req.headers['content-type'] || '';
 
-    console.log(` 요청 Content-Type: ${contentType}`);
+    // console.log(` 요청 Content-Type: ${contentType}`);
 
     // JSON 요청일 경우 (파일 없이 게시글 등록)
     if (contentType.includes('application/json')) {
-      console.log(' 📝 JSON 요청 처리');
+      // console.log(' 📝 JSON 요청 처리');
 
       const {category, title, content} = req.body;
       const userId = req.user?.id;
@@ -30,7 +30,7 @@ const createQnaBoard = async (req, res) => {
         []
       );
 
-      console.log(' JSON 요청으로 MongoDB 저장 완료:', qnaBoard);
+      // console.log(' JSON 요청으로 MongoDB 저장 완료:', qnaBoard);
 
       return res.status(201).json({
         message: 'QnA 게시글이 성공적으로 등록되었습니다.',
@@ -45,7 +45,7 @@ const createQnaBoard = async (req, res) => {
         .json({error: '파일 업로드는 multipart/form-data 형식이어야 합니다.'});
     }
 
-    console.log(' 📎 FormData 요청 처리 (파일 포함)');
+    // console.log(' 📎 FormData 요청 처리 (파일 포함)');
 
     const bb = busboy({headers: req.headers});
     const uploadDir = path.join(__dirname, '../uploads/qna');
@@ -62,7 +62,7 @@ const createQnaBoard = async (req, res) => {
 
     // 파일 저장 처리
     bb.on('file', (name, file, info) => {
-      console.log(` 파일 업로드 시작: ${info.filename}, 필드명: ${name}`);
+      // console.log(` 파일 업로드 시작: ${info.filename}, 필드명: ${name}`);
       const {filename} = info;
       const saveTo = path.join(uploadDir, `${Date.now()}-${filename}`);
       const stream = fs.createWriteStream(saveTo);
@@ -70,7 +70,7 @@ const createQnaBoard = async (req, res) => {
       file.pipe(stream);
 
       file.on('end', () => {
-        console.log(` 파일 저장 완료: ${saveTo}`);
+        // console.log(` 파일 저장 완료: ${saveTo}`);
 
         if (name.startsWith('images')) {
           formData.images.push(`/uploads/qna/${path.basename(saveTo)}`);
@@ -86,7 +86,7 @@ const createQnaBoard = async (req, res) => {
       fileUploadPromises.push(
         new Promise(resolve => {
           stream.on('finish', () => {
-            console.log(` 파일 스트림 종료: ${saveTo}`);
+            // console.log(` 파일 스트림 종료: ${saveTo}`);
             resolve();
           });
         })
@@ -95,21 +95,21 @@ const createQnaBoard = async (req, res) => {
 
     // 폼 필드 값 처리
     bb.on('field', (name, value) => {
-      console.log(`📌 폼 필드 수신: ${name} = ${value}`);
+      // console.log(`📌 폼 필드 수신: ${name} = ${value}`);
       if (value && value.trim() !== '') {
         formData[name] = value.trim();
       } else {
-        console.warn(`⚠️ 필드 데이터가 비어 있음: ${name}`);
+        // console.warn(`⚠️ 필드 데이터가 비어 있음: ${name}`);
       }
     });
 
     // 모든 파일 업로드 완료 후 실행
     bb.on('finish', async () => {
       try {
-        console.log(' 모든 파일과 필드 수신 완료');
+        // console.log(' 모든 파일과 필드 수신 완료');
         await Promise.all(fileUploadPromises);
 
-        console.log(' 최종 저장할 데이터:', formData);
+        // console.log(' 최종 저장할 데이터:', formData);
         const {category, title, content, images, attachments} = formData;
         const userId = req.user?.id;
 
@@ -126,7 +126,7 @@ const createQnaBoard = async (req, res) => {
           attachments
         );
 
-        console.log(' MongoDB 저장 완료:', qnaBoard);
+        // console.log(' MongoDB 저장 완료:', qnaBoard);
 
         return res.status(201).json({
           message: 'QnA 게시글이 성공적으로 등록되었습니다.',
@@ -182,11 +182,11 @@ const deleteQnaBoard = async (req, res) => {
     const userId = req.user.id;
     const isAdmin = req.user.roles.includes('admin');
 
-    console.log(` 게시글 삭제 요청:`, {
-      boardId: qnaBoardId,
-      userId,
-      roles: req.user.roles
-    });
+    // console.log(` 게시글 삭제 요청:`, {
+    //   boardId: qnaBoardId,
+    //   userId,
+    //   roles: req.user.roles
+    // });
 
     //  1. 삭제할 게시글 정보 가져오기
     const qnaBoard = await qnaService.getQnaBoardById(qnaBoardId);
@@ -268,7 +268,7 @@ const deleteQnaComment = async (req, res) => {
     const {commentId} = req.params;
     const {id: userId, roles: userRoles} = req.user; // `req.user`에서 id와 roles 가져오기
 
-    console.log(' 댓글 삭제 요청:', {commentId, userId, userRoles});
+    // console.log(' 댓글 삭제 요청:', {commentId, userId, userRoles});
 
     const result = await qnaService.deleteQnaComment(commentId, userId, userRoles);
     return res.status(200).json(result);
@@ -280,13 +280,13 @@ const deleteQnaComment = async (req, res) => {
 
 const updateQnaBoard = async (req, res) => {
   try {
-    console.log('🛠️ [DEBUG] QnA 게시글 수정 요청 도착');
+    // console.log('🛠️ [DEBUG] QnA 게시글 수정 요청 도착');
 
     const {qnaBoardId} = req.params; // URL에서 게시글 ID 가져오기
     const userId = req.user.id; // 사용자 ID
 
-    console.log('✏️ 수정할 게시글 ID:', qnaBoardId);
-    console.log('👤 사용자 ID:', userId);
+    // console.log('✏️ 수정할 게시글 ID:', qnaBoardId);
+    // console.log('👤 사용자 ID:', userId);
 
     const formData = {
       category: '',
@@ -309,7 +309,7 @@ const updateQnaBoard = async (req, res) => {
       file.pipe(stream);
 
       file.on('end', () => {
-        console.log(`✅ 파일 저장 완료: ${saveTo}`);
+        // console.log(` 파일 저장 완료: ${saveTo}`);
         if (name === 'images') {
           formData.images.push(`/uploads/qna/${path.basename(saveTo)}`);
         } else if (name === 'attachments') {
@@ -319,13 +319,13 @@ const updateQnaBoard = async (req, res) => {
     });
 
     bb.on('field', (name, value) => {
-      console.log(`📌 폼 필드 수신: ${name} = ${value}`);
+      // console.log(` 폼 필드 수신: ${name} = ${value}`);
 
       if (name === 'deletedImages' || name === 'deletedAttachments') {
         try {
           // JSON 문자열이 제대로 전달되었는지 확인 후 변환
           formData[name] = JSON.parse(value);
-          console.log(`✅ 변환된 ${name}:`, formData[name]);
+          // console.log(` 변환된 ${name}:`, formData[name]);
         } catch (error) {
           console.warn(`⚠️ ${name} 데이터 파싱 실패:`, value);
           formData[name] = []; // 변환 실패 시 빈 배열 사용
@@ -336,16 +336,16 @@ const updateQnaBoard = async (req, res) => {
     });
 
     bb.on('finish', async () => {
-      console.log('✅ 모든 데이터 수신 완료:', formData);
+      // console.log(' 모든 데이터 수신 완료:', formData);
 
       try {
-        // 2️⃣ **MongoDB ObjectId 변환 (문자열 → ObjectId)**
+        // 2️ **MongoDB ObjectId 변환 (문자열 → ObjectId)**
         if (!mongoose.Types.ObjectId.isValid(qnaBoardId)) {
           throw new Error(`유효하지 않은 QnA 게시글 ID: ${qnaBoardId}`);
         }
         const objectId = new mongoose.Types.ObjectId(qnaBoardId);
 
-        // 3️⃣ 서비스 로직 호출
+        // 3️ 서비스 로직 호출
         const result = await qnaService.updateQnaBoard(
           objectId,
           userId,
@@ -358,17 +358,17 @@ const updateQnaBoard = async (req, res) => {
           formData.deletedAttachments
         );
 
-        console.log('✅ QnA 게시글 수정 완료:', result);
+        // console.log(' QnA 게시글 수정 완료:', result);
         return res.status(200).json(result);
       } catch (error) {
-        console.error('❌ QnA 게시글 수정 중 오류 발생:', error);
+        console.error(' QnA 게시글 수정 중 오류 발생:', error);
         return res.status(500).json({error: error.message});
       }
     });
 
     req.pipe(bb);
   } catch (error) {
-    console.error('❌ QnA 게시글 수정 처리 중 서버 오류:', error);
+    console.error(' QnA 게시글 수정 처리 중 서버 오류:', error);
     return res.status(500).json({error: '서버 오류 발생'});
   }
 };

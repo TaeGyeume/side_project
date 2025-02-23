@@ -121,7 +121,7 @@ export const authAPI = {
         api.post('/auth/refresh-token', {}, requestConfig),
         '리프레시 토큰 갱신 중 오류 발생'
       );
-      console.log('✅ 새 액세스 토큰 수신:', response);
+      console.log(' 새 액세스 토큰 수신:', response);
       return response;
     } catch (error) {
       console.error('리프레시 토큰 갱신 실패');

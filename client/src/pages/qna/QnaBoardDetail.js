@@ -161,7 +161,12 @@ const QnaBoardDetail = () => {
       {qnaBoard.attachments && qnaBoard.attachments.length > 0 && (
         <div className="qna-attachments">
           {qnaBoard.attachments.map((file, index) => (
-            <a key={index} href={`http://localhost:5000${file}`} download target="_blank">
+            <a
+              key={index}
+              href={`http://localhost:5000${file}`}
+              download
+              target="_blank"
+              rel="noopener noreferrer">
               첨부파일 {index + 1}
             </a>
           ))}
