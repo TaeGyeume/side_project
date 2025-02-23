@@ -1,20 +1,35 @@
 import React, {useEffect, useState} from 'react';
 import {useParams, useNavigate} from 'react-router-dom';
-import {getQnaBoardById, updateQnaBoard} from '../../api/qna/qnaBoardService'; // updateQnaBoard API 호출
-import {getUserProfile} from '../../api/user/user'; // 사용자 정보 조회
-import './styles/QnaBoardWrite.css'; // 스타일을 동일하게 사용
+import {getQnaBoardById, updateQnaBoard} from '../../api/qna/qnaBoardService';
+import {getUserProfile} from '../../api/user/user';
+import {
+  Button,
+  IconButton,
+  Card,
+  CardMedia,
+  CardActions,
+  TextField,
+  MenuItem,
+  Typography,
+  Box
+} from '@mui/material';
+import {Delete as DeleteIcon} from '@mui/icons-material';
 
 const QnaBoardEdit = () => {
-  const {qnaBoardId} = useParams(); // 게시글 ID를 URL에서 가져옵니다.
+  const {qnaBoardId} = useParams();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null); // 사용자 정보 상태
+  const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     category: '',
     title: '',
     content: '',
     images: [],
-    attachments: []
+    attachments: [],
+    existingImages: [],
+    existingAttachments: []
   });
+
+  const [imagePreviews, setImagePreviews] = useState([]); // 새 이미지 미리보기
   const [loading, setLoading] = useState(true);
 
   const categories = [
@@ -30,40 +45,72 @@ const QnaBoardEdit = () => {
     '기타 문의'
   ];
 
-  // 사용자 정보 가져오기
-  const fetchUser = async () => {
-    try {
-      const response = await getUserProfile();
-      setUser(response.data);
-    } catch (error) {
-      setUser(null);
-    }
-  };
-
-  // 기존 게시글 데이터 가져오기
-  const fetchQnaBoard = async () => {
-    try {
-      const data = await getQnaBoardById(qnaBoardId);
-      setFormData({
-        category: data.category,
-        title: data.title,
-        content: data.content,
-        images: data.images || [],
-        attachments: data.attachments || []
-      });
-      setLoading(false);
-    } catch (error) {
-      console.error('게시글 조회 오류:', error);
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await getUserProfile();
+        setUser(response.data);
+      } catch (error) {
+        setUser(null);
+      }
+    };
+
+    const fetchQnaBoard = async () => {
+      try {
+        const data = await getQnaBoardById(qnaBoardId);
+        setFormData({
+          category: data.category,
+          title: data.title,
+          content: data.content,
+          images: [],
+          attachments: [],
+          existingImages: data.images || [],
+          existingAttachments: data.attachments || []
+        });
+        setLoading(false);
+      } catch (error) {
+        console.error('게시글 조회 오류:', error);
+        setLoading(false);
+      }
+    };
+
     fetchUser();
     fetchQnaBoard();
   }, [qnaBoardId]);
 
-  // 게시글 수정 처리
+  // 새 이미지 및 첨부파일 업로드 핸들러
+  const handleFileChange = e => {
+    const {name, files} = e.target;
+    const fileArray = Array.from(files);
+
+    if (name === 'images') {
+      const previews = fileArray.map(file => URL.createObjectURL(file));
+      setImagePreviews(prev => [...prev, ...previews]);
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: [...prev[name], ...fileArray]
+    }));
+  };
+
+  // 기존 이미지 삭제
+  const handleRemoveExistingImage = index => {
+    setFormData(prev => ({
+      ...prev,
+      existingImages: prev.existingImages.filter((_, i) => i !== index)
+    }));
+  };
+
+  // 기존 첨부파일 삭제
+  const handleRemoveExistingFile = index => {
+    setFormData(prev => ({
+      ...prev,
+      existingAttachments: prev.existingAttachments.filter((_, i) => i !== index)
+    }));
+  };
+
+  // 게시글 수정 요청
   const handleUpdateQnaBoard = async e => {
     e.preventDefault();
 
@@ -76,20 +123,32 @@ const QnaBoardEdit = () => {
     setLoading(true);
 
     try {
-      const updatedFormData = new FormData();
+      let updatedFormData = new FormData();
       updatedFormData.append('category', formData.category);
       updatedFormData.append('title', formData.title);
       updatedFormData.append('content', formData.content);
 
-      // 파일들 추가
-      Array.from(formData.images).forEach(file => updatedFormData.append('images', file));
-      Array.from(formData.attachments).forEach(file =>
-        updatedFormData.append('attachments', file)
+      formData.images.forEach(file => {
+        if (file instanceof File) {
+          updatedFormData.append('images', file);
+        }
+      });
+
+      formData.attachments.forEach(file => {
+        if (file instanceof File) {
+          updatedFormData.append('attachments', file);
+        }
+      });
+
+      updatedFormData.append('existingImages', JSON.stringify(formData.existingImages));
+      updatedFormData.append(
+        'existingAttachments',
+        JSON.stringify(formData.existingAttachments)
       );
 
-      await updateQnaBoard(qnaBoardId, updatedFormData);
+      await updateQnaBoard(qnaBoardId, updatedFormData, true);
       alert('게시글이 수정되었습니다.');
-      navigate(`/qna/${qnaBoardId}`); // 수정 후 해당 게시글 상세페이지로 이동
+      navigate(`/qna/${qnaBoardId}`);
     } catch (error) {
       alert('게시글 수정 중 오류가 발생했습니다.');
       setLoading(false);
@@ -99,69 +158,100 @@ const QnaBoardEdit = () => {
   if (loading) return <p>로딩 중...</p>;
 
   return (
-    <div className="qna-write-container">
-      <h2>게시글 수정</h2>
+    <Box sx={{maxWidth: 600, margin: 'auto', mt: 4}}>
+      <Typography variant="h4">게시글 수정</Typography>
       <form onSubmit={handleUpdateQnaBoard} encType="multipart/form-data">
-        {/* 카테고리 선택 */}
-        <label>카테고리</label>
-        <select
+        <TextField
+          select
+          label="카테고리"
           name="category"
           value={formData.category}
           onChange={e => setFormData({...formData, category: e.target.value})}
-          required>
-          <option value="">카테고리를 선택하세요</option>
+          fullWidth
+          required
+          margin="normal">
           {categories.map((category, index) => (
-            <option key={index} value={category}>
+            <MenuItem key={index} value={category}>
               {category}
-            </option>
+            </MenuItem>
           ))}
-        </select>
+        </TextField>
 
-        {/* 제목 입력 */}
-        <label>제목</label>
-        <input
-          type="text"
+        <TextField
+          label="제목"
           name="title"
           value={formData.title}
           onChange={e => setFormData({...formData, title: e.target.value})}
+          fullWidth
           required
+          margin="normal"
         />
 
-        {/* 내용 입력 */}
-        <label>내용</label>
-        <textarea
+        <TextField
+          label="내용"
           name="content"
+          multiline
+          rows={4}
           value={formData.content}
           onChange={e => setFormData({...formData, content: e.target.value})}
+          fullWidth
           required
+          margin="normal"
         />
 
-        {/* 이미지 업로드 */}
-        <label>이미지 업로드 (최대 3개)</label>
-        <input
-          type="file"
-          name="images"
-          multiple
-          accept="image/*"
-          onChange={e => setFormData({...formData, images: e.target.files})}
-        />
+        {/* 기존 이미지 목록 */}
+        {formData.existingImages.length > 0 && (
+          <Box>
+            <Typography variant="h6">현재 업로드된 이미지</Typography>
+            {formData.existingImages.map((img, index) => (
+              <Card key={index} sx={{maxWidth: 120, display: 'inline-block', margin: 1}}>
+                <CardMedia
+                  component="img"
+                  height="80"
+                  image={`http://localhost:5000${img}`}
+                  alt="기존 이미지"
+                />
+                <CardActions>
+                  <IconButton
+                    onClick={() => handleRemoveExistingImage(index)}
+                    color="error">
+                    <DeleteIcon />
+                  </IconButton>
+                </CardActions>
+              </Card>
+            ))}
+          </Box>
+        )}
 
-        {/* 첨부파일 업로드 */}
-        <label>첨부파일 업로드 (PDF, DOCX 등)</label>
-        <input
-          type="file"
-          name="attachments"
-          multiple
-          accept=".pdf, .doc, .docx"
-          onChange={e => setFormData({...formData, attachments: e.target.files})}
-        />
+        <Button variant="contained" component="label" sx={{mt: 2}}>
+          새 이미지 업로드
+          <input
+            type="file"
+            name="images"
+            multiple
+            accept="image/*"
+            hidden
+            onChange={handleFileChange}
+          />
+        </Button>
 
-        {/* 수정 버튼 */}
-        <button type="submit" disabled={loading}>
+        <Button variant="contained" component="label" sx={{mt: 2}}>
+          새 첨부파일 업로드
+          <input
+            type="file"
+            name="attachments"
+            multiple
+            accept=".pdf, .doc, .docx"
+            hidden
+            onChange={handleFileChange}
+          />
+        </Button>
+
+        <Button type="submit" variant="contained" color="primary" fullWidth sx={{mt: 3}}>
           {loading ? '수정 중...' : '수정 완료'}
-        </button>
+        </Button>
       </form>
-    </div>
+    </Box>
   );
 };
 

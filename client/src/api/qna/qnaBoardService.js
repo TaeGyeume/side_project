@@ -151,34 +151,21 @@ export const deleteQnaComment = async commentId => {
     throw error;
   }
 };
-
-// QnA 게시글 수정 (파일이 있을 경우 FormData, 없을 경우 JSON)
-export const updateQnaBoard = async (qnaBoardId, data, isMultipart = false) => {
+export const updateQnaBoard = async (qnaBoardId, data, isMultipart) => {
   try {
     let requestData = data;
-    let headers = {};
+    let headers = isMultipart ? {} : {'Content-Type': 'application/json'};
+
+    // 🚀 전송 데이터 디버깅
+    console.log('✅ 수정 요청 데이터:', requestData);
 
     if (isMultipart) {
-      const formData = new FormData();
-
-      formData.append('category', data.category);
-      formData.append('title', data.title);
-      formData.append('content', data.content);
-
-      if (data.images && data.images.length > 0) {
-        data.images.forEach(file => formData.append('images', file));
+      for (let [key, value] of requestData.entries()) {
+        console.log(`🔹 ${key}:`, value);
       }
-      if (data.attachments && data.attachments.length > 0) {
-        data.attachments.forEach(file => formData.append('attachments', file));
-      }
-
-      requestData = formData;
-      headers = {'Content-Type': 'multipart/form-data'}; // Axios가 자동 처리
     } else {
-      headers = {'Content-Type': 'application/json'};
+      console.log('🔹 JSON 데이터:', requestData);
     }
-
-    console.log(' 수정 요청 데이터:', requestData);
 
     const response = await axios.put(`${API_BASE_URL}/${qnaBoardId}`, requestData, {
       headers,
@@ -187,7 +174,7 @@ export const updateQnaBoard = async (qnaBoardId, data, isMultipart = false) => {
 
     return response.data;
   } catch (error) {
-    console.error(' QnA 게시글 수정 오류:', error.response?.data || error.message);
+    console.error('⛔ QnA 게시글 수정 오류:', error.response?.data || error.message);
     throw error;
   }
 };

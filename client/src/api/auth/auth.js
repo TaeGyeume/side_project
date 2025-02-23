@@ -8,7 +8,7 @@ const requestConfig = {
   }
 };
 
-let isRefreshing = false; // 리프레시 토큰 요청 상태 관리
+// let isRefreshing = false; // 리프레시 토큰 요청 상태 관리
 
 const handleRequest = async (requestPromise, errorMessage) => {
   try {
