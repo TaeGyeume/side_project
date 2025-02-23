@@ -4,10 +4,9 @@ const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api/qna';
 
 // QnA 게시글 생성 (Busboy 사용)
-export const createQnaBoard = async data => {
+export const createQnaBoard = async (data, isMultipart) => {
   try {
     let requestData;
-    let headers = {};
 
     // ✅ 파일이 없으면 JSON 요청 (application/json)
     if (
@@ -19,12 +18,9 @@ export const createQnaBoard = async data => {
         title: data.title?.trim() || '',
         content: data.content?.trim() || ''
       };
-      headers = {'Content-Type': 'application/json'};
     } else {
       // ✅ 파일이 있을 경우 multipart/form-data 사용
       requestData = new FormData();
-
-      // ✅ 값이 존재하는 경우에만 추가
       if (data.category) requestData.append('category', data.category.trim());
       if (data.title) requestData.append('title', data.title.trim());
       if (data.content) requestData.append('content', data.content.trim());
@@ -44,18 +40,25 @@ export const createQnaBoard = async data => {
           }
         });
       }
-
-      // ✅ Content-Type은 Axios가 자동 처리
     }
 
-    // 🚀 디버깅: 서버로 전송할 데이터 확인
+    // 🚀 디버깅: requestData 출력
     console.log('✅ 최종 전송할 데이터:', requestData);
-    for (let [key, value] of requestData.entries()) {
-      console.log(`🔹 ${key}:`, value);
+
+    if (requestData instanceof FormData) {
+      for (let [key, value] of requestData.entries()) {
+        console.log(`🔹 ${key}:`, value);
+      }
+    } else {
+      console.log('🔹 JSON 데이터:', requestData);
     }
 
-    // ✅ 요청 보내기 (JSON 또는 FormData)
-    const response = await axios.post(API_BASE_URL, requestData, {
+    const headers = isMultipart
+      ? {} // 🔥 FormData일 경우 Content-Type 자동 설정
+      : {'Content-Type': 'application/json'}; // JSON 요청 시 명시적 지정
+
+    // ✅ 요청 보내기 (JSON 또는 FormData 자동 선택)
+    const response = await axios.post(API_BASE_URL, data, {
       headers,
       withCredentials: true
     });
@@ -66,6 +69,7 @@ export const createQnaBoard = async data => {
     throw error;
   }
 };
+
 //  QnA 게시글 목록 조회 (페이징)
 export const getQnaBoards = async (page = 1, limit = 10, category = null) => {
   try {
