@@ -4,6 +4,7 @@ const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api/qna';
 
 //  QnA 게시글 생성 (Busboy 사용)
+// QnA 게시글 생성 (Busboy 사용)
 export const createQnaBoard = async data => {
   try {
     const hasFiles =
@@ -15,40 +16,42 @@ export const createQnaBoard = async data => {
 
     if (hasFiles) {
       requestData = new FormData();
-
       requestData.append('category', data.category?.trim() || '');
       requestData.append('title', data.title?.trim() || '');
       requestData.append('content', data.content?.trim() || '');
 
+      // 이미지 파일 추가
       data.images?.forEach(file => {
         if (file instanceof File) {
           requestData.append('images', file);
         }
       });
 
+      // 첨부파일 추가
       data.attachments?.forEach(file => {
         if (file instanceof File) {
           requestData.append('attachments', file);
         }
       });
 
-      headers = {'Content-Type': 'multipart/form-data'}; // ✅ 명확하게 설정
+      headers = {'Content-Type': 'multipart/form-data'}; // 명확하게 설정
     } else {
-      requestData = new FormData(); // ✅ 파일이 없어도 FormData로 강제
+      requestData = new FormData(); // 파일이 없어도 FormData로 강제
       requestData.append('category', data.category?.trim() || '');
       requestData.append('title', data.title?.trim() || '');
       requestData.append('content', data.content?.trim() || '');
       headers = {'Content-Type': 'multipart/form-data'};
     }
 
-    console.log('✅ 최종 전송할 FormData 내용:');
+    // 서버로 전송할 FormData 로그 출력 (디버깅용)
+    console.log('✅ 전송할 FormData 내용:');
     for (let [key, value] of requestData.entries()) {
       console.log(`🔹 ${key}:`, value);
     }
 
     const response = await axios.post(`${API_BASE_URL}`, requestData, {
       headers,
-      withCredentials: true
+      withCredentials: true // 쿠키 포함
     });
 
     return response.data;
@@ -140,7 +143,7 @@ export const deleteQnaComment = async commentId => {
   }
 };
 
-//  QnA 게시글 수정 (파일이 있을 경우 `FormData`, 없을 경우 `JSON`)
+// QnA 게시글 수정 (파일이 있을 경우 FormData, 없을 경우 JSON)
 export const updateQnaBoard = async (qnaBoardId, data, isMultipart = false) => {
   try {
     let requestData = data;

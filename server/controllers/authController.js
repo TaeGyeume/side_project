@@ -1,5 +1,7 @@
 const authService = require('../services/authService');
 const cookieOptions = require('../config/cookieConfig');
+const jwt = require('jsonwebtoken');
+const RefreshToken = require('../models/RefreshToken'); // ✅ 추가
 
 // ✅ 아이디 찾기 컨트롤러 (이메일 입력 → 인증 코드 발송)
 exports.findUserId = async (req, res) => {
@@ -84,8 +86,8 @@ exports.login = async (req, res) => {
     // 공통 쿠키 설정 옵션
     const tokenCookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // 배포 환경에서는 secure 활성화
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // 크로스 사이트 쿠키 허용
+      secure: false, // 배포 환경에서는 secure 활성화
+      sameSite: 'None', // 크로스 사이트에서도 쿠키 유지
       path: '/',
       maxAge: 15 * 60 * 1000 // 액세스 토큰은 15분 유효
     };
@@ -206,25 +208,58 @@ exports.logout = async (req, res) => {
 exports.refreshToken = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
+    console.log('✅ [리프레시 요청] 전달된 리프레시 토큰:', refreshToken);
+
     if (!refreshToken) {
+      console.error('❌ 리프레시 토큰이 없습니다.');
       return res.status(401).json({message: '리프레시 토큰이 없습니다.'});
     }
 
-    const newAccessToken = await authService.refreshAccessToken(refreshToken, res);
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    console.log('✅ [리프레시 요청] 디코딩된 정보:', decoded);
+
+    const storedToken = await RefreshToken.findOne({
+      userId: decoded.id,
+      token: refreshToken
+    });
+
+    console.log('✅ [리프레시 요청] DB에 저장된 리프레시 토큰:', storedToken);
+
+    if (!storedToken) {
+      console.error('❌ DB에서 리프레시 토큰을 찾을 수 없습니다.');
+      return res
+        .status(403)
+        .json({message: '유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요.'});
+    }
+
+    const newAccessToken = jwt.sign(
+      {id: decoded.id, roles: decoded.roles},
+      process.env.JWT_SECRET,
+      {expiresIn: '1h'}
+    );
+
+    console.log('✅ [리프레시 요청] 새로 발급된 액세스 토큰:', newAccessToken);
 
     res.cookie('accessToken', newAccessToken, {
-      ...cookieOptions,
-      secure: false
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      path: '/',
+      maxAge: 15 * 60 * 1000
     });
 
-    res.status(200).json({message: '토큰 갱신 성공'});
+    return res.status(200).json({message: '토큰 갱신 성공', accessToken: newAccessToken});
   } catch (error) {
+    console.error('❌ 리프레시 토큰 검증 실패:', error.message);
+
     res.clearCookie('refreshToken', {
-      path: '/',
-      secure: false,
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax' // 크로스 사이트 쿠키 허용
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      path: '/'
     });
-    res
+
+    return res
       .status(403)
       .json({message: '유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요.'});
   }
